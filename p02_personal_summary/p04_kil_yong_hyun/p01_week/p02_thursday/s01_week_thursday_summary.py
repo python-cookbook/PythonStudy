@@ -1,3 +1,157 @@
+#  1.18 시퀀스 요소에 이름 매핑
+#  ▣ 문제 : 리스트나 튜플의 요소에 이름으로 접근 가능하도록 수정하고 싶다.
+#  ▣ 해결 : collections.namedtuple() 을 사용하면 일반적인 튜플 객체를 사용하는 것에 비해 그리 크지 않은 오버헤드로 이 기능을 구현한다.
+#            collections.namedtuple() 은 실제로 표준 파이썬 tuple 타입의 서브클래스를 반환하는 팩토리 메소드이다.
+from collections import namedtuple
+Subscriber = namedtuple('Subscriber', ['addr', 'joined'])
+sub = Subscriber('jonesy@example.com', '2012-10-19')
+print(sub)
+print(sub.addr, sub.joined)
+
+#   - namedtuple 의 인스턴스는 일반적인 클래스 인스턴스와 비슷해 보이지만 튜플과 교환이 가능하고, 인덱싱이나 언패킹과 같은 튜플의
+#     일반적인 기능을 모두 지원한다.
+print(len(sub))
+addr, joined = sub  # 언패킹
+print(addr, joined)
+
+#   - 일반적인 튜플을 사용하는 코드
+def compute_cost(records):
+    total = 0.0
+    for rec in records:
+        total += rec[1] * rec[2]
+    return total
+
+#   - namedtuple 을 사용한 코드
+from collections import namedtuple
+Stock = namedtuple('Stock', ['name', 'shares', 'price'])
+def compute_cost(records):
+    total = 0.0
+    for rec in records:
+        s = Stock(*rec)
+        total += s.shares * s.price
+    return total
+
+#  ▣ 토론 : namedtuple 은 저장 공간을 더 필요로 하는 딕셔너리 대신 사용할 수 있다.
+#            딕셔너리를 포함한 방대한 자료 구조를 구상하고 있다면 namedtuple 을 사용하는 것이 더 효율적이다.
+#            하지만 딕셔너리와는 다르게 네임드 튜플은 수정할 수 없다.
+s = Stock('ACME', 100, 123.45)
+print(s)
+s.shares = 75
+
+#   - 속성을 수정해야 한다면 namedtuple 인스턴스의 _replace() 메소드를 사용해야 한다.
+s = s._replace(shares=75)
+print(s)
+
+#   - _replace() 메소드를 사용해서 옵션이나 빈 필드를 가진 네임드 튜플을 간단히 만들 수 있다.
+from collections import namedtuple
+Stock = namedtuple('Stock', ['name', 'shares', 'price', 'date', 'time'])
+
+stock_prototype = Stock('', 0, 0.0, None, None)  # prototype instance 생성
+
+def dict_to_stock(s):  # dictionary 를 Stock 으로 변환하는 함수
+    return stock_prototype._replace(**s)
+
+a = {'name': 'ACME', 'shares': 100, 'date': '2012-02-22'}
+print(dict_to_stock(a))
+
+
+#  1.19 데이터를 변환하면서 줄이기
+#  ▣ 문제 : 감소 함수(sum, min, max)를 실행해야 하는데, 먼저 데이터를 변환하거나 필터링해야 한다.
+#  ▣ 해결 : 생성자 표현식을 사용해서 처리한다.
+nums = [1, 2, 3, 4, 5]
+s = sum(x * x for x in nums)
+print(s)
+
+#   - 디렉터리에 또 다른 .py 파일이 있는지 살펴본다.
+import os
+files = os.listdir('./files')
+if any(name.endswith('.py') for name in files):
+    print('There be python!')
+else:
+    print('Sorry, no python.')
+
+#   - 튜플을 CSV 로 출력한다.
+s = ('ACME', 50, 123.45)
+print(','.join(str(x) for x in s))
+
+#   - 자료 구조의 필드를 줄인다.
+portfolio = [{'name': 'GOOG', 'shares': 50},
+             {'name': 'YHOO', 'shares': 75},
+             {'name': 'AOL', 'shares': 20},
+             {'name': 'SCOX', 'shares': 65}]
+min_shares = min(s['shares'] for s in portfolio)
+
+#  ▣ 토론 : 위의 코드는 함수에 인자로 전달된 생성자 표현식의 문법적인 측면을 보여준다.
+s = sum((x * x for x in nums))
+s = sum(x * x for x in nums)
+#   ※ 위의 두 식은 같다.
+
+#   - min, max 같은 함수는 key 라는 여러 상황에 유용한 인자를 받기 때문에 생성자 방식을 사용해야 하는 이유를 더 만들어 준다.
+min_shares = min(s['shares'] for s in portfolio)
+min_shares = min(portfolio, key=lambda v: v['shares'])
+from operator import itemgetter
+min_shares = min(portfolio, key=itemgetter('shares'))
+print(min_shares)
+
+
+#  1.20 여러 매핑을 단일 매핑으로 합치기
+#  ▣ 문제 : 딕셔너리나 매핑이 여러 개 있고, 자료 검색이나 데이터 확인을 위해서 하나의 매핑으로 합치고 싶다.
+#  ▣ 해결 : collections 모듈의 ChainMap 클래스를 사용하면 된다.
+a = {'x': 1, 'z': 3}
+b = {'y': 2, 'z': 4}
+from collections import ChainMap
+c = ChainMap(a, b)
+print(c)
+print(c['x'])
+print(c['y'])
+print(c['z'])
+
+#  ▣ 토론 : ChainMap 은 매핑을 여러 개 받아서 하나처럼 보이게 한다.
+#            하지만 그렇게 보이는 것일뿐 하나로 합치는 것은 아니다. 단지 매핑에 대한 리스트를 유지하면서 리스트를 스캔하도록
+#            일반적인 딕셔너리 동작을 재정의한다.
+print(len(c))
+print(list(c.keys()), list(c.values()))
+
+#   - 매핑의 값을 변경하는 동작은 언제나 리스트의 첫 번째 매핑에 영향을 준다
+c['z'] = 10
+c['w'] = 40
+del c['z']
+print(a)
+del c['y']  # 두 번째 매핑에 있는 값이므로 변경이 안된다.
+
+#   - ChainMap 은 프로그래밍 언어의 변수와 같이 범위가 있는 값(전역변수, 지역변수)에 사용하면 유용하다.
+values = ChainMap()
+values['x'] = 1
+values = values.new_child()  # 새로운 매핑 추가
+values['x'] = 2
+values = values.new_child()
+values['x'] = 3
+print(values)
+print(values['x'])
+values = values.parents  # 마지막 매핑 삭제
+print(values['x'])
+values = values.parents
+print(values['x'])
+print(values)
+
+#   - ChainMap 의 대안으로 update() 를 사용해 딕셔너리를 하나로 합칠 수도 있다.
+a = {'x': 1, 'z': 3}
+b = {'y': 2, 'z': 4}
+merged = dict(b)
+merged.update(a)
+print(merged['x'], merged['y'], merged['z'])
+a['x'] = 13
+print(merged['x'])
+
+#   - ChainMap 은 원본 딕셔너리를 참조하기 때문에 이와 같은 문제가 발생하지 않는다.
+a = {'x': 1, 'z': 3}
+b = {'y': 2, 'z': 4}
+merged = ChainMap(a, b)
+print(merged['x'])
+a['x'] = 42
+print(merged['x'])
+
+
 # Chapter 2. 문자열과 텍스트
 #  2.1 여러 구분자로 문자열 나누기
 #  ▣ 문제 : 문자열을 필드로 나누고 싶지만 구분자가 문자열에 일관적이지 않다.
