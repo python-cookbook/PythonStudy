@@ -1,4 +1,5 @@
-''' 
+''''''
+'''
 
 1장 1절 시퀀스를 개별 변수로 나누기
 
@@ -41,6 +42,7 @@
 * 시퀀스에서의 주의 사항
 - 모든 시퀀스는 개별 변수로 나눌 수 있지만 반드시 변수의 개수가 시퀀스에 일치해야만 한다. 그렇지 않을 경우 ValueError 가 발생한다.
     예)
+
 '''
 
 p = (4,5)
@@ -98,6 +100,18 @@ z
 
 '''
 * 언패킹
+- 패킹 : 하나의 변수에 여러 값을 넣는 것
+  언패킹 : 패킹된 변수에서 여러개의 값을 꺼내 오는 것
+   예)
+'''
+
+c = (3, 4)
+d, e = c    # c의 값을 언패킹하여 d, e에 값을 넣었다
+f = d, e    # 변수 d와 e를 f에 패킹
+
+
+'''
+
 - 이터레이터(iterator)와 제너레이터(generator). 매우매우매우 중요!
     1. 이터레이터 : 반복가능한 객체 (초간단 이해 -> 객체에 .next가 가능하다면 이터레이터가 맞음)
         예) 이터레이터 =  iter(list) : list를 iter로 통하여 이터레이터를 만들었다, list는 반복가능하지만 이터레이터는 아니다.. 
@@ -175,3 +189,61 @@ get_END #generator 종료
 '''
 
 
+
+'''
+
+* 언패킹을 할 때 특정 값을 무시하는 법 : 해당 변수의 공간을 _ 로 입력
+  예)
+'''
+
+data = [ 'ACME', 50, 91.1, (2012, 12, 21) ]
+_, shares, price, _ = data
+
+# shares
+# 50
+# price
+# 91.1
+
+''' 
+
+1장 2절 임의 순환체의 요소 나누기
+ - 순환체에 정해진 요소의 개수 보다 많은 요소를 언패킹 하게 되면 값이 너무 많습니다 라는 예외가 발생한다.
+   이 문제를 해결하기 위해 별( * ) 표현식을 사용한다.
+   
+   * 이 별표 구문은 길이를 알 수 없는 순환체에 매우 효과적으로 사용 할 수 있다. ( 예 - 길이가 일정하지 않은 튜플 )
+   
+   예)
+'''
+
+def drop_first_last(grades):
+    first, *middle, last = grades
+    return avg(middle)
+
+record = ('Dave', 'dave@example,com', '773-555-1212', '847-555-1212')
+name, email, *phone_numbers = user_record
+
+*trailing_qtrs, current_qtr = sales_record
+trailing_avg = sum(trailing_qtrs)/len(trailing_qtrs)
+return avg_comparison(trailing_avg, current_qtr)
+
+*trailing, current = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+trailing    # *trailing과 current 순으로 요소가 담기므로 마지막 current의 자리인 마지막 1을 빼고 나머지가 전부 trailing에 담긴다
+current     # current엔 딱 한자리인 1만 담긴다
+
+records = [
+    ('foo', 1, 2),
+    ('bar', 'hello'),
+    ('foo', 3, 4),
+]
+
+def do_foo(x, y):
+    print('foo', x, y)
+
+def do_bar(s):
+    print('bar', s)
+
+for tag, *args in records:
+    if tag == 'foo':
+        do_foo(*args)
+    elif tag == 'bar':
+        do_bar(*args)
