@@ -41,68 +41,137 @@
 * 시퀀스에서의 주의 사항
 - 모든 시퀀스는 개별 변수로 나눌 수 있지만 반드시 변수의 개수가 시퀀스에 일치해야만 한다. 그렇지 않을 경우 ValueError 가 발생한다.
     예)
-        # p = (4,5)
-        # x,y,z = p
-        
-        Traceback (most recent call last):
-        File "K:/Python/PythonStudy/p02_personal_summary/p07_bae_jun_ho/p01_week/p01_tuesday/1.1-1.17.py", line 87, in <module>
-        x,y,z = p
-        
+'''
+
+p = (4,5)
+x,y,z = p
+# Traceback (most recent call last):
+# File "K:/Python/PythonStudy/p02_personal_summary/p07_bae_jun_ho/p01_week/p01_tuesday/1.1-1.17.py", line 87, in <module>
+
+'''        
 ValueError: not enough values to unpack (expected 3, got 2)
 - 같은 형의 나열형 객체끼리는 비교도 가능하다. 특히 리스트와 튜플은 길이와 같은 인덱스를 가지는 모든 요소들끼리 같다면 두 리스트/튜플은 같은 것으로 판별된다.
 - 나열형 객체의 복사는 ‘얕은 복사’라는 것도 유의해야 한다. 즉, 중첩된 구조는 복사되지 않는다. (얕은 복사 : 리스트의 중첩 구조는 복사하지 않고 틀만 복사함 아래 예 참조)
     예)
-        # >>> lst=[ [] ]*3
-        # >>> lst
-        # [[], [], []]
-        # >>> lst[0].append(1)
-        # >>> lst
-        # [[1], [1], [1]]
+'''
+lst=[ [] ]*3
+lst
+#[[], [], []]
+lst[0].append(1)
+lst
+#[[1], [1], [1]]
 
+'''
 - 서로 다른 리스트를 만들고 싶은 경우
     예)
-        # lst = [ [] for _ in range(3)]
-        # >>> lst
-        # [[], [], []]
-        # >>> lst[0].append(1)
-        # >>> lst[1].append(2)
-        # >>> lst[2].append(3)
-        # >>> lst
-        # [[1], [2], [3]]
+'''
 
+lst = [ [] for _ in range(3)]
+lst
+#[[], [], []]
+lst[0].append(1)
+lst[1].append(2)
+lst[2].append(3)
+lst
+#[[1], [2], [3]]
+
+
+'''
 - 만약 ‘깊은 복사’를 수행하려면 copy 모듈의 deepcopy 함수를 이용하면 된다. (깊은 복사 : 구조까지 전부 다 복사해옴. 아래 예 참조)
     예)
-        # >>> x=[11,22]
-        # >>> y=[x, 33]
-        # >>> y
-        # [[11, 22], 33]
-        # >>> from copy import deepcopy
-        # >>> z = deepcopy(y)
-        # >>> z
-        # [[11, 22], 33]
-        # >>> x[0]=-44
-        # >>> y
-        # [[-44, 22], 33] # x가 변하면 y도 변한다.
-        # >>> z
-        # [[11, 22], 33] # x가 변해도 z는 변함이 없다.
+'''
 
+x=[11,22]
+y=[x, 33]
+y
+# [[11, 22], 33]
+
+from copy import deepcopy
+z = deepcopy(y)
+z
+#[[11, 22], 33]
+x[0]=-44
+y
+#[[-44, 22], 33] # x가 변하면 y도 변한다.
+z
+#[[11, 22], 33] # x가 변해도 z는 변함이 없다.
+
+'''
 * 언패킹
 - 이터레이터(iterator)와 제너레이터(generator). 매우매우매우 중요!
     1. 이터레이터 : 반복가능한 객체 (초간단 이해 -> 객체에 .next가 가능하다면 이터레이터가 맞음)
         예) 이터레이터 =  iter(list) : list를 iter로 통하여 이터레이터를 만들었다, list는 반복가능하지만 이터레이터는 아니다.. 
-                                     명시적으로 반복가능한객체로 만들어서 사용해줘야한다
+                                       명시적으로 반복가능한객체로 만들어서 사용해줘야한다
 
         1-1. 이터레이블 : 반복 가능하다 (반복(loop)연산이 가능하여 해당 위치를 이동해가면서 값을 사용할수 있는 지를 말한다)
-        예) a라는 dict를 생성하여 class를 확인하면 a는 dict일뿐 이터레이터가 아니다
-            # a = {1:'a',2:'b'}
-            # print(a.__class__)
-            <class 'dict'>
+
+        1-2. 이터레이션 : 반복가능한객체에서 해당값을 가져오는 행위
+
+        1-3. 이터함수(iter 함수) : list나 dict를 이터레이터로 만들어주는 함수
+
+    2. 제너레이터 : 이터레이터를 만들어주는것을 말한다 (= 반복가능한 객체를 만들어주는 행위)
+
+        2-1. yield : function에서 return과 동일한 역할을 수행한다. 
+            -> 해당 function을 yield를 사용하여 제너레이터를 만들어줌(아래 예제 참조)
 
 '''
 
-a = {1:'a',2:'b'}
-print(a.__class__)
 
-b = iter(a)
-print(b.__class__)
+def generator(n):
+    print("get_START")
+    i = 0
+    while i < n:
+        yield i
+        print("yield 이후 %d" % i)
+        i += 1
+    print("get_END")
+
+
+for i in generator(4):
+    print("for_START %d" % i)
+    print(i)
+    print("for_END %d" % i)
+
+
+'''
+위 코드 실행 결과
+
+get_START # generator 최초생성시점 , # yield 구문 돌입, 여기서부터 while문의 시작
+
+for_START 0 # generator에서 yield로 리턴된 값을 받아서 for문의 시작
+
+0
+
+for_END 0
+
+yield 후 0 # yield후에 잔여코드실행(while문이 아직 이때 i는 0의 상태로 실행되고 있는것), 다돌고난뒤에 while문 한번반복하여 yield를 해준다 값은 1을 리턴
+
+for_START 1 # for loop이 최초한번 돌고 두번째 돌입
+
+1
+
+for_END 1
+
+yield 후 1
+
+for_START 2
+
+2
+
+for_END 2
+
+yield 후 2
+
+for_START 3
+
+3
+
+for_END 3
+
+yield 후 3
+
+get_END #generator 종료
+
+'''
+
 
