@@ -416,3 +416,115 @@ portfolio = [
 cheap = heapq.nsmallest(3, portfolio, key=lambda s: s['price'])
 expensive = heapq.nlargest(3, portfolio, key=lambda s: s['price'])
 
+# heapq.heapify() (힙 메소드) 의 중요한 기능은 heap[0] 이 가장 작은 요소로 정렬된다는 것이다.
+
+nums = [1, 8, 2, 23, 7, -4, 18, 23, 42, 37, 2]
+
+import heapq
+
+heap = list(nums)
+heapq.heapify(heap)
+heap
+# [-4, 2, 1, 23, 7, 2, 18, 23, 42, 37, 8]
+
+# heapq.heappop()을 쓰면 가장 첫번째의 아이템을 뽑아낼 수 있다.
+
+heapq.heappop(heap)
+# -4
+
+'''
+
+1장 5절 우선 순위 큐 구현 : 우선 순위에 따라 아이템을 정렬하는 큐를 만들고 항상 순위가 높은 아이템을 먼저 팝하도록 해야한다.
+
+ 1) heapq 모듈을 사용해서 우선 순위 큐를 구현한다.
+ 2) heapq.heappush()와 heapq.heappop() : heappush는 list_queue의 첫 번째 아이템이 가장 작은 아이템이 되도록 삽입 혹은 제거하고, heappop는 가장 작은 아이템을 반환해서 큐의 팝이 올바른 아이템에 적용되게 함
+    예)
+'''
+
+# heapq 모듈을 사용해서 우선 순위 큐를 구현
+
+import heapq
+
+
+class PriorityQueue:
+    def __init__(self):
+        self._queue = []
+        self._index = 0
+
+    def push(self, item, priority):
+        heapq.heappush(self._queue, (-priority, self._index, item))
+        # 내부 튜플 설명 : -priority - 일반 정렬 순서의 반대 순서(높은 값에서 낮은 값으로)로 우선순위를 정렬, index - 우선 순위가 동일 할 경우 삽입 순으로 정렬하기 위해 사용, Item - 인스턴스
+        self._index += 1
+
+    def pop(self):
+        return heapq.heappop(self._queue)[-1]
+
+
+# 위 코드를 사용하는 예
+
+class Item:
+    def __init__(self, name):
+        self.name = name
+
+    def __repr__(self):
+        return 'Item({!r})'.format(self.name)
+
+
+q = PriorityQueue()
+q.push(Item('foo'), 1)
+q.push(Item('bar'), 5)
+q.push(Item('spam'), 4)
+q.push(Item('grok'), 1)
+q.pop()  # 우선 순위 값이 가장 큰 bar -> spam 순으로 팝 되고 우선 순위가 같을 경우 입력된 순서인 foo -> grok 순으로 팝시켜준다.
+# Item('bar')
+q.pop()
+# Item('spam')
+q.pop()
+# Item('foo')
+q.pop()
+# Item('grok')
+
+
+'''
+
+1장 6절 딕셔너리의 키를 여러 값에 매핑하기 : 딕셔너리의 키를 하나 이상의 값에 매핑(multidict) 할 때
+- 하나의 키에 하나의 값이 매핑 되어 있는 경우 이것을 딕셔너리 라고 한다.
+- 하나의 키에 여러개의 값을 매핑하려면 여러 값을 리스트나 세트와 같은 전용 컨테이너에 따로 저장해 두어야 한다.
+  ( 순서가 상관 있고 중복여부는 상관 없으면 리스트, 순서가 상관 없고 중복여부가 상관 있으면 세트 )
+
+- 딕셔너리를 쉽게 만들게 해주는 모듈과 메소드 : collections 모듈의 defaultdict를 사용한다
+
+
+
+
+
+
+
+
+'''
+
+# 하나의 키에 여러 값을 매핑
+d = {
+    'a': [1, 2, 3],
+    'b': [4, 5]
+}
+
+e = {
+    'a': {1, 2, 3},
+    'b': {4, 5}
+}
+
+# defaultdict
+from collections import defaultdict
+
+d = defaultdict(list)
+d['a'].append(1)
+d['a'].append(2)
+d['a'].append(3)
+d['a'].append(4)
+
+d = defaultdict(set)
+d['a'].append(1)
+d['a'].append(2)
+d['a'].append(4)
+
