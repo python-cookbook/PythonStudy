@@ -12,7 +12,7 @@
 - x in s                  :   s의 한 요소가 x와 같으면 True 
 - x not in s              :   s의 한 요소가 x와 같으면 False
 - s1 + s2                 :   두 시퀀스를 결합
-- s*n 혹은 n*s             :   시퀀스를 n회 반복
+- s*n 혹은 n*s            :   시퀀스를 n회 반복
 - s[i]                    :   시퀀스s의 i번째 요소
 - s[i:j]                  :   시퀀스s의 i번째 요소 부터 j-1번째 요소까지 추출
 - s[i:j:k]                :   시퀀스s의 i번째 요소 부터 j-1번째 요소까지 k 단위로 추출
@@ -418,6 +418,7 @@ expensive = heapq.nlargest(3, portfolio, key=lambda s: s['price'])
 
 # heapq.heapify() (힙 메소드) 의 중요한 기능은 heap[0] 이 가장 작은 요소로 정렬된다는 것이다.
 
+# 예22.
 nums = [1, 8, 2, 23, 7, -4, 18, 23, 42, 37, 2]
 
 import heapq
@@ -443,6 +444,7 @@ heapq.heappop(heap)
 
 # heapq 모듈을 사용해서 우선 순위 큐를 구현
 
+# 예23.
 import heapq
 
 
@@ -494,14 +496,21 @@ q.pop()
 
 - 딕셔너리를 쉽게 만들게 해주는 모듈과 메소드 : collections 모듈의 defaultdict를 사용한다
 
-
-
-
-
-
-
+- 여러 값을 가지는 딕셔너리를 만드려면 첫 번째 값에 대한 초기화를 스스로 해야하고 defaultdict를 사용하지 않으면 다음과 같이 생성해야 한다.
+    # defaultdict 사용 X
+    d = {}
+    for key, value in pairs:
+    if key not in d:
+        d[key] = []
+    d[key].append(value)
+    
+    # defaultdict 사용 O
+    d = defaultdict(list)
+    for key, value in pairs:
+        d[key].append(value)
 
 '''
+# 예24.
 
 # 하나의 키에 여러 값을 매핑
 d = {
@@ -528,3 +537,148 @@ d['a'].append(1)
 d['a'].append(2)
 d['a'].append(4)
 
+'''
+
+1장 7절 딕셔너리 순서 유지 : 딕셔너리를 만들고 순환이나 직렬화 할 때 순서를 조절하고 싶은 경우 딕셔너리 내부 아이템의 순서를 조절하려면 collections 모듈의 OrderedDict를 사용한다.
+    - OrderedDict 메소드는 삽입 초기의 순서를 그대로 기억한다.
+    - 따라서 OrderedDict는 직렬화하거나 다른 포맷으로 인코딩할 다른 매핑을 만들 때 특히 유용하다. 
+    - OrderedDict는 내부적으로 Doubly Linked List로 삽입 순서와 관련있는 키를 기억해둔다. 새로운 아이템을 처음으로 삽입하면 리스트의 제일 끝에 위치시킨다. 재할당을 하더라도 순서는 변하지 않게 된다.
+
+'''
+
+# 예25.
+from collections import OrderedDict
+
+d = OrderedDict()
+d['foo'] = 1
+d['bar'] = 2
+d['spam'] = 3
+d['grok'] = 4
+
+for key in d:
+    print(key, d[key])
+# "foo 1", "bar 2", "spam 3", "grok 4"
+
+'''
+
+1장 8절 딕셔너리 계산 : 딕셔너리 데이터에 계산을 수행할 때 계산을 하기 위해선 키와 값을 뒤집어야 한다. zip() 으로 뒤집을 수 있다.
+    - zip()은 단 한번만 소비할 수 있는 이터레이터를 생성해서 사용한다. 따라서 계산을 한 뒤 다시 또 계산을 하려면 한번 더 zip을 사용해야 한다.
+    - 특정 데이터의 최대 최소 값을 알고 싶으면 max() min() 함수에 key 값을 제공한다.
+    - 딕셔너리에 max() min()를 사용하면 변수 키값의 최대 최소값을 뽑이준다. 키값 말고 변수 값의 최대 최소값 자체가 알고 싶을 땐 max min 안에 .values()를 넣어준다.
+    - 값이 최대 최소인 변수를 찾으려면 익명함수 람다를 사용한다.
+    - 중복된 값이 있으면 가장 크거나 가장 작은 키 값을 반환한다.
+    
+'''
+
+prices = {
+    'ACME' : 45.23,
+    'AAPL' : 612.78,
+    'IBM' : 205.35,
+    'HPQ' : 37.20,
+    'FB' : 10.75,
+}
+
+# 예26.
+
+min_price = min(zip(prices.values(), prices.keys()))
+# (10.75, 'FB')
+max_price = max(zip(prices.values(), prices.keys()))
+# (612.78, 'AAPL')
+
+# 예27.
+min(prices)     # AAPL
+max(prices)     # IBM
+min(prices.values())    # 10.75
+max(prices.values())    # 612.78
+
+# 예28.
+min(prices, key=lambda k: prices[k])    # FB
+max(prices, key=lambda k: prices[k])    # AAPL
+
+'''
+
+1장 9절 두 딕셔너리의 유사점 찾기 : 두 딕셔너리가 있고 유사점(동일한 키나 동일한 값)을 찾고 싶은 경우 keys()와 items() 메소드에 집합 연산을 수행하면 된다.
+- 집합 연산
+    차 집합 : A - B , A.difference(B)
+    교 집합 : A & B , A.intersection(B)
+    합 집합 : A | B , A.union(B)
+
+
+'''
+
+a = {'x' : 1, 'y' : 2, 'z' : 3}
+b = {'w' : 10, 'x' : 11, 'y' : 2}
+
+# 예28.
+# 동일 키 찾기
+a.keys() & b.keys()
+# {'x', 'y'}
+# 없는 키 찾기
+a.keys() - b.keys()
+# {'z'}
+# 키, 값 모두 동일한 것 찾기
+a.items() & b.items()
+# {('y', 2)}
+# 특정 키를 제거한 새로운 딕셔너리 생성
+c = {key:a[key] for key in a.keys() - {'z', 'w'}}
+c
+# {'x' : 1, 'y' : 2}
+
+'''
+
+1장 10절 순서를 깨지 않고 시퀀스의 중복 없애기 : 시퀀스에서 중복된 값을 없애되 아이템의 순서를 유지하고 싶을 땐 해쉬 여부에 따라 적용 방법이 달라진다.
+    
+* hash
+
+대응 관계를 나타낼 수 있는 자료형을 연관 배열(Associative array) 또는 해시(Hash)라고 한다. ( 예 - '이름' = '홍길동' )
+파이썬에서는 이러한 자료형이 딕셔너리(Dictionary)이다.
+딕셔너리는 Key와 Value라는 것을 한 쌍으로 갖는 자료형이다. (예 - Key : 'baseball', Value : '야구')
+딕셔너리는 리스트나 튜플처럼 순차적으로(sequential) 해당 요소값을 구하지 않고 Key를 통해 Value를 얻는다. 
+이것이 바로 딕셔너리의 가장 큰 특징이다. 
+baseball이라는 단어의 뜻을 찾기 위해 사전의 내용을 순차적으로 모두 검색하는 것이 아니라 baseball이라는 단어가 있는 곳만 펼쳐 보는 것이다.
+    
+    1) 해쉬 가능할 때 (hashable) : 세트와 제너레이터를 사용해서 해결
+
+    2) 해쉬 불가능할 때 (not hashable)
+
+- key 인자의 목적은 중복 검사를 위해 함수가 시퀀스 아이템을 hashable 하게 변환한다고 명시하는데 있다.
+- 시퀀스를 세트로 생성하면 중복을 없앨 수 있으나 세트를 사용할 경우 데이터의 순서가 훼손된다. 따라서 이를 방지하기 위해 데이터를 읽어올 때 아래 함수를 사용하여 다음과 같이 불러오면 된다.
+    with open(somefile, 'r') as f:
+        for item in items:
+            if item not in seen:
+                yield item
+                seen.add(item)
+
+
+'''
+# hashable 할 때
+
+def dedupe(items):
+    seen = set()
+    for item in items:
+        if item not in seen:
+            yield item
+            seen.add(item)
+
+a = [1, 5, 2, 1, 9, 1, 5, 10]
+list(dedupe(a))
+# [1, 5, 2, 9, 10]
+
+# not hashable 할 때
+
+def dedupe(items):
+    seen = set()
+    for item in items:
+        val = item if key is None else key(item)
+        if val not in seen:
+            yield item
+            seen.add(val)
+
+# 예29.
+# 필드가 하나이거나 커다란 자료 구조에 기반한 값의 중복을 없앨 때 사용
+
+a = [{'x' : 1, 'y' : 2}, {'x' : 1, 'y' : 3}, {'x' : 1, 'y' : 2}, {'x' : 2, 'y' : 4}]
+list(dedupe(a, key=lambda d: (d['x'], d['y'])))
+# [{'x' : 1, 'y' : 2}, {'x' : 1, 'y' : 3}, {'x' : 2, 'y' : 4}]      x, y가 모두 중복인 것을 제거
+list(dedupe(a, key=lambda d: d['x']))
+# [{'x' : 1, 'y' : 2}, {'x' : 2, 'y' : 4}]      x가 중복인 것을 제거
