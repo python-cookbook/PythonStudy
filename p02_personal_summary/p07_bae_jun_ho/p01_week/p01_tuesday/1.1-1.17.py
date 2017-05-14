@@ -44,7 +44,7 @@
     예)
 
 '''
-
+# 예1.
 p = (4,5)
 x,y,z = p
 # Traceback (most recent call last):
@@ -56,6 +56,7 @@ ValueError: not enough values to unpack (expected 3, got 2)
 - 나열형 객체의 복사는 ‘얕은 복사’라는 것도 유의해야 한다. 즉, 중첩된 구조는 복사되지 않는다. (얕은 복사 : 리스트의 중첩 구조는 복사하지 않고 틀만 복사함 아래 예 참조)
     예)
 '''
+# 예2.
 lst=[ [] ]*3
 lst
 #[[], [], []]
@@ -68,6 +69,7 @@ lst
     예)
 '''
 
+# 예3.
 lst = [ [] for _ in range(3)]
 lst
 #[[], [], []]
@@ -82,17 +84,20 @@ lst
 - 만약 ‘깊은 복사’를 수행하려면 copy 모듈의 deepcopy 함수를 이용하면 된다. (깊은 복사 : 구조까지 전부 다 복사해옴. 아래 예 참조)
     예)
 '''
-
+# 예4.
 x=[11,22]
 y=[x, 33]
 y
 # [[11, 22], 33]
 
+# 예5.
 from copy import deepcopy
 z = deepcopy(y)
 z
 #[[11, 22], 33]
-x[0]=-44
+
+#예 6.
+x[0] = -44
 y
 #[[-44, 22], 33] # x가 변하면 y도 변한다.
 z
@@ -105,6 +110,7 @@ z
    예)
 '''
 
+# 예7.
 c = (3, 4)
 d, e = c    # c의 값을 언패킹하여 d, e에 값을 넣었다
 f = d, e    # 변수 d와 e를 f에 패킹
@@ -130,7 +136,7 @@ f = d, e    # 변수 d와 e를 f에 패킹
 
 '''
 
-
+# 예8.
 def generator(n):
     print("get_START")
     i = 0
@@ -196,6 +202,7 @@ get_END #generator 종료
   예)
 '''
 
+# 예9.
 data = [ 'ACME', 50, 91.1, (2012, 12, 21) ]
 _, shares, price, _ = data
 
@@ -212,24 +219,31 @@ _, shares, price, _ = data
    
    * 이 별표 구문은 길이를 알 수 없는 순환체에 매우 효과적으로 사용 할 수 있다. ( 예 - 길이가 일정하지 않은 튜플 )
    
+   변수를 불러오고 싶지 않을 때 사용하는 버리기용 변수명 : _, ign(ignored)
+   
    예)
 '''
 
+# 예10.
 def drop_first_last(grades):
     first, *middle, last = grades
     return avg(middle)
 
+# 예11.
 record = ('Dave', 'dave@example,com', '773-555-1212', '847-555-1212')
 name, email, *phone_numbers = user_record
 
+# 예12.
 *trailing_qtrs, current_qtr = sales_record
 trailing_avg = sum(trailing_qtrs)/len(trailing_qtrs)
 return avg_comparison(trailing_avg, current_qtr)
 
+# 예13.
 *trailing, current = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
 trailing    # *trailing과 current 순으로 요소가 담기므로 마지막 current의 자리인 마지막 1을 빼고 나머지가 전부 trailing에 담긴다
 current     # current엔 딱 한자리인 1만 담긴다
 
+# 예14.
 records = [
     ('foo', 1, 2),
     ('bar', 'hello'),
@@ -247,3 +261,158 @@ for tag, *args in records:
         do_foo(*args)
     elif tag == 'bar':
         do_bar(*args)
+
+
+'''
+
+1장 3절 마지막 N개의 아이템 유지
+- 순환이나 프로세싱 중 마지막으로 발견한 N개의 아이템을 유지하고 싶은 경우 : collections.deque 를 사용한다.
+
+
+ * 스택과 큐
+    - 스택(stack) : 스택은 데이타 입/출력이 한쪽으로만 접근 할 수 있는 자료 구조이다. 스택에서 가장 나중에 들어간 데이타가 제일 먼저 나오게 된다. 그래서 스택을 LIFO(Last In First Out) 구조라고 한다.
+                    스택을 조작하는 동작은 데이타를 넣은 PUSH 동작과 데이타를 빼오는 POP 동작이 있다. PUSH는 스택의 최상단 데이타 위에 새로운 데이타를 쌓는다(stack). POP은 스택의 최상단에 있는 데이타를 빼온다.
+                    파이썬에는 내장 자료형 중에 하나인 리스트형이 스택을 표현하는데 사용된다. 즉, 파이썬에는 스택을 따로 구현할 필요가 없다. 
+    
+    -  큐 (queue) : 큐는 먼저 넣은 데이타가 먼저 나오는 FIFO(First-In-First-Out) 구조로 저장하는 자료구조 이다. 즉, 큐는 LIFO 구조인 스택과 반대되는 개념의 자료 구조이다. 
+                    스택은 데이타가 입/출력하는 부분이 한 부분밖에 없다고 한다면, 큐는 양쪽 모두 뚤려있다. 한쪽으로는 데이타를 넣기만 하고, 다른쪽에서는 데이타를 빼내기만 한다. 
+                    데이타를 넣는 연산을 PUT 동작, 데이타를 빼내는 동작을 GET 동작이라고 한다.
+                    큐의 구현은 스택과 마찬가지로 리스트형으로 표현 할 수 있다. 파이썬은 프로그래머가 자료 구조에 대해 고민을 덜어 준다. 
+                    앞서 다루었던 연결 리스트도 이해를 돕기 위해 class로 구현 하였지만, 리스트형으로 표현 할 수 있다. 
+                    리스트형 하나만으로도 C언어의 배열과 연결 리스트, 스택, 큐를 표현 할 수 있으니, 파이썬은 대부분의 경우 자료 구조를 따로 구성 할 필요가 없다. 
+                    이런 이유로 파이썬은 프로그래머에게 프로그램 로직에만 집중할 수 있게 해준다.
+
+    deque(maxlen=큐의 길이) 로 큐를 만들 수 있다. maxlen으로 최대길이를 지정해주지 않으면 제약 없이 큐의 양쪽에 아이템을 넣고 뺄 수 있다.
+
+
+    예)
+'''
+# 예15.
+from collections import deque
+
+def search(lines, pattern, history=5):
+    previous_lines = deque(maxlen=history)
+    for line in lines:
+        if pattern in line:
+            yield line, previous_lines
+        previous_lines.append(line)
+
+# 위 코드 사용 예
+if __name__ == '__main__':
+    with open('examplefile.txt') as f:
+        for line, prevlines in search(f, 'python', 5):
+            for pline in prevlines:
+                print(pline, end='')
+            print(line, end='')
+            print('-'*20)
+
+# 스택의 예시
+def Main():
+    stack = []            # stack create
+    stack.append(1)  # same PUSH
+    stack.append(2)
+    stack.append(3)
+    stack.append(4)
+    print stack
+
+    while stack:
+       print "POP >", stack.pop()
+
+Main()
+
+# 큐의 예시
+def Main():
+    queue = []           # queue create
+    queue.append(1) # same PUT
+    queue.append(2)
+    queue.append(3)
+    queue.append(4)
+    print queue
+
+    while queue:
+        print "GET > ",queue.pop(0) # same GET
+
+Main()
+
+# 예16.
+q = deque(maxlen=3)
+
+q.append(1)
+q.append(2)
+q.append(3)
+q
+# deque([1,2,3], maxlen=3)
+
+q.append(4)
+q
+# deque([2,3,4], maxlen=3)
+
+# 예17.
+q = deque()
+q.append(1)
+q.append(2)
+q.append(3)
+
+q.appendleft(4)
+q
+# deque([4,1,2,3])
+q.pop() # .pop()을 하면 큐의 맨오른쪽의 아이템이 출력되면서 제거된다
+# 3
+q
+# deque([4,1,2])
+q.popleft() # .popleft() 하면 큐의 맨왼쪽의 아이템이 출력되면서 제거된다.
+# 4
+
+'''
+
+1장 4절 N 아이템의 최대 최소값 찾기 : 컬렉션 내부에서 가장 크거나 작은 N개의 아이템을 찾아야 할때 heapq 모듈에 있는 nlargest()와 nsmallest() 함수를 사용한다.
+    - nlargest(n, collection) : 컬랙선 내부에서 가장 큰 순서대로 n개의 아이템을 뽑아서 출력
+    - nsmallest(n, collection) : 컬랙션 내부에서 가장 작은 순서대로 n개의 아이템을 뽑아서 출력
+    
+    위 두 함수 모두 복잡한 구조에 사용 될 수 있도록 키 파라미터를 받는다
+    
+    * (중요) lambda 함수
+    
+    key = lambda : 익명함수
+        
+    익명함수 : 단순하게 쓰고 버리기 좋기 때문에 사용.
+    
+    lambda 사용법 : lambda 인수1, 인수2, ...  (인수를 이용한 표현식)
+     - lambda 선언 뒤에, 인수들이 붙고 이 인수를 바탕으로 표현식을 처리 후, 값을 리턴.
+
+    예) 
+    
+'''
+# 예18.
+def sum(a, b): # 단순하게 a와 b를 합하는 함수를 만든다고 했을 때, 선언과 return 값을 코딩해주어야 한다.
+    return a+b
+
+x = lambda a, b: a+b # 이에 반해 lambda는 아래와 같이 한줄로 표현 할 수 있다.
+
+# 예19.
+array = [-1, 3, -4, 10, 5, 7]
+print sorted(array, key = lambda x : x**2)  # sorted 함수에서 key값은 정렬하는 기준이 된다. lambda를 통해 key 값을 x^2으로 return 받았으므로, key 값 기준으로 정렬한다.
+# [-1, 3, -4, 5, 7, 10]
+
+# 예20.
+import heapq
+
+nums = [1, 8, 2, 23, 7, -4, 18, 23, 42, 37, 2]
+print(heapq.nlargest(3, nums))
+# [42, 37, 2]
+print(heapq.nsmallest((3, nums)))
+# [-4, 1, 2]
+
+# 예21.
+portfolio = [
+    {'name': 'IBM', 'shares': 100, 'price': 91.1},
+    {'name' : 'AAPL', 'shares' : 50, 'price' : 543.22},
+    {'name' : 'FB', 'shares' : 200, 'price' : 21.09},
+    {'name' : 'HPQ', 'shares' : 35, 'price' : 31.75},
+    {'name' : 'YHOO', 'shares' : 45, 'price' : 16.35},
+    {'name' : 'ACME', 'shares' : 75, 'price' : 115.65}
+]
+
+cheap = heapq.nsmallest(3, portfolio, key=lambda s: s['price'])
+expensive = heapq.nlargest(3, portfolio, key=lambda s: s['price'])
+
