@@ -8,10 +8,6 @@ import psutil
 ## 3. 사용 메모리 : 49152 byte
 ## 4. 만든 사람   : 임미선
 ###################################################################################################
-proc1 = psutil.Process(os.getpid())
-mem1 = proc1.memory_info()
-before_start = mem1[0]
-
 
 # ################ 시작 메모리 체크 #################
 proc1 = psutil.Process(os.getpid())
