@@ -21,15 +21,15 @@ stime = time.time()
 
 
 def wordcount():
-    sentence = ''
-    wordlist = []
-    while len(sentence) <= 200:
+    sentence = ''   #입력한 문장 변수
+    wordlist = []   #입력한 문장에서 공백 기준 쪼갠 단어를 담을 리스트 변수
+    while len(sentence) <= 200:             #문장의 길이가 200이하일 경우에만 실행
         sentence = input('문장을 입력하세요')
         if sentence != 'END':
-            for i in sentence.split():
-                wordlist.append(i)
-            print(len(set(wordlist)))
-        else :
+            for i in sentence.split():      #공백기준 쪼갠 단어를 순서대로 for문 실행
+                wordlist.append(i)          # 리스트 변수에 단어를 담음
+            print(len(set(wordlist)))       #단어의 개수 출력
+        else :                              #END를 입력했을 경우 함수 종료
             break
 
 wordcount()
