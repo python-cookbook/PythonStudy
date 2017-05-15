@@ -1,4 +1,15 @@
-''''''
+'''
+
+의문점 : 메소드와 함수의 차이
+        오브젝트와 클래스
+        __init__
+        __repr__
+        args
+        yield와 return의 차이
+        예제 12번.        
+
+'''
+
 '''
 
 1장 1절 시퀀스를 개별 변수로 나누기
@@ -728,3 +739,239 @@ for i in range(*a.indices(len(s))):
 # W
 # r
 # d
+
+'''
+
+1장 12절 시퀀스에서 가장 많은 아이템을 찾고 싶을 경우 이러한 문제를 해결하기 위해 존재하는 클래스가 collections.Counter 이다.
+- Counter는 아이템이 나타난 횟수를 가리키는 딕셔너리인데 Counter 객체엔 해시 가능한 모든 아이템을 입력할 수 있다.
+- Counter 한 결과끼리도 연산이 가능하다.
+
+    예)
+
+'''
+
+# 예33.
+words = [
+    'look', 'into', 'my', 'eyes', 'look', 'into', 'my', 'eyes', 'the', 'eyes', 'the', 'eyes', 'the', 'eyes', 'the',
+    'eyes',
+    'not', 'around', 'the', 'eyes', "don't", 'look', 'around', 'the', 'eyes', 'look', 'into', 'my', 'eyes', "you're",
+    'under'
+]
+
+from collections import Counter
+
+word_counts = Counter(words)
+top_three = word_counts.most_common(3)
+print(top_three)
+# [('eyes',8),('the',5),('look',4)]
+
+# 예34.
+a = Counter(words)
+b = Counter(morewords)
+a
+# Counter({'eyes' : 8, 'the' : 5, 'look' : 4, 'into' : 3, 'my' : 3, 'around' : 2, "you're" : 1, "don't" : 1, 'under' : 1, 'not : 1})
+b
+# Counter({'eyes' : 1, 'looking' : 1, 'are' : 1, 'in' : 1, 'why' : 1, 'looking' : 1, 'are' : 1, 'under' : 1, 'you : 1, 'my' : 1, 'why' : 1})
+c = a + b
+# Counter({'eyes' : 9, 'the' : 5, 'look' : 4, 'my' : 4, 'into' : 3, 'not' : 2, 'around' : 2, "you're" : 1, "don't" : 1, 'in' : 1, 'why' : 1,
+#          'looking' : 1, 'are' : 1, 'under' : 1, 'you : 1})
+
+
+'''
+
+1장 13절 일반 키로 딕셔너리 리스트 정렬 : 딕셔너리 리스트가 있고 하나 혹은 그 이상의 딕셔너리 값으로 이를 정렬하고 싶은 경우 operator 모듈의 itemgetter 함수를 사용한다.
+- itemgetter() 함수에는 키를 여러개 전달 할 수도 있다.
+- 정렬 함수 sorted()에 정렬할 rows를 전달한 다음 정렬 기준으로 키워드 인자 key로 정렬하게 하는데 itemgetter() 함수가 key에 사용할 호출 가능한 객체를 불러와서 생성한다.
+- itemgetter() 는 딕셔너리 키, 리스트 요소, 객체의 __getitem__() 메소드에 넣을 수 있는 모든 값을 인자로 받을 수 있다.
+    익명함수 lambda를 사용해서 itemgetter의 기능을 구현할 수 있으나 성능은 itemgetter쪽이 더 좋다.
+     예)
+        rows_by_fname = sorted(rows, key=lambda r: r['fname'])
+    
+
+'''
+# 예35.
+rows = [
+    {'fname': 'Brian', 'lname': 'Jones', 'uid': 1003},
+    {'fname':'David','lname':'Beazley','uid':1002},
+    {'fname':'John','lname':'Cleese','uid':1001},
+    {'fname':'Big','lname':'Jones','uid':1004}
+]
+
+from operator import itemgetter
+
+rows_by_fname = sorted(rows, key=itemgetter('fname'))   # fname 기준으로 rows를 정렬해서 rows_by_fname에 저장
+
+rows_by_lfname = sorted(rows, key=itemgetter('lname','fname'))  # lname -> fname 순으로 기준을 해서 rows를 정렬하고 rows_by_lfname에 저장
+
+# 예36.
+min(rows, key=itemgetter('uid'))
+
+'''
+
+1장 14절 기본 비교 기능 없이 객체 정렬 : 동일한 클래스 객체를 정렬할 때 클래스는 비교연산을 제공하지 않기 때문에 인스턴스를 입력 받아 객체 비교에 사용할 값을 반환한다.
+
+
+
+'''
+
+# 예37.
+# 익명함수 lambda 사용
+class User:
+    def __init__(selfself, user_id):
+        self.user_id = user_id
+    def __repr__(self):
+        return 'User({})'.format(self.user_id)
+
+users = [User(20), User(3), User(99)]
+users
+# [User(23), User(3), User(99)]
+sorted(users, key=lambda u: u.user_id)
+# [User(3), User(23), User(99)]
+
+# itemgetter() 사용
+min(users, key=attrgetter('user_id'))
+
+'''
+
+1장 15절 필드에 따라 레코드 묶기 : 일련의 딕셔너리나 인스턴스가 있고 특정 필드 값에 기반한 그룹의 데이터를 순환하고 싶을 때 itertools.groupby()함수를 사용한다.
+- groupby() 함수는 시퀀스를 검색하고 동일한 값(혹은 키 함수에서 반환한 값)에 대한 일련의 "실행"을 찾는다.
+  이 경우 개별 순환값과 같은 값을 가진 그룹의 모든 아이템을 만드는 이터레이터를 함께 반환한다.
+  groupby() 함수는 연속된 데이터에 대해서만 동작하기 때문에 정렬을 꼭 한 다음 사용해야 한다.
+
+
+'''
+
+# 예38.
+rows = [
+    {'address': '5412 N CLARK', 'date' : '07/01/2012'},
+    {'address': '5148 N CLARK', 'date' : '07/04/2012'},
+    {'address': '5800 E 58TH', 'date' : '07/02/2012'},
+    {'address': '2122 N CLARK', 'date' : '07/03/2012'},
+    {'address': '5645 N RAVENSWOOD', 'date' : '07/02/2012'},
+    {'address': '1060 W ADDISON', 'date' : '07/02/2012'},
+    {'address': '4801 N BROADWAY', 'date' : '07/01/2012'},
+    {'address': '1039 W GRANVILLE', 'date' : '07/04/2012'}
+    ]
+
+from operator import itemgetter
+from itertools import groupby
+
+# 원하는 필드로 정렬
+rows.sort(key=itemgetter('date'))
+
+# 그룹 내부에서 순환
+for date, items in groupby(rows, key=itemgetter('date')):
+    print(date)
+    for i in items:
+        print('    ', i)
+
+# 07/01/2012
+#   {'address': '5412 N CLARK', 'date' : '07/01/2012'}
+#   {'address': '4801 N BROADWAY', 'date' : '07/01/2012'}
+#   ..........
+
+
+'''
+
+1장 16절 시퀀스 필터링 : 시퀀스 내부의 데이터를 특정 조건에 따라 값을 추출하거나 줄이고 싶을 때 List comprehension 이란 것을 사용한다.
+- 리스트 컴프리헨션(List Comprehension) : 리스트 내에서 조건문을 사용할 수 있다.
+                                       필터링 과정에서 조건을 만드는 것이 쉽지 않은 경우 필터링 코드를 함수 안에 넣고 filter()를 사용한다. 
+
+* filter 함수
+- filter()는 첫 번째 인수로 함수 이름을, 두 번째 인수로 그 함수에 차례로 들어갈 반복 가능한 자료형을 받는다. 
+  그리고 두 번째 인수인 반복 가능한 자료형 요소들이 첫 번째 인수인 함수에 입력되었을 때 리턴값이 참인 것만 묶어서(걸러내서) 돌려준다.
+
+    예)
+        #positive.py 
+        def positive(l): 
+            result = [] 
+            for i in l: 
+                if i > 0: 
+                    result.append(i) 
+            return result
+
+        print(positive([1,-3,2,0,-5,6]))
+        # [1, 2, 6]
+
+        위에서 만든 positive 함수는 리스트를 입력값으로 받아 각각의 요소를 판별해서 양수값만 리턴하는 함수이다.
+
+        filter 함수를 이용하면 위의 내용을 아래와 같이 간단하게 작성할 수 있다.
+
+        #filter1.py
+        def positive(x):
+            return x > 0
+
+        print(list(filter(positive, [1, -3, 2, 0, -5, 6])))
+        # [1, 2, 6]
+
+        여기서는 두 번째 인수인 리스트의 요소들이 첫 번째 인수인 positive 함수에 입력되었을 때 리턴값이 참인 것만 묶어서 돌려준다. 
+        앞의 예에서는 1, 2, 6만 양수여서 x > 0 이라는 문장이 참이 되므로 [1, 2, 6]이라는 결과값을 리턴하게 된 것이다.
+        앞의 함수는 익명함수 lambda를 이용하면 더욱 간편하게 코드를 작성할 수 있다.
+        print(list(filter(lambda x: x > 0, [1, -3, 2, 0, -5, 6])))
+
+* Boolean
+Boolean은 다른 자료형과 달리 True 또는 False라는 값만 바인딩할 수 있다.
+Type 했을 때 <class 'bool'> 가 Boolean 이다.
+bool은 Boolean의 줄임말이다. 
+True나 False는 파이썬의 예약어로 true나 false가 아니라 첫 글자로 대문자를 사용해야 한다.
+Boolean이라는 자료형은 파이썬의 비교 연산자에서 많이 사용된다.
+
+- Boolean 시퀀스를 입력으로 받는 itertools.compress() 라는 함수는 셀렉터에서 조건이 참인 요소만 골라서 반환하는 함수이다.
+
+
+'''
+# 예39.
+mylist = [1, 4, -5, 10, -7, 2, 3, -1]
+[n for n in mylist if n>0]
+# [1, 4, 10, 2, 3]
+
+
+# 예40.
+values = ['1', '2', '-3', '-', '4', 'N/A', '5']
+
+def is_int(val):
+    try:
+        x = int(val)
+        return True
+    except ValueError:
+        return False
+
+ivals = list(filter(is_int, values))
+print(ivals)
+# ['1', '2', '-3', '4', '5']
+
+# 예41.
+[n if n>0 else 0 for n in mylist]   # mylist의 모든 n에 대해서 0보다 크면 냅두고 아니면 0으로 바꾼다
+                                    # if n > 0 else(n이 0보다 큰 것 이외에 대해서) 0 (0으로 입력한다) for n in mylist(mylist의 모든 요소에 대해 루프하면서)
+
+# 예42.
+# count 값이 5 이상인 주소만 남기고 싶은 경우
+addresses = [
+    '5412 N CLARK',
+    '5148 N CLARK',
+    '5800 E 58TH',
+    '2122 N CLARK',
+    '5645 N RAVENSWOOD',
+    '1060 W ADDISON',
+    '4801 N BROADWAY',
+    '1039 W GRANVILLE'
+    ]
+
+counts = [0, 30, 10, 4, 1, 7, 6, 1]
+
+from itertools import compress
+m5 = [n>5 for n in counts]
+m5
+# [False, False, True, False, False, True, True, False]
+list(compress(addresses, m5))
+# ['5800 E 58TH', '4801 N BROADWAY', '1039 W GRANVILLE']
+
+
+
+'''
+
+1장 17절 딕셔너리의 부분 추출 : 
+
+
+
+'''
