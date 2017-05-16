@@ -876,6 +876,9 @@ for date, items in groupby(rows, key=itemgetter('date')):
 1장 16절 시퀀스 필터링 : 시퀀스 내부의 데이터를 특정 조건에 따라 값을 추출하거나 줄이고 싶을 때 List comprehension 이란 것을 사용한다.
 - 리스트 컴프리헨션(List Comprehension) : 리스트 내에서 조건문을 사용할 수 있다.
                                        필터링 과정에서 조건을 만드는 것이 쉽지 않은 경우 필터링 코드를 함수 안에 넣고 filter()를 사용한다. 
+                                       
+  * http://whatisthenext.tistory.com/110 꼭 참조
+  * http://whatisthenext.tistory.com/109 꼭 참조
 
 * filter 함수
 - filter()는 첫 번째 인수로 함수 이름을, 두 번째 인수로 그 함수에 차례로 들어갈 반복 가능한 자료형을 받는다. 
