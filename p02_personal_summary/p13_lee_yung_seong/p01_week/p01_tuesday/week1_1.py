@@ -475,5 +475,36 @@ import math
 clip_neg = [n if n>0 else 0 for n in mylist]
 clip_neg
 #또 다른 주목할 만한 필터링 도구로 순환 가능한 Boolean 셀렉터 시퀀스를 입력으로 받는 itertools.compress()가 있다. 그렇게
+#입력하면 셀렉터에서 조건이 참인 요소만 골라서 반환.이것은 어떤 시퀀스의 필터링 결과를 다른 시퀀스에 반영하려 할 때 유용하다. 다음과 같이
+# 두개의 열이 있는 데이터를 가정하자.
+addresses = [
+    '5412 N CLARK',
+'5413 N CLARK',
+'5414 E CLARK1',
+'5415 N CLARK2',
+'5416 N CLARK3',
+'5417 N CLARK4',
+'5418 N CLARK5',
+]
 
+#1.17 딕셔너리의 부분 추출
+#문제  딕셔너리의 특정 부분으로부터 다른 딕셔너리를 만들고 싶다.
+#해결 딕셔너리 컴프리헨션을 사용하면 해결된다.
+prices = {
+    'ACME' : 45.23,
+    'AAPL' : 612.78,
+    'IBM' : 205.55,
+    'HPQ' : 37.20,
+    'FB' : 10.75
+}
+p1 = {key:value for key, value in prices.items() if value>200}
+p1
+tech_names={'AAPL','IBM'}
+p2 = {key:value for key, value in prices.items() if key in tech_names}
+p2
+#토론 딕셔너리 컴프리ㅔㄴ션으로 할 수 있는 대부분의 일은 튜플 시퀀스를 만들고 dict() 함수에 전달하는 것으로도 할 수 있다.
+#하지만 딕셔너리 컴프리헨션이 더 빠르고 깔끔하다.
+p1 = dict((key,value) for key, value in prices.items() if value > 299)
+p1
 
+#1.18 시퀀스 요소에 이름 매핑
