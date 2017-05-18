@@ -1,4 +1,4 @@
-1.18 시퀀스 요소에 이름 매핑
+# 1.18 시퀀스 요소에 이름 매핑
 from collections import namedtuple
 Subscriber = namedtuple('subscriber',['addr','joined'])
 sub = Subscriber('jonesy@example.com','2012-10-19')
@@ -29,7 +29,7 @@ records = [
 ]
 print(compute_cost(records))
 
-1.19 데이터를 변환하면서 줄이기
+# 1.19 데이터를 변환하면서 줄이기
 nums = [ 1,2,3,4,5]
 s = sum(x * x for x in nums)
 
@@ -51,7 +51,7 @@ portfolio = [ {'name':'GOOG','shares':50},
 min_shares=min(s['shares'] for s in portfolio)
 min_shares
 
-1.20 여러 매핑을 단일 매핑으로 합치기
+# 1.20 여러 매핑을 단일 매핑으로 합치기
 a = {'x':1,'z':3}
 b = {'y':2,'z':4}
 from collections import ChainMap
@@ -65,7 +65,7 @@ list(c.keys())
 list(c.values())
 
 
-2.1 여러 구분자로 문자열 나누기
+# 2.1 여러 구분자로 문자열 나누기
 line = 'asdf fjdk; afed,fjek,asdf,        foo'
 import re
 re.split(r'[;,\s]\s*',line)
@@ -81,10 +81,10 @@ delimiters
 
 ''.join(v+d for v,d in zip(values,delimiters))
 
-2.2 문자열 처음이나 마지막에 
-    텍스트 매칭
-자료 없음
-2.3 쉘 와이드카드 패턴으로 문자열 매칭
+# 2.2 문자열 처음이나 마지막에
+#     텍스트 매칭
+# 자료 없음
+# 2.3 쉘 와이드카드 패턴으로 문자열 매칭
 addresses = ['5412 N CLARK ST','1060 W ADDISON ST','1039 W GRANVILLE AVE',
              '2122 N CLARK ST','4802 N BROADWAY']
 
@@ -92,7 +92,7 @@ from fnmatch import fnmatchcase
 [addr for addr in addresses if fnmatchcase(addr,'* ST')]
 [addr for addr in addresses if fnmatchcase(addr,'54[0-9][0-9] *CLARK*')]
 
-2.4 텍스트 패턴 매칭과 검색
+# 2.4 텍스트 패턴 매칭과 검색
 text = ' yeah, but no, but yeah, but no, but yeah'
 text == 'yeah'
 text.startswith('yeah')
@@ -121,10 +121,10 @@ else:
 if datepat.match(text2):
     print('yes')
 else:
-    print('no')   
+    print('no')
 text = 'Today is 11/27/2012. Pycon starts 3/13/2013.'
 datepat.findall(text)
-2.5 텍스트 검색과 치환
+# 2.5 텍스트 검색과 치환
 text = ' yeah, but no, but yeah, but no, but yeah'
 
 text.replace('yeah','yep')
@@ -139,15 +139,15 @@ def change_date(m):
     mon_name=month_abbr[int(m.group(1))]
     return '{}{}{}'.format(m.group(2),mon_name,m.group(3))
 datepat.sub(change_date, text)
-2.6 대소문자를 구별하지 않는 
-    검색과 치환
+# 2.6 대소문자를 구별하지 않는
+#     검색과 치환
 import re
 text = 'UPPER PYTHON, lower python, Mixed Python'
 re.findall('python',text,flags=re.IGNORECASE)
 
-re.sub('python','snake',text,flags = re.IGNORECASE)   
+re.sub('python','snake',text,flags = re.IGNORECASE)
 
-2.7 가장 짧은 매칭을 위한 정규 표현식
+# 2.7 가장 짧은 매칭을 위한 정규 표현식
 import re
 str_pat = re.compile(r'\"(.*)\"')
 text1='Computer says "no."'
@@ -159,9 +159,9 @@ str_pat.findall(text2)
 str_pat = re.compile(r'\"(.*?)\"')
 str_pat.findall(text2)
 
-r’\“(.*)\”’ 패턴은 따옴표에 둘러싸인 텍스트만 찾는다. 그래서 text2에서 원치 않게 인용문 두 개에 동시에 매칭한다. 이 문제를 해결하려면
-(.*?)를 붙이면 해결이 된다.
-2.8 여러 줄에 걸친 정규 표현식 사용
+# r’\“(.*)\”’ 패턴은 따옴표에 둘러싸인 텍스트만 찾는다. 그래서 text2에서 원치 않게 인용문 두 개에 동시에 매칭한다. 이 문제를 해결하려면
+# (.*?)를 붙이면 해결이 된다.
+# 2.8 여러 줄에 걸친 정규 표현식 사용
 import re
 comment = re.compile(r'/\*(.*?)\*/')
 text1 = '/* this is a comment*/'
@@ -173,13 +173,13 @@ comment.findall(text2)
 
 comment = re.compile(r'/\*((?:.|\n)*?)\*/')
 comment.findall(text2)
-text2에 c 스타일 주석이 포함되어 있지만 이를 찾아내지 못하는데 이 문제를 해결하려면 (r'/\*((?:.|\n)*?)\*/') 이런식으로 개행문 패턴에 넣어야 한다.
+# text2에 c 스타일 주석이 포함되어 있지만 이를 찾아내지 못하는데 이 문제를 해결하려면 (r'/\*((?:.|\n)*?)\*/') 이런식으로 개행문 패턴에 넣어야 한다.
 
 comment = re.compile(r'/\*(.*?)\*/', re.DOTALL)
 comment.findall(text2)
 
-re.DOTALL 이 플래그를 사용하면 정규 표현식의 점이 개행문을 포함한 모든 문자에 매칭한다.
-2.9 유니코드 텍스트 노멀화
+# re.DOTALL 이 플래그를 사용하면 정규 표현식의 점이 개행문을 포함한 모든 문자에 매칭한다.
+# 2.9 유니코드 텍스트 노멀화
 s1 = 'Spicy Jalape\u00f1o'
 s2 = 'Spicy Jalapen\u0303o'
 print(s1)
@@ -199,14 +199,14 @@ t4 = unicodedata.normalize('NFD', s2)
 t3 == t4
 print(ascii(t3))
 
-2.10 정규 표현식에 유니코드 사용
+# 2.10 정규 표현식에 유니코드 사용
 import re
 num = re.compile('\d+')
 num.match('123')
 
 num.match('\u0661\u0662\u0663')
 
-2.11 문자열에서 문자 잘라내기
+# 2.11 문자열에서 문자 잘라내기
 s= '     hello world \n'
 s.strip()
 s.lstrip()
@@ -224,14 +224,14 @@ s
 import re
 re.sub('\s+',' ',s)
 
-2.12 텍스트 정리
+# 2.12 텍스트 정리
 s = 'p\xfdt\u0125\xf6\xf1\x0cis\tawesome\r\n'
 print(s)
 
 remap = {
     ord('\t') : ' ',
     ord('\f') : ' ',
-    ord('\r') : None 
+    ord('\r') : None
 }
 
 a = s.translate(remap)
@@ -247,7 +247,7 @@ print('accents removed:', c)
 d = b.encode('ascii','ignore').decode('ascii')
 print('accents removed via I/O:', d)
 
-2.13 텍스트 정렬
+# 2.13 텍스트 정렬
 text = 'Hello World'
 text.ljust(20)
 text.rjust(20)
@@ -260,23 +260,23 @@ format(text,'=^20')   # 이렇게도 응용 가능하다.
 
 '{:>10s}{:>10s}'.format('Hello', 'World')
 
-2.14 문자열 합치기
+# 2.14 문자열 합치기
 parts = ['Is','Chicago','Not','Chicago?']
 ' '.join(parts)
 ''.join(parts)
 
-문자열의 수가 적다면 + 로 합치기가 가능하다.
-소스코드에서는 아래와 같이 단순히 붙여놓기만 해도 가능하다.
+# 문자열의 수가 적다면 + 로 합치기가 가능하다.
+# 소스코드에서는 아래와 같이 단순히 붙여놓기만 해도 가능하다.
 a = 'Hello' 'World'
 a
 
 print(a+':'+b+':'+c)
 print(':'.join([a,b,c]))
 print(a,b,c,sep=':')
-마지막 방법으로 하는 것이 가장 좋은 방법이다.
+# 마지막 방법으로 하는 것이 가장 좋은 방법이다.
 
 
-2.15 문자열에 변수 사용
+# 2.15 문자열에 변수 사용
 s = '{name} has {n} message'
 s.format(name='Guido',n=37)
 
@@ -284,7 +284,7 @@ name = 'Guido'
 n = 37
 s.format_map(vars())
 
-2.16 텍스트 열의 개수 고정
+# 2.16 텍스트 열의 개수 고정
 s = "Look into my eyes, look into my eyes, the eyes, the eyes, \
 the eyes, not around the eyes, don't look around the eyes, \
 look into my eyes, you're under."
@@ -300,13 +300,13 @@ print()
 
 
 
-print(textwrap.fill(s, 40, initial_indent='    ')) 
+print(textwrap.fill(s, 40, initial_indent='    '))
 #글자 길이 40으로 제한하고 첫 문장만 initial_indent = '    ' 넣어 출력
 print()
 
 
 print(textwrap.fill(s, 40, subsequent_indent='    '))
-print() 
-# 글자 길이 40으로 제한하고 
-첫문장 제외 subsequent_indent='    ' 넣어 출력
+print()
+# 글자 길이 40으로 제한하고
+# 첫문장 제외 subsequent_indent='    ' 넣어 출력
 
