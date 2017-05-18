@@ -954,7 +954,7 @@ import re
 re.split(r'[;,\s]\s*', line)  # 세미콜론, 쉼표, 공백(\s), 공백여러개(\s*)를 구분자로 써서 글자를 구분
 #['asdf', 'fjdk', 'fjek', 'asdf', 'foo']
 
-# 예10.
+예10.
 
 # match 메소드 사용
 m = p.match("python")
@@ -977,3 +977,67 @@ m.end()
 # 8
 m.span()
 # (2, 8)
+
+# 예11.
+fields = re.split(r'(;|,|\s)\s*', line)
+fields
+# ['asdf', ' ', 'fjdk', ';', 'afed', ',', 'fjel', ',', 'asdf', ',', 'foo']
+
+# 예12.
+values = fields[::2]
+delimiters = fields[1::2]+['']
+values
+# ['asdf', 'fjdk', 'afed', 'fjel', 'asdf', 'foo']
+
+delimiters
+# [' ', ';', ',', ',', ',', '']
+
+
+# 예13.
+re.split(r'(?:,|;|\s)\s*', line)
+# ['asdf', 'fjdk', 'afed', 'fjek', 'asdf', 'foo']
+
+'''
+
+2장 2절 문자열 처음이나 마지막에 텍스트 매핑 : 문자열의 처음이나 마지막에 파일 확장자, URL Scheme 등 특정 패턴이 포함된 텍스트를 검사할 때 str.startswith()나
+                                        str.endswith() 메소드를 사용한다.
+                                        
+- 여러개의 선택지를 검사하고 싶을 땐 검사하고 싶은 값을 튜플에 담아 startswith()나 endswith()에 넣는다.
+- 슬라이스를 사용하면 비슷한 동작을 할 수 있지만 코드가 너무 지저분해진다.
+- 정규식으로도 동일한 기능을 만들 수 있다.
+
+'''
+
+# 예14.
+import os
+filenames = os.listdir('.')
+filenames
+# ['Makefile', 'foo.c', 'bar.py', 'spam.c', 'spam.h']
+[name for name in filenames if name.endswith(('.c', '.h'))]
+# ['foo.c', 'spam.c', 'spam.h']
+any(name.endswith('.py') for name in filenames)
+# True
+
+# 예15.
+from urllib.request import urlopen
+
+def read_data(name):
+    if name.startswith(('http:', 'https:', 'ftp:')):
+        return urlopen(name).read()
+    else:
+        with open(name) as f:
+            return f.read()
+
+# 예16.
+import re
+url = 'http://www.python.org'
+re.match('http:|https:|ftp:', url)
+# <_sre.SRE_Match object at 0x101253098)
+
+'''
+
+
+
+
+
+'''
