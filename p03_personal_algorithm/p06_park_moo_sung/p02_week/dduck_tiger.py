@@ -23,10 +23,9 @@ stime = time.time()
 
 # 1항=1, 2항=1로 시작하는 피보나치수열 함수 만들기
 def fibo(num):
-    if num>=3:
-        return fibo(num-1) + fibo(num-2)
     if num <= 2:
         return 1
+    return fibo(num - 1) + fibo(num - 2)
 
 # 몇번째 날인지(cnt), 마지막 날 몇개의 떡을 줬는지(num) 입력하면
 # 첫째날, 둘째날 준 떡의 개수 출력해주는 함수

@@ -132,7 +132,7 @@ f = d, e    # 변수 d와 e를 f에 패킹
 - 이터레이터(iterator)와 제너레이터(generator). 매우매우매우 중요!
     1. 이터레이터 : 반복가능한 객체 (초간단 이해 -> 객체에 .next가 가능하다면 이터레이터가 맞음)
         예) 이터레이터 =  iter(list) : list를 iter로 통하여 이터레이터를 만들었다, list는 반복가능하지만 이터레이터는 아니다.. 
-                                       명시적으로 반복가능한객체로 만들어서 사용해줘야한다
+                                     명시적으로 반복가능한객체로 만들어서 사용해줘야한다
 
         1-1. 이터레이블 : 반복 가능하다 (반복(loop)연산이 가능하여 해당 위치를 이동해가면서 값을 사용할수 있는 지를 말한다)
 
@@ -876,6 +876,9 @@ for date, items in groupby(rows, key=itemgetter('date')):
 1장 16절 시퀀스 필터링 : 시퀀스 내부의 데이터를 특정 조건에 따라 값을 추출하거나 줄이고 싶을 때 List comprehension 이란 것을 사용한다.
 - 리스트 컴프리헨션(List Comprehension) : 리스트 내에서 조건문을 사용할 수 있다.
                                        필터링 과정에서 조건을 만드는 것이 쉽지 않은 경우 필터링 코드를 함수 안에 넣고 filter()를 사용한다. 
+                                       
+  * http://whatisthenext.tistory.com/110 꼭 참조
+  * http://whatisthenext.tistory.com/109 꼭 참조
 
 * filter 함수
 - filter()는 첫 번째 인수로 함수 이름을, 두 번째 인수로 그 함수에 차례로 들어갈 반복 가능한 자료형을 받는다. 
@@ -970,8 +973,26 @@ list(compress(addresses, m5))
 
 '''
 
-1장 17절 딕셔너리의 부분 추출 :  
-
-
+1장 17절 딕셔너리의 부분 추출 : 딕셔너리의 특정 부분으로부터 다른 딕셔너리를 만들고 싶을 때 16절 처럼 딕셔너리 컴프리헨션을 쓰면 된다.
+                            사용 방법은 16절의 리스트 컴프리헨션이랑 동일하다.
 
 '''
+
+# 예43.
+prices = {
+    'ACME' : 45.23,
+    'AAPL' : 612.78,
+    'IBM' : 205.35,
+    'HPQ' : 37.20,
+    'FB' : 10.75,
+}
+
+tech_names = { 'AAPL', 'IBM', 'HPQ', 'MSFT'}
+
+p1 = { key:value for key, value in prices.item() if value > 200}
+
+p2 = { key:value for key, value in prices.items() if key in tech_names}
+
+p11 = dict((key, value) for key, value in prices.items() if value > 200)     # p1 방법에 비해 느리다
+
+p22 = { key:prices[key] for key in prices.keys() & tech_names}   # p2 방법에 비해 느리다
