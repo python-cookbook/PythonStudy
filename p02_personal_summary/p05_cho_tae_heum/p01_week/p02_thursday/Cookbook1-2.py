@@ -14,6 +14,8 @@ joined
 
 Stock = namedtuple('Stock', ['name', 'shares', 'price'])
 
+#123123132
+
 
 # 매핑할 namedtuple을 만들어 놓고....
 def compute_cost(records):
