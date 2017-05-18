@@ -1036,8 +1036,205 @@ re.match('http:|https:|ftp:', url)
 
 '''
 
+2장 3절 쉘 와일드카드 패턴으로 문자열 매칭 : 유닉스 셸에 사용하는 것과 동일한 와일드카드 패턴을 텍스트 매칭에 사용하고 싶은 경우 fnmatch 모듈에서 fnmatch()
+                                       와 fnmatchcase() 함수를 사용하면 된다.
+                                       
+- 일반적으로 fnmatch()는 시스템의 파일 시스템과 동일한 대소문자 구분 규칙을 갖는다.
+- fnmatchcase()는 정확하게 지정한 소문자, 대문자에 부합하는 것만 찾아낸다.
+- fnmatch()와 fnmatchcase()는 리스트 컴프리헨션에 사용 가능하다.
+
+
+'''
+
+# 예17.
+from fnmatch import fnmatchcase
+
+addresses = [
+    '5412 N CLARK ST',
+    '1060 W ADDISON ST',
+    '4802 N BROADWAY',
+    '1039 W GRANVILLE AVE',
+    '2122 N CLARK ST'
+    ]
+
+[addr for addr in addresses if fnmatchcase((addr, '* ST'))]
+[addr for addr in addresses if fnmatchcase(addr, '54[0-9][0-9] *CLARK*')]
+
+'''
+
+2장 4절 텍스트 패턴 매칭과 검색 : 특정 패턴에 대한 텍스트 매칭이나 검색을 하고 싶은 경우 매칭하려는 텍스트가 간단하다면 str.find(), str.endswith(), strstartswith()
+                              와 같은 기본 문자열 메소드를 사용한다. 복잡한 매칭을 하려면 정규 표현식과 re 모듈을 이용한다.
+
+'''
+
+# 예18.
+datapat = re.compile(r'(\d+)/(\d+)/(\d+)$')
+datapat.match('11/27/2012abcdef')
+datapat.match('11/27/2012')
+# <_sre.SRE_Match object; span=(0, 10), match='11/27/2012'>
+
+'''
+
+2장 5절 텍스트 검색과 치환 : 문자열에서 텍스트 패턴을 검색하고 치환하고 싶은 경우 간단한 패턴이면 str.replace() 메소드를, 복잡한 치환인 경우 콜백 함수를 명시한다.
+- 데이터.replace(검색어,치환어) 
+- re.sub(검색패턴,치환패턴, 데이터) 
+
+
+'''
+
+# 예19.
+text = 'yeah, but no, but yeah, but no, but yeah'
+text.replace('yeah', 'yey')
+# 'yey, but no, but yey, but no, but yey'
+
+# 예20.
+text = 'Today is 11/27/2012. PyCon starts 3/13/2013'
+import re
+re.sub(r'(\d+)/(\d+)/(\d+)', r'\3-\1-\2', text)
+# 'Today is 2012-11-27. PyCon starts 2013-3-13'
+
+# 예21.
+from calendar import month_abbr
+def change_date(m):
+    mon_name = month_abbr[int(m.group(1))]
+    return '{} {} {}'.format(m.group(2), mon_name, m.group(3))
+
+datepat.sub(change_date, text)
+
+'''
+
+2장 6절 대소문자를 구별하지 않는 검색과 치환 : 텍스트를 검색하고 치환 할 때 대소문자를 구별하지 않고 싶은 경우 re모듈의 re.IGNORECASE를 사용한다
+
+
+'''
+
+# 예22.
+text = 'UPPER PYTHON, lower python, Mixed Python'
+re.findall('python', text, flags=re.IGNORECASE)
+# ['PYTHON', 'python', 'Python']
+re.sub('python', 'snake', text, flags=re.IGNORECASE)
+# 'UPPER snake, lower snake, Mixed snake' # 제대로 변경이 안된다
+def matchcase(word):       # 위를 해결하기 위해 함수를 생성해서 다시 변경
+    def replace(m):
+        text = m.group()
+        if text.isupper():
+            return word.upper()
+        elif text.islower():
+            return word.lower()
+        elif text[0].isupper():
+            return word.capitalize()
+        else:
+            return word
+    return replace
+re.sub('python', matchcase('snake'), text, flags=re.IGNORECASE)
+# 'UPPER SNAKE, lower snake, Mixed Snake'
+
+'''
+
+2장 7절 가장 짧은 매칭을 위한 정규 표현식 : 정규표현식으로 텍스트 매칭을 하고 싶은 경우 가장 짧은 부분을 찾아 낼 때 nongreedy 매칭을 이용한다.
+
+
+'''
+
 
 
 
 
 '''
+
+2장 8절
+
+
+'''
+
+
+
+
+
+'''
+
+2장 9절
+
+
+'''
+
+
+
+
+
+'''
+
+2장 10절
+
+
+'''
+
+
+
+
+
+'''
+
+2장 11절
+
+
+'''
+
+
+
+
+
+'''
+
+2장 12절
+
+
+'''
+
+
+
+
+
+'''
+
+2장 13절
+
+
+'''
+
+
+
+
+
+'''
+
+2장 14절
+
+
+'''
+
+
+
+
+
+'''
+
+2장 15절
+
+
+'''
+
+
+
+
+
+'''
+
+2장 16절
+
+
+'''
+
+
+
+
