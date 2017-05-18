@@ -358,3 +358,305 @@ print(str_pat.findall(text1))
 ############################################################
 
 # 2.8 여러 줄에 걸친 정규 표현식 사용
+
+# 여러줄에 걸쳐 매칭하고 싶을 때
+import re
+
+comment = re.compile((r'/\*(.*?)\*/'))
+text = '''/* this is a 
+        multiline comment */'''
+print(comment.findall(text))
+
+'''  []  '''
+
+comment = re.compile(r'/\*((?:.|\n)*?)\*/')
+print(comment.findall(text))
+
+''' [' this is a \n        multiline comment '] '''
+
+#############################################################
+
+# 2.9 유니코드 텍스트 노멀화
+
+# 시퀀스 코드 포인트로 표현하기
+
+s1 = 'Spicy Jalape\u00f1o'
+s2 = 'Spicy Jalape\u0303no'
+print(s1)
+'''Spicy Jalapeño'''    # 정확한 표현법
+print(s2)
+'''Spicy Jalapeño'''    # n에 ~ 를 합친 표현법.
+s1 == s2
+'''False'''
+
+# 텍스트 노멀화(여러 표현식 가지면 문제되므로)
+
+import unicodedata
+t1 = unicodedata.normalize('NFC', s1)
+t2 = unicodedata.normalize('NFC', s2)
+print(t1 == t2)
+'''... 왜 다르다고 나오지? '''
+
+# 발음 구별 부호를 모두 지우고 싶다면?
+
+t1 = unicodedata.normalize('NFD', s1)
+print(''.join(c for c in t1 if not unicodedata.combining(c)))
+''' Spicy Jalapeno '''
+
+##########################################################
+
+# 2.10 정규 표현식에 유니코드 사용
+
+# re모듈에서 제공하는 유니코드 처리 기능
+
+import re
+num = re.compile(('\d+'))
+print(num.match('123'))
+'''<_sre.SRE_Match object; span=(0, 3), match='123'>''' # 아스키 숫자
+
+num.match('\u0661\u0662\u0663')
+'''<_sre.SRE_Match object; span=(0, 3), match='١٢٣'>''' # 아라비아 숫자
+
+# 검색 수행 시 텍스트 노멀화 하는 방법
+
+pat = re.compile('star\u00dfe', re.IGNORECASE)
+s = 'stra\u0663sse'
+pat.match(s)
+pat.match(s.upper()) # 뭔지 모르겠다...
+
+############################################################
+
+# 2.11 문자열에서 문자 잘라내기
+
+# 공백문 잘라내기
+
+h = '        hello \n'
+print(h)
+'''        hello 
+'''
+
+print(h.strip())
+'''hello'''
+
+print(h.lstip())
+'''hello \n'''
+
+# 중간 공백은 못 자름
+
+r = ' hello       world \n'
+print(r.strip())
+'''hello       world'''
+
+# 중간 공백 제거 방법
+
+r.replace(' ','') # 1번 방법
+
+import re
+re.sub('\s+',' ',r)
+print(re.sub('\s+',' ',r)) # 2번 방법
+
+
+# 문자 잘라내기
+
+t = '--------------hello====='
+print(t.strip('-'))
+'''hello====='''
+
+print(t.strip('-='))
+'''hello'''
+
+
+
+
+# 파일 읽어들이며 문자열 정리하기
+
+with open(filename) as f:
+    lines = (line.strip() for line in f)
+    for line in lines:
+        ...
+
+###################################################
+
+# 2.12 텍스트 정리
+
+# 특정 범위의 문자, 발음 구별 부호 없애기
+
+s= 'python\fis\tawesome\r\n'
+print(s)
+'''pythonis	awesome'''
+
+remap = { ord('\t') : ' ',
+          ord('\f') : ' ',
+          ord('\r'): None }  # None 은 삭제하는 것
+a = s.translate(remap)
+
+# 업그레이드 버전
+
+import unicodedata
+import sys
+cmb_chrs = dict.fromkeys(c for c in range(sys.maxunicode) if unicodedata.combining(chr(c)))
+b = unicodedata.normalize('NFD',a)
+b.translate(cmb_chrs) # 왜 실행이 안될까?
+
+# 다른 버전
+
+digitmap = { c: ord('0') + unicodedata.digit(chr(c)) for c in range(sys.maxunicode)
+             if unicodedata.category(chr(c)) == 'ND'}
+len(digitmap)
+'''460'''
+
+x= '\u0661\u0662\u0663'
+x.translate(digitmap)
+'''123'''
+
+################################################
+
+# 2.13 텍스트 정렬
+
+# ljust, rjust, center
+
+text = 'Hello World'
+print(text.rjust(20))
+'''        Hello World'''
+print(text.center(20))
+'''    Hello World    '''
+
+# format
+print(format(text, '>20'))
+'''        Hello World'''
+print(format(text, 'k>20'))
+'''kkkkkkkkkHello World'''
+print(format(text, '^20'))
+'''    Hello World    '''
+
+number = 1.2345
+print(format(number, '>10'))
+'''    1.2345'''
+print(format(number, '^10.2f'))
+''' 1.23'''
+
+##############################################
+
+# 2.14 문자열 합치기
+
+# join 함수
+
+parts = ['Is', 'Chicago', 'Not', 'Chicago?']
+print(' '.join(parts))
+'''Is Chicago Not Chicago?'''
+print(', '.join(parts))
+'''Is, Chicago, Not, Chicago?'''
+
+# 간단한 방법
+
+c = 'Is Chicago' ' ' 'Not Chicago?'
+print(c)
+'''Is Chicago Not Chicago?'''
+
+# 효율적인 합치기 방법
+
+print(a + ':' + b + ':' + c) # 비효율적
+print(':'.join([a,b,c]))     # 비효율적2
+print(a,b,c, sep=':')        # 효율적
+
+# yield 생성자 함수
+
+def sample():
+    yield 'Is'
+    yield 'Chicago'
+    yield 'Not'
+    yield 'Chicago?'
+
+text = ''.join(sample())
+print(text)
+'''IsChicagoNotChicago?'''
+
+######################################################
+
+# 2.15 문자열에 변수 사용
+
+# format() 활용한 변수값 치환하기
+
+s = '{name} has {n} messages'       # 방법1
+print(s.format(name='Guido', n=37))
+'''Guido has 37 messages'''
+
+name = 'Guido'                      # 방법2. 치환할 값이 변수에 들어가 있는 경우 가능
+n = 37
+print(s.format_map(vars()))
+
+
+class info:                         # 방법3. 인스턴스 활용
+    def __init__(self,name,n):
+        self.name = name
+        self.n = n
+a=info('Guido',37)
+print(s.format_map(vars(a)))
+
+
+name = 'Guido'                      # 방법4. 더 신기!!! 변수 n 이 없을때도 에러 안 나게 하는 방법
+n = 37
+
+class safesub(dict):
+    def __missing__(self, key): ######## __missing__ 메소드를 통해 없는 값을 기본으로 처리함. 디버깅에 유리
+        return '{' + key + '}'
+
+del n
+print(s.format_map(safesub(vars())))
+'''Guido has {n} messages'''
+
+import sys                          # 방법5. 완성판!! 꼭 알아두자!!
+def sub(text):
+    return text.format_map(safesub(sys._getframe(1).f_locals))
+name = 'Guido'
+n = 37
+print(sub('Hello {name}'))
+'''Hello Guido'''
+print(sub('You have {n} messages'))
+'''You have 37 messages'''
+print(sub('your favorite color is {color}'))
+'''your favorite color is {color}'''
+
+#########################################################
+
+# 2.16 텍스트 열의 개수 고정
+
+# 열의 개수 변경하기
+s = "이상하게도 요즘엔 그냥 쉬운 게 좋아하긴 그래도 여전히 코린 음악은 좋더라 " \
+    "Hot Pink보다 진한 보라색을 더 좋아해 또 뭐더라 단추 있는 Pajamas, Lipstick 좀 짓궂은 장난들 " \
+    "I like it. I'm twenty five 날 좋아하는 거 알아 I got this. I'm truly fine 이제 조금 알 것 같아 날"
+print(s)
+'''한줄로 다 나옴'''
+
+
+import textwrap
+print(textwrap.fill(s,70))
+'''이상하게도 요즘엔 그냥 쉬운 게 좋아하긴 그래도 여전히 코린 음악은 좋더라 Hot Pink보다 진한 보라색을 더 좋아해 또
+뭐더라 단추 있는 Pajamas, Lipstick 좀 짓궂은 장난들 I like it. I'm twenty five 날
+좋아하는 거 알아 I got this. I'm truly fine 이제 조금 알 것 같아 날
+'''
+
+print(textwrap.fill(s,40))
+'''이상하게도 요즘엔 그냥 쉬운 게 좋아하긴 그래도 여전히 코린 음악은
+좋더라 Hot Pink보다 진한 보라색을 더 좋아해 또 뭐더라 단추 있는
+Pajamas, Lipstick 좀 짓궂은 장난들 I like it.
+I'm twenty five 날 좋아하는 거 알아 I got this.
+I'm truly fine 이제 조금 알 것 같아 날
+'''
+
+print(textwrap.fill(s,40, initial_indent ='    '))
+'''    이상하게도 요즘엔 그냥 쉬운 게 좋아하긴 그래도 여전히 코린
+음악은 좋더라 Hot Pink보다 진한 보라색을 더 좋아해 또 뭐더라
+단추 있는 Pajamas, Lipstick 좀 짓궂은 장난들 I like
+it. I'm twenty five 날 좋아하는 거 알아 I got
+this. I'm truly fine 이제 조금 알 것 같아 날
+'''
+
+print(textwrap.fill(s,40, subsequent_indent ='    '))
+'''이상하게도 요즘엔 그냥 쉬운 게 좋아하긴 그래도 여전히 코린 음악은
+    좋더라 Hot Pink보다 진한 보라색을 더 좋아해 또 뭐더라
+    단추 있는 Pajamas, Lipstick 좀 짓궂은 장난들 I
+    like it. I'm twenty five 날 좋아하는 거 알아
+    I got this. I'm truly fine 이제 조금 알 것
+    같아 날
+'''
