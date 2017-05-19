@@ -508,3 +508,55 @@ p1 = dict((key,value) for key, value in prices.items() if value > 299)
 p1
 
 #1.18 시퀀스 요소에 이름 매핑
+#문제 : 리스트나 튜플의 위치로 요소에 접근하는 코드가 있다. 하지만 때론 이런 코드의 가독성이 떨어진다. 또한 위치에 의존하는
+# 코드의 구조도 이름으로 접근 가능하도록 수정하고 싶다.
+#해결 : collections.namedtuple()을 사용하면 일반적인 튜플 객체를 사용하는 것에 비해 그리 크지 않은 오버헤드로 이 기능을 구현한다.
+#collections.namedtuple()은 실제로 표준 파이썬 튜플 타입의 서브클래스를 반환하는 팩토리 메소드 이다. 타입 이름과 포함해야할 필드를
+#전달하면 인스턴스화 가능한 클래스를 반환한다. 여기에 필드의 값을 전달하는 식으로 사용 가능하다.
+from collections import namedtuple
+Subscriber = namedtuple('Subscriber',['addr','joined'])
+sub = Subscriber('aaa@naver.com','2012-01-02')
+sub
+sub.addr
+#namedtuple의 인스턴스는 일반적인 클래스 인스턴스와 비슷해 보이지만 튜플과 교환이 가능하고 인덱싱이나 언패킹과 같은 튜플의 일반적인 기능을 모두 지원한다.
+len(sub)
+addr,joined = sub
+addr
+joined
+#네임드 튜플은 주로 요소의 위치를 기반으로 규현되어 있는 코드를 분리한다. 따라서 데이터베이스로부터 거대한 튜플리스트를 받고 요소의 위치로
+#접근하는 코드가 있을 때, 예를 들어 테이브렝 새로운 열이 추가되었다거나 할 떄 문제가 생길 수 있다. 하지만 반환된 튜플을 네임드 튜플로 변환했다면
+#이런 문제를 예방할 수 있다.
+def compute_cost(records):
+    total = 0.0
+    for rec in records:
+        total += rec[1]*rec[2]
+    return total
+#위치에 기반한 다음과 같은 요소 접근은 가독성을 떨어뜨리고 자료의 구조형에 크게 의존한다.
+from collections import namedtuple
+Stock = namedtuple('Stock',['name','shares','price'])
+def compute_cost(records):
+    total =0.0
+    for rec in records:
+        s = Stock(*rec)
+        total += s.shares * s.price
+    return total
+#예제의 records 시퀀스에 이미 인스턴스가 포함되어 있기 때문에 stock 네임드 튜플로 명시적인 변환을 하지 않아도 된다.
+#토론 : 네임드 튜플은 저장 공간을 더 필요로 하는 딕셔너리 대신 사용할 수 있다. 딕셔너리를 포함한 방대한 자료 구조를 구상하고 있다면
+#네임드 튜플을 사용하는 것이 효율적. 하지만 네임드 튜플은 수정이 불가능.
+s=Stock('ACME',100,123.45)
+s
+s.shares = 75
+#속성을 수정해야 한다면 네임드튜플 인스턴스의 _replace() 메소드를 사용한다.
+s = s._replace(shares=75)
+#_replace를 사용하면 옵션이나 빈 필드를 가진 네임드 튜플을 간단히 만들 수 있다. 일단 기본 값을 가진 프로토타입 튜플을 만들고.
+# _replace()로 치환돤 값을 가진 새로운 인스턴스를 만든다.
+from collections import namedtuple
+Stock = namedtuple('Stock',['name','shares','price','date','time'])
+stock_prototype=Stock(' ',0,0.0,None,None)
+def dict_to_stock(s):
+    return stock_prototype._replace(**s)
+a={'name':'ACME','shares':100,'price':123.45}
+dict_to_stock(a)
+#인스턴스 요소를 빈번히 수정해야 하면 네임드 튜플은 적절치 않음. __slots__사용을 생각하자
+#1.19 데이터르 ㄹ변환하면서 줄이기
+#문제. 감소함수(sum,min,max)를 실행해야 하는데 데이터를 변환하거나 필터링 해야함.
