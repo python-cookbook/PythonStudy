@@ -6,7 +6,6 @@
 
 
 # @property
-
 1) http://brownbears.tistory.com/160
 2) https://www.programiz.com/python-programming/property
 
