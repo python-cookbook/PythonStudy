@@ -150,6 +150,187 @@ master_pat = re.compile('|'.join([LE, LT, EQ])) # Correct
 
 
 
+
+
+
+
+################ 2.19 간단한 재귀 파서 작성 #################
+
+# 문제
+# 주어진 문법 규칙에 따라 텍스트를 파싱하고 동작을 수행하거나 입력된 텍스트를 추상 신택스 트리로 나타내야 한다.
+# 문법은 간단하지만 프레임워크를 사용하지 않고 파서를 직접 작성하고 싶다.
+
+# 해결
+# 특정 문법에 따라 텍스트를 파싱하는 데 집중한다.
+# 우선 문법의 정규 스펙을 BNF 나 EBNF 로 하는 데서 시작한다.
+# 예를 들어 간단한 산술 표현식을 다음과 같이 나타낼 수 있다.
+'''
+expr ::= expr + term
+| expr - term
+| term
+
+term ::= term * factor
+| term / factor
+| factor
+
+factor ::= ( expr )
+| NUM
+
+# 너무 오류가 나는구나!!!
+
+
+expr ::= term { (+|-) term }*
+
+term ::= factor { (*|/) factor }*
+
+factor ::= ( expr )
+| NUM
+
+
+# 이것도 오류가 나!!!
+
+expr
+expr ::= term { (+|-) term }*
+expr ::= factor { (*|/) factor }* { (+|-) term }*
+expr ::= NUM { (*|/) factor }* { (+|-) term }*
+expr ::= NUM { (+|-) term }*
+expr ::= NUM + term { (+|-) term }*
+expr ::= NUM + factor { (*|/) factor }* { (+|-) term }*
+expr ::= NUM + NUM { (*|/) factor}* { (+|-) term }*
+expr ::= NUM + NUM * factor { (*|/) factor }* { (+|-) term }*
+expr ::= NUM + NUM * NUM { (*|/) factor }* { (+|-) term }*
+expr ::= NUM + NUM * NUM { (+|-) term }*
+expr ::= NUM + NUM * NUM
+
+# 대체 뭐가 문제야!!!
+
+
+
+
+# 앞의 지식들을 모두 모아서, 재귀 표현식 해석기를 만드는 간단한 방식을 살펴보자.
+
+import re
+import collections
+
+# Token specification 토근 스펙화
+NUM = r'(?P<NUM>\d+)'
+PLUS = r'(?P<PLUS>\+)'
+MINUS = r'(?P<MINUS>-)'
+TIMES = r'(?P<TIMES>\*)'
+DIVIDE = r'(?P<DIVIDE>/)'
+LPAREN = r'(?P<LPAREN>\()'
+RPAREN = r'(?P<RPAREN>\))'
+WS = r'(?P<WS>\s+)'
+
+master_pat = re.compile('|'.join([NUM, PLUS, MINUS, TIMES,
+DIVIDE, LPAREN, RPAREN, WS]))
+# Tokenizer 토큰화
+Token = collections.namedtuple('Token', ['type', 'value'])
+
+
+def generate_tokens(text):
+ scanner = master_pat.scanner(text)
+for m in iter(scanner.match, None):
+ tok = Token(m.lastgroup, m.group())
+if tok.type != 'WS':
+ yield tok
+
+
+# Parser
+class ExpressionEvaluator:
+ '''
+ 재귀 파서 구현, 모든 메소드는 하나의 문법 규칙을 구현한다.
+ 현재 룩어헤드 토큰을 받고 테스트하는 용도로 ._accept()를 사용한다.
+ 입력 받은 내역에 완벽히 매칭하고 다음 토큰을 무시할 때는 .expect()를 사용한다.
+ '''
+
+ def parse(self, text):
+ self.tokens = generate_tokens(text)
+self.tok = None # 마지막 심볼 소비
+ self.nexttok = None # 다음 심볼 토큰화
+ self._advance() # 처음 룩어헤드 토큰 불러오기
+ return self.expr()
+
+def _advance(self):
+ 'Advance one token ahead'
+ self.tok, self.nexttok = self.nexttok, next(self.tokens, None)
+
+def _accept(self, toktype):
+ 'Test and consume the next token if it matches toktype'
+ if self.nexttok and self.nexttok.type == toktype:
+ self._advance()
+return True
+ else:
+ return False
+
+ def _expect(self, toktype):
+ 'Consume next token if it matches toktype or raise SyntaxError'
+ if not self._accept(toktype):
+ raise SyntaxError('Expected ' + toktype)
+
+# Grammar rules follow 문법 규칙
+ def expr(self):
+ "expression ::= term { ('+'|'-') term }*"
+ exprval = self.term()
+while self._accept('PLUS') or self._accept('MINUS'):
+ op = self.tok.type
+right = self.term()
+if op == 'PLUS':
+ exprval += right
+elif op == 'MINUS':
+ exprval -= right
+return exprval
+
+def term(self):
+ "term ::= factor { ('*'|'/') factor }*"
+ termval = self.factor()
+while self._accept('TIMES') or self._accept('DIVIDE'):
+ op = self.tok.type
+right = self.factor()
+if op == 'TIMES':
+ termval *= right
+elif op == 'DIVIDE':
+ termval /= right
+return termval
+
+def factor(self):
+ "factor ::= NUM | ( expr )"
+ if self._accept('NUM'):
+ return int(self.tok.value)
+elif self._accept('LPAREN'):
+ exprval = self.expr()
+self._expect('RPAREN')
+return exprval
+else:
+ raise SyntaxError('Expected NUMBER or LPAREN')
+
+
+# ExpressionEvaluator클래스를 사용하는 방법은 아래와 같다.
+
+def descent_parser():
+ e = ExpressionEvaluator()
+print(e.parse('2'))
+print(e.parse('2 + 3'))
+print(e.parse('2 + 3 * 4'))
+print(e.parse('2 + (3 + 4) * 5'))
+
+print(e.parse('2 + (3 + * 4)'))
+
+
+
+if __name__ == '__main__':
+ descent_parser()
+
+'''
+
+
+
+
+
+
+
+
+
 ############################  chapter 3. 숫자, 날짜, 시간  ################################
 
 # 파이썬에서 분수, 배열, 날짜, 시간 계산하기!!!
@@ -746,8 +927,182 @@ ax * ay
 
 # 다항식을 계산하고 싶으면 다음과 같이 한다.
 
+def f(x):
+    return 3*x**2 - 2*x + 7
+
+print(f(ax))     # array([ 8, 15, 28, 47])
 
 
+# 넘파이는 배열에 사용가능한 일반함수를 제공한다. math 모듈이 제공하는 함수와 비슷함
+
+np.sqrt(ax)
+#array([ 1.        ,  1.41421356,  1.73205081,  2.        ])
+np.cos(ax)
+#array([ 0.54030231, -0.41614684, -0.9899925 , -0.65364362])
+
+
+# 일반함수는 배열 요소를 순환하며 요소마다 math 함수를 계산하는 것보다 수백 배 빠르다.
+# 가능하면 일반함수를 사용하도록 하자
+
+
+# 넘파이 배열은 동일한 데이터 타입을 메모리에 연속으로 나열한다. 그래서 파이썬 리스트보다 훨씬 큰 배열을 만들 수 있다.
+# 예를 들어 소수를 담는 10,000 x 10,000 2차원 그리드를 만들고 싶다면 간단히 다음과 같이 하면 된다.
+
+
+
+grid = np.zeros(shape=(10000, 10000), dtype=float)
+
+grid
+
+'''
+array([[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+       [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+       [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+       ..., 
+       [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+       [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+       [ 0.,  0.,  0., ...,  0.,  0.,  0.]])
+'''
+
+
+# 마찬가지로 모든 연산은 모든 요소에 동시 적용된다.
+
+grid += 10
+
+grid
+'''
+array([[ 10.,  10.,  10., ...,  10.,  10.,  10.],
+       [ 10.,  10.,  10., ...,  10.,  10.,  10.],
+       [ 10.,  10.,  10., ...,  10.,  10.,  10.],
+       ..., 
+       [ 10.,  10.,  10., ...,  10.,  10.,  10.],
+       [ 10.,  10.,  10., ...,  10.,  10.,  10.],
+       [ 10.,  10.,  10., ...,  10.,  10.,  10.]])
+
+'''
+
+np.sin(grid)
+# 원래 결과 출력되야 하는데 MemoryError남
+
+
+# numpy가 파이썬의 리스트, 그 중에서도 다차원 배열의 인덱싱 기능을 확장하고 있다는 점을 특히 주목해야 함.
+# 간단한 2차원 배열을 만들고 몇 가지 예를 들어 보자...
+
+
+a = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]])
+a
+'''
+array([[ 1,  2,  3,  4],
+       [ 5,  6,  7,  8],
+       [ 9, 10, 11, 12]])
+'''
+
+# 첫번째 행 선택
+a[1]
+#array([5, 6, 7, 8])
+
+# 첫번째 열 선택
+a[:,1]
+#array([ 2, 6, 10])
+
+# 지역을 선택 후 변경
+a[1:3, 1:3]
+#array([[ 6,  7],
+#       [10, 11]])
+
+a[1:3, 1:3] += 10
+a
+#array([[ 1,  2,  3,  4],
+#       [ 5, 16, 17,  8],
+#       [ 9, 20, 21, 12]])
+
+# 행 벡터를 모든 행 연산에 적요
+
+a + [100, 101, 102, 103]
+#array([[101, 103, 105, 107],
+#       [106, 117, 119, 112],
+#       [109, 121, 123, 115]])
+
+a
+#array([[ 1,  2,  3,  4],
+#       [ 5, 16, 17,  8],
+#       [ 9, 20, 21, 12]])
+
+
+# 조건이 있는 할당
+np.where(a < 10, a, 10)
+#array([[ 1,  2,  3,  4],
+#       [ 5, 10, 10,  8],
+#       [ 9, 10, 10, 10]])
+
+
+
+########################  3.10. 행렬과 선형 대수 계산 ############################
+
+# 문제 - 행렬 곱셈, 행력식 찾기, 선형 방정식 풀기 등 행렬이나 선형 대수 계산을 해야 한다.
+
+# 해결 = 넘파이 라이브러리에 이런 용도로 사용할 수 있는 matrix 객체가 있다.
+# 행렬은 레시피 3.9 에 나왔던 배열 객체와 비슷한 면이 있지만, 계산할 때는 선형 대수 계산법을 따른다. 기본적인 예제 몇 개를 살펴보자
+
+
+import numpy as np
+m = np.matrix([[1,-2,3],[0,4,5],[7,8,-9]])
+
+# 전치 행렬
+print(m.T)
+
+'''
+[[ 1  0  7]
+ [-2  4  8]
+ [ 3  5 -9]]
+
+'''
+
+# 역행렬
+print(m.I)
+
+'''
+[[ 0.33043478 -0.02608696  0.09565217]
+ [-0.15217391  0.13043478  0.02173913]
+ [ 0.12173913  0.09565217 -0.0173913 ]]
+
+'''
+
+# 벡터를 만들고 곱하기
+v = np.matrix([[2], [3], [4]])
+print(m * v)
+
+'''
+[[ 8]
+ [32]
+ [ 2]]
+'''
+
+# numpy.linalg 서브 패키지에 더 많은 연산이 있다.
+
+# determinant
+print(np.linalg.det(m))
+# -230.0
+
+# Eigenvalues
+print(np.linalg.eigvals(m))
+# [-13.11474312   2.75956154   6.35518158]
+
+# Solve for x in mx = v
+x = np.linalg.solve(m, v)
+print(x)
+'''
+[[ 0.96521739]
+ [ 0.17391304]
+ [ 0.46086957]]
+
+'''
+print(np.array_equal(m * x, v))
+# True
+
+
+
+# 선형 대수의 범위는 너무 방대하기 때문에 여기서 다 다룰 수 없다.......
 
 
 
