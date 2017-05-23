@@ -894,3 +894,7 @@ numpy.linalg.det(m)
 # 아이겐밸류
 numpy.linalg.eigvals(m)
 # array([-13.11474312,   2.75956154,   6.35518158])
+
+'''
+
+'''
