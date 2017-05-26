@@ -165,12 +165,161 @@ relativedelta(months=+2, days=+28)
 
 # 해결 = 파이썬의 datetime 모듈에 이런 계산을 도와주는 클래스와 함수가 있다.
 
+from datetime import datetime, timedelta
+
+weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday',
+            'Friday', 'Saturday', 'Sunday']
+
+
+def get_previous_byday(dayname, start_date=None):
+    if start_date is None:
+        start_date = datetime.today()
+    day_num = start_date.weekday()
+    day_num_target = weekdays.index(dayname)
+    days_ago = (7 + day_num - day_num_target) % 7
+    if days_ago == 0:
+        days_ago = 7
+    target_date = start_date - timedelta(days=days_ago)
+    return target_date
+
+
+
+datetime.today() # For reference
+#datetime.datetime(2017, 5, 26, 15, 3, 23, 523580)
+
+get_previous_byday('Monday')
+# datetime.datetime(2017, 5, 22, 15, 3, 49, 499379)
+
+get_previous_byday('Tuesday') # Previous week, not today
+# datetime.datetime(2017, 5, 23, 15, 4, 4, 302759)
+
+get_previous_byday('Friday')
+# datetime.datetime(2017, 5, 19, 15, 4, 21, 822984)
+
+
+get_previous_byday('Sunday', datetime(2012, 12, 21))
+# datetime.datetime(2012, 12, 16, 0, 0)
+
+
+# dateutil 의 relativedelta() 를 사용한 계산은 다음과 같아
+
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+from dateutil.rrule import *
+d = datetime.now()
+print(d)
+# 2017-05-26 15:05:46.497735
+
+
+# Next Friday
+print(d + relativedelta(weekday=FR))
+# 2017-05-26 15:05:46.497735
+
+# Last Friday
+print(d + relativedelta(weekday=FR(-1)))
+# 2017-05-26 15:05:46.497735
 
 
 
 
+###################### 3.14. 현재 달의 날짜 범위 찾기 #############################
+
+# 문제 - 현재 달의 날짜를 순환해야 하는 코드가 있고, 그 날짜 범위를 계산하는 효율적인 방법이 필요하다
+
+# 날짜를 순환하기 위해 모든 날짜를 리스트로 만들 필요가 없다. 대신 범위의 시작 날짜와 마지막 날짜만 계산하고
+# datetime.timedelta 객체를 사용해서 날짜를 증가시키면 된다.
+
+from datetime import datetime, date, timedelta
+import calendar
+
+def get_month_range(start_date=None):
+    if start_date is None:
+        start_date = date.today().replace(day=1)
+    _, days_in_month = calendar.monthrange(start_date.year, start_date.month)
+    end_date = start_date + timedelta(days=days_in_month)
+    return (start_date, end_date)
+
+a_day = timedelta(days=1)
+first_day, last_day = get_month_range()
+while first_day < last_day:
+    print(first_day)
+    first_day += a_day
+
+'''
+2017-05-01
+2017-05-02
+2017-05-03
+2017-05-04
+2017-05-05
+2017-05-06
+2017-05-07
+2017-05-08
+2017-05-09
+2017-05-10
+.....
+
+'''
 
 
+
+##################### 3.15 문자열을 시간으로 변환 ######################
+
+# 문제 - 문자열 형식의 시간 데이터를 datetime 객체로 변환하고 싶다면!!
+
+# 해결 - 파이썬의 datetime 모듈을 사용하면 상대적으로 쉽게 이 문제를 해결할 수 있다.
+
+
+from datetime import datetime
+text = '2012-09-20'
+y = datetime.strptime(text, '%Y-%m-%d')
+z = datetime.now()
+diff = z - y
+print(diff)
+# 1709 days, 15:59:32.938441
+
+
+#datetime.strftime 메소드는 네자리 연도 표시를 위한 %Y, 두자리 월 표시를 위한 %m 과 같은 서식을 지원한다.
+
+print(z)
+# 2017-05-26 15:59:32.938441
+
+nice_z = datetime.strftime(z, '%A %B %d, %Y')
+print(nice_z)
+# Friday May 26, 2017
+
+
+# strftime() 은 실행속도가 느릴 수 있다. 날짜 형식을 정확히 알고 있다면 해결책을 직접 구현하는 것이 더 유리하다
+# 예를들어 'YYYY-MM-DD' 형식이라면
+
+from datetime import datetime
+def parse_ymd(s):
+    year_s, mon_s, day_s = s.split('-')
+    return datetime(int(year_s), int(mon_s), int(day_s))
+
+
+
+
+########################## 3.16. 시간대 관련 날짜 처리 ###############################
+
+# 문제 - 다른 나라의 다른 시간대
+
+# 시간대와 관련된 거의 모든 문제는 pytz 모듈로 해결한다. 이 패키지는 Olson 시간 데이터베이스를 제공한다.
+# pytz 는 주로 datetime 라이브러리에서 생성한 날짜를 현지화할 때 사용한다.
+
+# 예를 들어 시카고 시간은 다음과 같이 표현한다.
+
+from datetime import datetime
+from pytz import timezone
+d = datetime(2012, 12, 21, 9, 30, 0)
+print(d)
+# 2012-12-21 09:30:00
+
+
+# 시카고에 맞게 현지화
+central = timezone('US/Central')
+loc_d = central.localize(d)
+print(loc_d)
+# 2012-12-21 09:30:00-06:00
 
 
 
