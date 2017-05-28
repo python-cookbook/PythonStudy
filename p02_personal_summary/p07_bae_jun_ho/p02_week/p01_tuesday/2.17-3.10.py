@@ -387,3 +387,514 @@ EBNF는 특수한 의미를 갖 는 메타 기호를 더 사용하여 반복되�
                
 '''
 
+# 예6.
+
+import re
+import collections
+
+# 토큰 스펙화
+NUM      =  r'(?P<NUM>\d+)'
+PLUS     =  r'(?P<PLUS>\+)'
+MINUS    =  r'(?P<MINUS>-)'
+TIMES    =  r'(?P<TIMES>\*)'
+DIVIDE   =  r'(?P<DIVIDE>/)'
+LPAREN   =  r'(?P<LPAREN>\()'
+RPAREN   =  r'(?P<RPAREN>\))'
+WS       =  r'(?P<WS>\s+)'
+
+master_pat = re.compile('|'.join([NUM, PLUS, MINUS, TIMES, DIVIDE, LPAREN, RPAREN, WS]))
+
+# 토큰화
+Token = collections.namedtuple('Token', ['type', 'value'])
+def generate_tokens(text):
+    scanner = master_pat.scanner(text)
+    for m in iter(scanner.match, None):
+        tok = Token(m.lastgroup, m.group())
+        if tok.type != 'WS':
+            yield tok
+
+# 파서
+class ExpressionEvaluator:
+    def parse(self,text):
+        self.tokens = generate_tokens(text)
+        self.tok = None
+        self.nexttok = None
+        self._advance()
+        return self.expr()
+
+    def _advance(self):
+        'Advance one token ahead'
+        self.tok, self.nexttok = self.nexttok, next(self.tokens, None)
+
+    def _accept(self, toktype):
+        'Test and consume the next token if it matches toktype'
+        if self.nexttok and self.nexttok.type == toktype:
+            self._advance()
+            return True
+        else :
+            return False
+
+    def _expect(self,toktype):
+        'Consume next token if it matches toktype or raise SyntaxError'
+        if not self._accept(toktype):
+            raise SyntaxError('Expected '+toktype)
+
+    # 문법 규칙
+
+    def expr(self):
+        "expression ::= term { ('+'|'-') term }*"
+        exprval = self.term()
+        while self._accept('PLUS') or self._accept('MINUS'):
+            op = self.tok.type
+            right = self.term()
+            if op == 'PLUS':
+                exprval += right
+            elif op == 'MINUS':
+                exprval -= right
+        return exprval
+
+    def term(self):
+        "term ::== factor { ('*'|'-') term } *"
+        termval = self.factor()
+        while self._accept('TIMES') or self._accept('DIVIDE'):
+            op = self.tok.type
+            right = self.factor()
+            if op == 'TIMES':
+                termval *= right
+            elif op == 'DIVIDE':
+                termval /= right
+        return termval
+
+    def factor(self):
+        "factor ::= NUM | ( expr )"
+
+        if self._accept('NUM'):
+            return int(self.tok.value)
+        elif self._accept('LPAREN'):
+            exprval = self.expr()
+            self._expect('RPAREL')
+            return exprval
+        else:
+            raise SyntaxError('Expected NUMBER or LPAREN')
+
+# ExpressionEvaluator 사용
+
+e = ExpressionEvaluator()
+e.parse('2')
+# 2
+e.parse('2 + 3')
+# 5
+e.parse('2 + 3 * 4')
+# 14
+e.parse('2 + (3 + 4) * 5')
+# 37
+
+# ExpressionTreeBuilder
+class ExpressionTreeBuilder(ExpressionEvaluator):
+    def expr(self):
+        "expression ::= term { ('+'|'-') term }"
+
+        exprval = self.term()
+        while self._accept('PLUS') or self._accept('MINUS'):
+            op = self.tok.type
+            right = self.term()
+            if op == 'PLUS':
+                exprval = ('+', exprval, right)
+            elif op == 'MINUS':
+                exprval = ('-', exprval, right)
+        return exprval
+
+    def term(self):
+        "term ::= factor { ('*'|'/') factor }"
+        termval = self.factor()
+        while self._accept('TIMES') or self._accept('DIVIDE'):
+            op = self.tok.type
+            right = self.factor()
+            if op == 'TIMES':
+                termval = ('*', termval, right)
+            elif op == 'DIVIDE':
+                termval = ('/', termval, right)
+        return termval
+
+    def factor(self):
+        'factor ::= NUM | (expr)'
+
+        if self._accept('NUM'):
+            return int(self.tok.value)
+        elif self._accept('LPAREN'):
+            exprval = self.expr()
+            self._expect('RPAREN')
+            return exprval
+        else:
+            raise SyntaxError('Expected NUMBER or LPAREN')
+
+e = ExpressionTreeBuilder
+e.parse('2 + 3')
+# ('+', 2, 3)
+
+'''
+
+2장 20절 바이트 문자열에 텍스트 연산 수행 : 바이트 문자열에 일반 텍스트연산을 수행하고 싶은 경우 내장 연산 함수를 사용하면 된다.
+
+- 바이트 문자열은 서식화(formatting)를 지원하지 않는다.
+
+
+'''
+
+# 예7.
+
+# 바이트 배열
+data = bytearray(b'Hello World')
+data[0:5]
+# bytearray(b'Hello')
+data.startswith(b'Hello')
+# True
+data.split()
+# [bytearray(b'Hello'), bytearray(b'World')]
+
+# 바이트 정규 표현식 - 정규표현식 사용 시 패턴도 바이트로 나타내야 한다.
+data = b'FOO:BAR, SPAM'
+import re
+re.split(b'[:,]', data)
+# [b'FOO', b'BAR', b'SPAM']
+
+
+'''
+
+3.1 반올림 : 부동 소수점 값을 10진수로 반올림하고 싶은 경우 내장 함수인 round(value, ndgits) 함수를 사용한다. 
+
+- 반올림은 소수점 해당 자리에서 반올림을 통해 숫자값에 변동이 생긴다. 단순히 해당 자리수 까지만 보고 싶으면 서식화를 사용한다.
+  * 서식화를 통해 숫자를 변경하게 되면 int 타입이 str 타입으로 변경된다. 기억해두자!
+
+'''
+
+# 예8.
+round(1.23456, 3)
+# 1.235
+
+# 예9.
+x = 1.23456
+format(x, '0.2f')
+print(type(format(x, '0.2f')))
+# '1.23'
+
+'''
+
+3.2 정확한 10진수 계산 : 10진수 계산을 하는 경우 부동 소수점에서 생기는 오류를 피하고 싶을 땐 decimal 모듈을 사용한다.
+
+
+
+'''
+
+# 예10.
+from decimal import Decimal
+a = Decimal('4.2')
+b = Decimal('2.1')
+a+b
+# Decimal('6.3')
+
+# 예11.
+from decimal import localcontext
+a = Decimal('1.3')
+b = Decimal('1.7')
+print(a/b)
+# 0.7647058823529411764705882353
+with localcontext() as ctx:
+    ctx.prec = 3
+    print(a/b)
+# 0.765
+with localcontext() as ctx:
+    ctx.prec = 50
+    print(a/b)
+# 0.76470588235294117647058823529411764705882352941176
+
+'''
+
+3.3 출력을 위한 숫자 서식화 : 출력을 위해 자릿수, 정렬, 천 단위 구분 등 숫자를 서식화 하고 싶은 경우 내장함수인 format()을 사용한다.
+
+- 너비와 자릿수를 나타내는 형식 : '[<>^]?너비[,]?(.자릿수)?'
+  (.format() 메소드에서도 동일하게 사용한다)
+- 구분자를 바꾸려면 translate() 메소드를 사용한다.
+    예)
+        swap_separators = { ord('.'):',' , ord(','):'.' }
+        
+- 숫자는 % 연산자로 서식화 한다.
+    예)
+        '%0.2f' % x
+        # '1234.57'
+        '%10.1f' % x
+        # '    1234.6'
+        '%-10.1f' % x
+        # '1234.6    '
+
+
+* 서식화 메소드
+format()
+format(*args, *kwargs)
+format_map()
+format_map(mapping)
+
+*치환필드
+{} {} : 왼쪽부터 순서대로 인수로 지정한 값이 치환된다.
+{0} {1} {2} : 지정된 위치의 인수 값으로 치환된다.
+{name} {key} : kwargs, 또는 format_map()에서 지정한 사전키에 해당하는 값으로 치환
+{0[0]} {name[0]} : 인수의 0번째 요소가 치환
+{1[key]} {name[key]} : 인수의 지정된 키워드(key)의 값이 치환
+{0.attr} {name.attr} : 인수의 지정된 속성(attr)값이 치환
+:>30 :<30 :^30 : 지정한 폭(여기에서는 30)으로 왼쪽 맞춤, 오른쪽 맞춤, 가운데 맞춤
+:-<30 :->30 :^-30 : 왼쪽 맞춤, 오른쪽 맞춤, 가운데 맞춤에서 공백(스페이스)을 지정한 문자(여기에서는-)로 매운다.
+:b :9 :d :x :X : 2진수, 8진수, 10진수, 16진수(소문자), 16진수(대문자)로 변환한다.
+:f : 고정소수점 수의 문자열로 변환한다.
+:% : 백분율 표기로 변환한다.
+:, : 수치에 세 자리마다 쉼표(,)를 삽입한다.
+:6.2f : 표시할 자릿수를 지정한다. 6은 전체 자릿수, 2는 소수점 이하 자리수를 나타낸다.
+:%Y-%m-%d %H:%M:%S : 날짜 형식 특유의 서식으로, 연월일 등으로 변환한다. 날짜 형식은 datetime을 참고한다.
+find(sub[, start[, end]]) : 문자열 중에 sub이 존재하는 위치를 반환한다. 없으면 -1을 반환한다. RETURN int
+split(sep=None, msxsplit=-1) : 문자열로 분리한다. 기본으로는 공백 문자로 분할한다. RETURN list
+join(iterable) : 인수로 지정된 여러 문자열을 결합한다. RETURN str
+startswith(prefix[, start[, end]]) : 지정된 접두사를 가진 문자열을 검색한다. prefix에는 튜플로 여러개의 후보를 지정할 수 있다. 
+                                     start, end는 조사할 위치 지정에 사용한다. RETURN bool
+endswitch(suffix[, start[, end]]) : 지정된 접미사를 가진 문자열을 검색한다. suffix에는 튜플로 여러 개의 후보를 지정할 수 있다. 
+                                    start, end는 조사할 위치 저정에 사용한다. RETURN bool
+encode(encoding="utf-8", errors="static") : 문자열을 지정한 인코딩 형식으로 변환한다. errors에는 변환 불가능한 문자열이 있을 때 대응 방법을 기술한다. 
+                                            static이면 오류가 발생하며, ignore면 해당문자 무시, replace면 ?로 변환. RETURN bytes
+string.ascii_lowercase : 영문 소문자(abcd....xyz)
+string.ascii_uppercase : 영문 대문자(ABCD....XYX)
+string.ascii_letters : 소문자와 대문자를 합친 영문자 전체
+string.digits : 10진수 숫자(0123456789)
+string.hexdigits : 16진수 숫자(01234567890abcdefABCDEF
+string.octdigits : 8진수 숫자(01234567)
+string.punctuation : 기호 문자열(!"#$%&'()*+,-./:;<>?@[\]^_`{|}~)
+string.whitespace : 공백으로 취급되는 문자열(\t\n\r\x0b\x0c)
+string.printable : ascii_letter, digits, punctuation, whitespace를 포함한 문자열
+
+'''
+
+# 예12.
+x = 1234.56789
+# 소수점 한 자리 정확도로 10개 기준 오른쪽 정렬
+format(x, '>10.1f')
+# '    1234.6'
+
+# 소수점 한 자리 정확도로 10개 기준 왼쪽 정렬
+format(x, '<10.1f')
+# '1234.6    '
+
+# 소수점 한자리 정확도로 10개 기준 가운데 정렬
+format(x, '^10.1f')
+# '  1234.6  '
+
+# 천 단위 구분자 넣기
+format (x, ',')
+# '1,234.56789'
+format (x, '0,.1f')
+# '1,234.6'
+
+# 지수화
+format(x, 'e')
+# '1.234568e+03'
+format(x, '0.2E')
+# '1.23E+03'
+
+'''
+
+3장 4절 진수 작업 : 정수를 2, 8, 16진수로 변환하려면 bin(), oct(), hex()를 사용한다.
+- 진수 앞에 0x 0b 같은 겉이 분는 경우 format() 함수를 사용하면 된다.
+
+'''
+
+# 예13.
+x = 1234
+bin(x)
+# '0b10011010010'
+
+oct(x)
+# '0o2322'
+
+hex(x)
+# '0x4d2'
+
+x = -1234
+format(x, 'b')
+# '-10011010010'
+
+format(x, 'x')
+# '-4d2'
+
+
+'''
+
+3장 5절 바이트에서 큰 숫자를 패킹/언패킹 : 바이트 문자열을 언패킹 해서 정수값으로 만들거나 큰 정수를 바이트 문자열로 변환하는 경우 int.from_bytes()나 int.to_bytes()를
+                                     사용한다.
+
+'''
+
+# 예14.
+data = b'\x00\x124V\x00x\x90\xab\x00\xcd\xef\x01\x00#\x004'
+len(data)
+# 16
+int.from_bytes(data, 'little')
+# 69120565665751139577663547927094891008
+int.from_bytes(data, 'big')
+# 94522842520747284487117727783387188
+
+x = 94522842520747284487117727783387188
+x.to_bytes(16, 'big')
+# b'\x00\x124V\x00x\x90\xab\x00\xcd\xef\x01\x00#\x004'
+x.to_bytes(16, 'little')
+# b'4\x00#\x00\x01\xef\xcd\x00\xab\x90x\x00V4\x12\x00'
+
+'''
+
+3장 6절 복소수 계산 : 복소수를 사용하려면 complex(real, imag) 함수를 사용하거나 j를 붙인 부동 소수점 값으로 표현할 수 있다.
+
+- 실수, 허수, 켤레 복소수를 구하는 방법은 .real, .imag, .conjugate 로 확인한다.
+- 복소수 간 연산도 가능하다
+- 삼각함수와 제곱 등을 계산하려면 cmath 모듈을 사용한다.
+
+'''
+
+# 예15.
+a = complex(2, 4)
+b = 3 - 5j
+a
+# (2+4j)
+b
+# (3-5j)
+
+# 예16.
+import cmath
+cmath.sin(a)
+# (24.83130584894638-11.356612711218174j)
+cmath.cos(a)
+# (-11.36423470640106-24.814651485634187j)
+cmath.exp(a)
+# (-4.829809383269385-5.5920560936409816j)
+
+'''
+
+3장 7절 무한대와 NaN 사용 : NaN - Not a Number 을 확인하려면 math.isinf()와 math.isnan() 함수를 사용한다.
+- inf : 무한대(infinity)
+- Nan : Not a Number
+
+'''
+'''
+
+3장 8절 분수 계산 : 분수 관련 계산은 fractions 모듈을 사용한다.
+- .numerator : 분자
+- .denominator : 분모
+- float() : 분수를 소수로 변환
+- Fraction(*x.as_integer_ratio()) : 소수를 분수로 변환
+
+'''
+'''
+
+3장 9절 큰 배열 계산 : 배열이나 그리드와 같이 큰 숫자 데이터셋에 계산을 해야하는 경우 Numpy 모듈을 사용한다.
+
+* list와 array 비교
+
+x = [1, 2, 3, 4]
+ax = np.array([1, 2, 3, 4])
+
+x*2
+[1, 2, 3, 4, 1, 2, 3, 4]
+
+ax*2
+array([2, 4, 6, 8])
+
+x+10
+# 에러 발생
+
+ax+10
+array([11, 12, 13, 14])
+
+- 모든 요소는 동시에 적용된다.
+
+- Numpy의 배열은 다차원 배열을 지원한다.
+
+'''
+
+# 예17.
+import numpy as np
+a = np.array([[1,2,3,4],[5,6,7,8],[9,10,11,12]])
+a
+# array([[ 1,  2,  3,  4],
+#        [ 5,  6,  7,  8],
+#        [ 9, 10, 11, 12]])
+
+a[1]
+# array([5, 6, 7, 8])
+
+a[:,1]
+# array([ 2,  6, 10])
+
+a[1:3, 1:3]
+# array([[ 6,  7],
+#        [10, 11]])
+
+a + [100, 101, 102, 103]
+# array([[101, 103, 105, 107],
+#        [105, 107, 109, 111],
+#        [109, 111, 113, 115]])
+
+a
+# array([[ 1,  2,  3,  4],
+#        [ 5,  6,  7,  8],
+#        [ 9, 10, 11, 12]])
+
+np.where(a < 10, a, 10)
+# array([[ 1,  2,  3,  4],
+#        [ 5,  6,  7,  8],
+#        [ 9, 10, 10, 10]])
+
+'''
+
+3장 10절 행렬과 선형 대수 계산 : 행렬이나 선형 대수 계산을 해야 하는 경우 Numpy 모듈의 matrix 객체를 사용한다.
+- 배열과 동일하지만 계산은 선형대수의 행렬계산법을 따른다.
+- numpy.linalg 서브패키지에 더 많은 연산이 있다.
+
+'''
+
+import numpy as np
+m = np.matrix([[1,-2,3],[0,4,5],[7,8,-9]])
+m
+# matrix([[ 1, -2,  3],
+#         [ 0,  4,  5],
+#         [ 7,  8, -9]])
+
+# 전치 행렬
+m.T
+# matrix([[ 1,  0,  7],
+#         [-2,  4,  8],
+#         [ 3,  5, -9]])
+
+# 역 행렬
+m.I
+# matrix([[ 0.33043478, -0.02608696,  0.09565217],
+#         [-0.15217391,  0.13043478,  0.02173913],
+#         [ 0.12173913,  0.09565217, -0.0173913 ]])
+
+# 행렬 * 벡터
+v = np.matrix([[2],[3],[4]])
+v
+# matrix([[2],
+#         [3],
+#         [4]])
+
+m*v
+# matrix([[ 8],
+#         [32],
+#         [ 2]])
+
+import numpy.linalg
+# 디터미넌트
+numpy.linalg.det(m)
+# -229.99999999999983
+
+# 아이겐밸류
+numpy.linalg.eigvals(m)
+# array([-13.11474312,   2.75956154,   6.35518158])
+
+'''
+
+'''
