@@ -3,7 +3,7 @@ import psutil, time, os
 ###################################################################################################
 ## 1. 문제        : 좋은 수열 (고급)
 ## 2. 소요 시간   : 0.0 초 (소수점 6자리 반올림)
-## 3. 사용 메모리 : 28672 byte
+## 3. 사용 메모리 : 36864 byte
 ## 4. 만든 사람   : 길용현
 ###################################################################################################
 
@@ -11,18 +11,6 @@ import psutil, time, os
 proc1 = psutil.Process(os.getpid())
 mem1 = proc1.memory_info()
 before_start = mem1[0]
-
-def check_sequence(number, index):
-    if index >= 1:
-        if number[index-1] == number[index]:
-            return False
-    if index >= 3:
-        if number[index-3:index-1] == number[index-1:index+1]:
-            return False
-    if index >= 5:
-        if number[index-5:index-2] == number[index-2:index+1]:
-            return False
-    return True
 
 number = []
 
@@ -36,13 +24,48 @@ while True:
 # 시작 시간 체크
 stime = time.time()
 
-for index in range(digit):
+def check_sequence(number, d):
+    num_len = len(number)-1
+    if num_len >= (d*2-1):
+        if number[num_len-(2*d-1):num_len-(d-1)] == number[num_len-(d-1):]:
+            return False
+        else:
+            return check_sequence(number, d+1)
+    return True
+
+index = 0  # 현재 자리수
+
+while True:
+    # 가장 작은 수 부터 넣기 위해 1~3까지 순차적으로 입력 후 체크
     for i in range(1, 4):
         number.append(i)
-        if check_sequence(number, index):
+        if check_sequence(number, 1):
             break
         else:
             del number[index]
+
+    # 해당 자리수의 모든 값이 나쁜 수열을 만족하면 그 전 자리수의 값을 증가
+    if len(number) != index+1:
+        index -= 1
+        for i in range(len(number)-1, -1, -1):
+            bol = False
+            while True:
+                if number[i] != 3:  # 그 전 자리수의 값이 3이 아니면
+                    number[i] += 1
+                    if check_sequence(number, 1):
+                        bol = True
+                        break
+                else:  # 그 전 자리수의 값이 3이면
+                    del number[i]
+                    index -= 1
+                    break
+            if bol is True:
+                break
+
+    index += 1
+
+    if len(number) == digit:
+        break
 
 print(''.join([str(num) for num in number]))
 
