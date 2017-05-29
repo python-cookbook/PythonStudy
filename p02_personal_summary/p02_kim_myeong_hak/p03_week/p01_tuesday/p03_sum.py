@@ -363,3 +363,187 @@ for x in chain(a, b):
 
 
 #4.13 데이터 처리 파이프라인 생성
+
+#데이터 처리를  데이터 처리 파이프라인과 같은 방식으로 순차적으로 처리하고 싶다.
+#예를 들어, 처리해야 할 방대한 데이터가 있지만 메모리에 한꺼번에 들어가지 않는 경우에 적용할 수 있다.
+
+
+
+import os
+import fnmatch
+import gzip
+import bz2
+import re
+
+
+def gen_find(filepat, top):
+    '''
+    디렉터리 트리에서 와일드카드 패턴에 매칭하는 모든 파일 이름을 찾는다.
+    '''
+    for path, dirlist, filelist in os.walk(top):
+        for name in fnmatch.filter(filelist, filepat):
+            yield os.path.join(path, name)
+
+
+def gen_opener(filenames):
+    '''
+파일 이름 시퀀스를 하나씩 열어 파일 객체를 생성한다.
+다음 순환으로 넘어가는 순간 파일을 닫는다.
+    '''
+    for filename in filenames:
+        if filename.endswith('.gz'):
+            f = gzip.open(filename, 'rt')
+        elif filename.endswith('.bz2'):
+            f = bz2.open(filename, 'rt')
+        else:
+            f = open(filename, 'rt')
+        yield f
+        f.close()
+
+
+def gen_concatenate(iterators):
+    '''
+이터레이터 시퀀스를 합쳐 하나의 시퀀스로 만든다.
+    '''
+    for it in iterators:
+        yield from it
+
+
+def gen_grep(pattern, lines):
+    '''
+    라인 시퀀스에서 정규식 패턴을 살펴본다
+    '''
+    pat = re.compile(pattern)
+    for line in lines:
+        if pat.search(line):
+            yield line
+
+#처리 파이프라인 만들기
+#ex) python 이란 단어를 포함하고 있는 모든 로그 라인을 찾으려면 다음과 같다
+
+lognames = gen_find('access-log*', 'www')
+files = gen_opener(lognames)
+lines = gen_concatenate(files)
+pylines = gen_grep('(?i)python', lines)
+for line in pylines:
+    print(line)
+
+#파이프라인을 확장하고 싶다면 , 제너레이터 표현식으로 데이터를 넣을 수 있다.
+#예를 들어 다음 버전은 전송한 바이트 수를 찾고 그 총합을 구한다
+
+lognames = gen_find('access-log*', 'www')
+files = gen_opener(lognames)
+lines = gen_concatenate(files)
+pylines = gen_grep('(?i)python', lines)
+bytecolumn = (line.rsplit(None,1)[1] for line in pylines)
+bytes = (int(x) for x in bytecolumn if x != '-')
+print('Total', sum(bytes))
+
+
+
+#4.14 중첩 시퀀스 풀기
+#Q 중첩된 시퀀스를 합쳐 하나의 리스트로 만들고 싶다.
+
+from collections import Iterable
+
+# ignore_types : 문자열이나 바이트는 하나하나 펼치지 않게 제외해주었다.
+def flatten(items, ignore_types=(str, bytes)):
+    for x in items:
+        # 시퀀스일 경우 시퀀스 내부의 항목을 반환
+        if isinstance(x, Iterable) and not isinstance(x, ignore_types):
+            yield from flatten(x)
+        # 시퀀스가 아니면 그 자신을 반환
+        else:
+            yield x
+
+items = [1, 2, [3, 4, [5, 6], 7], 8]
+# 1 2 3 4 5 6 7 8 생성
+for x in flatten(items):
+    print(x)
+
+#앞의 코드에서 isinstance(x, Iterable)은 아이템이 순환 가능한 것인지 확인한다.
+#순환이 가능하다면 yield from 으로 모든 값을 하나의 서브루틴으로 분출한다.
+#ignore_types 와 not isinstance(x, ignore_types)로 문자열과 바이트가 순환 가능한 것으로 해석되지 않도록 했다.
+# 이렇게 해야만 리스트에 담겨있는 문자열을 전달했을 때 문자를 하나하나 펼치지 않고 문자열 단위로 전개한다.
+
+items = ['Dave', 'Paula', ['Thomas', 'Lewis']]
+for x in flatten(items):
+    print(x)
+
+
+#서브루틴으로 다른 제너레이터를 호출할 때 yield from을 사용하면 편리하다.
+#이 구문을 사용하지 ㅏㄶ으면 추가적인 for 문이 있는 코드를 작성해야 한다.
+
+def flatten(items, ignore_types=(str, bytes)):
+    for x in items:
+        if isinstance(x, Iterable) and not isinstance(x, ignore_types):
+            for i in flatten(x):
+                yield i
+        else:
+            yield x
+
+#4.15 정렬된 여러 시퀀스를 병합 후 순환
+
+#정렬된 시퀀스가 여럿 있고, 이들을 하나로 합친 후 정렬된 시퀀스를 순환하고 싶을땐?
+#A
+
+import heapq
+a = [1, 4, 7, 10]
+b = [2, 5, 6, 11]
+for c in heapq.merge(a, b):
+    print(c)
+
+
+#heapq.merge는 아이템에 순환적으로 접근하며 제공한 시퀀스를 한꺼번에 읽지 않는다.
+#따라서 아주 긴 시퀀스도 별 다른 무리 없이 사용할 수 있다.
+
+with open('sorted_file_1', 'rt') as file1, \
+    open('sorted_file_2', 'rt') as file2, \
+    open('merged_file', 'wt') as outf:
+
+    for line in heapq.merge(file1, file2):
+        outf.write(line)
+
+
+#4.16 무한 while 순환문을 이터레이터로 치환
+
+#Q. 함수나 일반적이지 않은 조건 테스트로 인해 무한 while 순환문으로 데이터에 접근하는 코드
+#
+
+
+CHUNKSIZE = 8192
+
+def reader(s):
+    while True:
+        data = s.recv(CHUNKSIZE)
+        if data == b'':
+            break
+        process_data(data)
+
+
+#앞의 코드는 iter()를 사용해 다음과 같이 수정할 수 있다.
+
+def reader2(s):
+    for chunk in iter(lambda: s.recv(CHUNKSIZE), b''):
+        pass
+
+
+import sys
+f = open('/etc/passwd')
+for chunk in iter(lambda: f.read(10), ''):
+    n = sys.stdout.write(chunk)
+
+nobody:*:-2:-2:Unprivileged User:/var/empty:/usr/bin/false
+root:*:0:0:System Administrator:/var/root:/bin/sh
+daemon:*:1:1:System Services:/var/root:/usr/bin/false
+_uucp:*:4:4:Unix to Unix Copy Protocol:/var/spool/uucp:/usr/sbin/uucico
+
+
+#내장함수 iter()의 기능은 거의 알려져 있지 않다.
+# 이함수에는 선택적으로 인자 없는 호출 가능 객체와 종료값을 입력으로 받는다. 이렇게 사용하면 주어진 종료 값을 반환하기 전까지
+#무한히 반복해서 호출 가능 객체를 호출한다.
+#이런 방식을 사용하면 입출력과 관련 있는 반복 호출에 잘 동작한다.
+# 예를 들어 소켓이나 파일에서 특정 크기의 데이터를 읽으려 한다면
+#반복적으로 read()난 recv()를 호출하고 파일 끝(end-of-file)을 확인해야 한다.
+# 이번 레시피를 따른다면 두 가지 동작을 하나의 iter()호출로 합칠 수 있다. lambda를 사용하면 인자를 받지않는 호출 객체를 만들 수 있고
+#원하는 크기의 인자를 recv()나 read()에 전달한다.
