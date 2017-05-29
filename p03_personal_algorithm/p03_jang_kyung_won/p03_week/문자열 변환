@@ -1,0 +1,72 @@
+import os
+import psutil
+import time
+
+###################################################################################################
+## 1. 문제        : 문자열 변환
+## 2. 소요 시간    : 0.0 초 (소수점 6자리 반올림)
+## 3. 사용 메모리  : 16384
+## 4. 만든 사람    : 장경원
+###################################################################################################
+
+change_cnt= int(input('변경할 문자가 몇개입니까?'))
+change_text = {}
+
+for i in range(change_cnt):                 # 변경할 문자가 몇개인지 input 받아서 그 숫자 만큼 물어보게 for 문을 실행합니다.
+    temp = str(input('변경할 내용을 입력하세요')) # 예: A a 를 입력
+    temp1 = temp.split()                         # split하여 임시로 temp1에 넣어줍니다.
+    change_text[temp1[0]]=temp1[1]               # 그리고 각각의 값을 key값과 value 값으로 change_Text 딕셔너리 변수에 담아줍니다.
+                                                 # for 문이 돌때까지 계속 입력 합니다.
+print(change_text)                               # 딕셔너리에 들어간거 확인
+
+find_text_cnt = int(input('몇 개의 문자를 확인하고 변경할까요?'))  # 의심 단어의 갯수만큼 for문을 돌릴때 필요합니다.
+word = []
+for i in range(find_text_cnt):
+    temp = str(input('오타로 의심 되는 단어를 입력하세요')) # 단어 하나씩 입력 , 예 : A
+    word.append(temp)
+# 시작 메모리 체크
+proc1 = psutil.Process(os.getpid())
+mem1 = proc1.memory_info()
+before_start = mem1[0]
+# 시작 시간 체크
+stime = time.time()
+for j in range(len(word)):              # 단어갯수만큼 loop문을 실행시킵니다.
+    for i in change_text.keys():        # 다음 loop에서는 change_text의 key값을 loop로 실행합니다.
+        temp = str(word[j])             # 숫자가 있으면 출력이 정상적으로 진행이 안돼므로 임시로 담아줍니다.
+        if temp in i:                  # 만약에 temp에 담긴 글자가 change_text의 key에 있다면 다음 코드를 진행합니다.
+            word[j] = change_text[temp]  # word[j]부분을 change_text의 value값으로 변경 해줍니다.
+            break
+print(''.join(word))                    # 최종 결과를 join을 이용하여 공백없이 출력합니다.
+                                        # 본래 단어는 ABC0415abA
+                                        # 최종 출력 결과 aBC5144aba가 출력 됩니다.
+# 종료 시간 체크
+etime = time.time()
+print('consumption time : ', round(etime - stime, 6))
+# 메모리 체크
+proc = psutil.Process(os.getpid())
+mem = proc.memory_info()
+after_start = mem[0]
+print('memory use : ', after_start-before_start)
+
+
+
+# change_cnt= int(input('변경할 문자가 몇개입니까?'))
+# change_text = {}
+#
+# for i in range(change_cnt):                # 변경할 문자가 몇개인지 input 받아서 그 숫자 만큼 물어보게 for 문을 실행합니다.
+#     temp = str(input('변경할 내용을 입력하세요')) # 예: A a 를 입력
+#     temp1 = temp.split()                        # split하여 임시로 temp1에 넣어줍니다.
+#     change_text[temp1[0]]=temp1[1]              # 그리고 각각의 값을 key값과 value 값으로 change_Text 딕셔너리 변수에 담아줍니다.
+#                                                 # for 문이 돌때까지 계속 입력 합니다.
+# print(change_text)                              # 딕셔너리에 들어간거 확인
+#
+# find_text_cnt = int(input('몇 개의 문자를 확인하고 변경할까요?'))  # 의심 단어의 갯수만큼 for문을 돌릴때 필요합니다.
+# word_list = []
+# for i in range(find_text_cnt):
+#     temp = str(input('오타로 의심 되는 단어를 입력하세요')) # 단어 하나씩 입력 , 예 : A
+#     word_list.append(temp)
+
+# for i in range(len(word_list)):              # 단어갯수만큼 loop문을 실행시킵니다.
+#     if change_text.get(word_list[i]) is not None:
+#         word_list[i] = change_text[word_list[i]]
+# print(''.join(word_list))                    # 최종 결과를 join을 이용하여 공백없이 출력합니다.

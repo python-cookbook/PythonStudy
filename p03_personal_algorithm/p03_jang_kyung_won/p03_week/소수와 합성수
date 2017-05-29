@@ -1,0 +1,75 @@
+import os
+import psutil
+import time
+
+###################################################################################################
+## 1. 문제        : 소수와 합성수
+## 2. 소요 시간    : 0.0 초 (소수점 6자리 반올림)
+## 3. 사용 메모리  : 16384
+## 4. 만든 사람    : 장경원
+###################################################################################################
+
+
+n = str(input('10억 이하 자연수를 입력하세요!!'))
+# 시작 메모리 체크
+proc1 = psutil.Process(os.getpid())
+mem1 = proc1.memory_info()
+before_start = mem1[0]
+# 시작 시간 체크
+stime = time.time()
+
+num_list= n.split()
+# print('입력된 숫자 확인 :', num_list)
+
+number_list = []                # split한 단어를 int변환하여 담을 리스트 변수 생성
+
+for i in num_list:              
+    number_list.append(int(i))    # split한 단어를 int(숫자형식)로 변환하여 담아줍니다.
+
+# print('int변환된 list 확인 :', number_list)     # list 확인
+
+cnt = 0
+for i in number_list:                          # number_list를 하나씩 i 담아 loop를 실행
+    if i == 1:                                # 1은 자기 자신 밖에 없기 때문에
+        print('Number_One')   # number_one이라고 출력해주고
+
+        continue                                  # 그 다음 코드를 진행하지 않고 처음으로 돌아가서 다음 숫자로 진행합니다.
+    for j in range(1,i+1):
+            if i % j == 0:           # i 나누기 j 값이 0 이면
+                cnt+=1                    # cnt 숫자를 하나씩 늘려 줍니다.
+    if cnt == 2:                                        # 소수는 약수가 2개 이므로 cnt ==2로 if문을 걸고
+        print (i ,'는(은) 총 ' , cnt ,'개의 약수가 있어 Prime_number입니다.')
+        cnt = 0                                        # 출력하고 초기화
+    elif cnt >= 3:                                     # 합성수는는 약수가 3개보다 크거나 같으므로 cnt>=3 로 if문을 걸고
+        print(i ,'는(은) 총 ', cnt,'개의 약수가 있어 Composite_number입니다.')
+        cnt = 0                                        # 출력하고 초기화
+# 종료 시간 체크
+etime = time.time()
+print('consumption time : ', round(etime - stime, 6))
+# 메모리 체크
+proc = psutil.Process(os.getpid())
+mem = proc.memory_info()
+after_start = mem[0]
+print('memory use : ', after_start-before_start)
+
+
+
+
+print('################# 검산용 #################')
+
+cnt1 = 0
+for i in range(1,max(number_list)+1):  # 제일 큰 숫자만 검산합니다.
+    a = divmod(max(number_list),i)
+    if a[1] == 0:
+        cnt1+=1
+        print(a)
+        print(i,'로 나눠집니다.')
+if cnt1 == 1:
+    print('총 ', cnt1 ,'개의 약수가 있어 이 숫자는 1입니다.')
+elif cnt1 == 2:
+    print('총 ' , cnt1 ,'개의 약수가 있어 Prime_number입니다.')
+elif cnt1 >= 3:
+    print('총 ', cnt1,'개의 약수가 있어 Composite_number입니다.')
+
+
+
