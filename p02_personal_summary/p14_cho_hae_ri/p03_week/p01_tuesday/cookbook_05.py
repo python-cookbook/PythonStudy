@@ -383,7 +383,329 @@ list(zip(a,b))
 #예를 들어 다음 코드를 살펴보자.
 
 
-21
+from itertools import chain
+a = [1,2,3,4]
+b = ['x', 'y', 'z']
+for x in chain(a,b):
+    print(x)
+
+
+# 1
+# 2
+# 3
+# 4
+# x
+# y
+# z
+
+
+# chain() 은 일반적으로 모든 아이템에 동일한 작업을 수행하고 싶지만 이 아이템이 서로 다른 세트에 포함되어 있을 때 사용한다.
+
+
+# 여러 아이템 세트
+active_items = set()
+inactive_items = set()
+
+# 모든 아이템 한 번에 순환
+for item in chain(active_items, inactive_items):
+    # 작업
+    ...
+
+# 앞에 나온 방식은 반복문을 두 번 사용하는 것보다 훨씬 보기 좋다.
+
+for item in inactive_items:
+    # 작업
+    ...
+
+
+# itertools.chain() 은 하나 혹은 그 이상의 순환 객체를 인자로 받는다. 그리고 입력받은 순환 객체 속 아이템을 차례대로
+# 순환하는 이터레이터를 생성한다. 큰 차이는 아니지만, 우선적으로 시퀀스를 하나로 합친 다음 순환하는 것보다 chain() 을 사용하는 게 더 효율적
+
+#비효율적
+for x in a + b:
+    ...
+
+#효율적
+for x in chain(a, b):
+    ...
+
+
+# 첫번째 방식에서 a+b 는 두 개를 합친 전혀 새로운 시퀀스를 만들고, a 와 b가 동일한 타입이여야 한다는 요구조건이 있으나
+# chain() 은 이런 과정이 없다. 따라서 입력한 시퀀스 크기가 아주 크다면 chain()을 사용하는것이 메모리 측면에서 유리하고 타입이 다른 경우에도 쉽게 사용 가능함
+
+
+#############################################################################
+#  4. 13. 데이터 처리 파이프라인 생성
+#############################################################################
+
+
+# 문제
+# 데이터 처리를 데이터 처리 파이프라인과 같은 방식으로 순차적으로 처리하고 싶다(unix 파이프라인과 비슷하게)
+# 예를 들어, 처리해야 할 방대한 데이터가 있지만 메모리에 한꺼번에 들어가지 않는 경우에 적용할 수 있다.
+
+
+# 해결
+# 제너레이터 함수를 사용하는 것이 처리 파이프라인을 구현하기에 좋다. 예를 들어 방대한 양의 로그 파일이 들어있는 디렉터리에 작업을 해야 한다고 가정해 보자.
+
+
+# foo/
+#     access-log-012007.gz
+#     access-log-022007.gz
+#     access-log-032007.gz
+#     ...
+#     access-log-012008
+# bar/
+#     access-log-092007.bz2
+#     ...
+#     access-log-022008
+
+# 그리고 각 파일에는 다음과 같은 데이터가 담겨 있다.
+
+# 124.115.6.12 - - [10/Jul/2012:00:18:50 -0500] "GET /robots.txt ..." 200 71
+# 210.212.209.67 - - [10/Jul/2012:00:18:51 -0500] "GET /ply/ ..." 200 11875
+# 210.212.209.67 - - [10/Jul/2012:00:18:51 -0500] "GET /favicon.ico ..." 404 369
+# 61.135.216.105 - - [10/Jul/2012:00:20:04 -0500] "GET /blog/atom.xml ..." 304 -
+# ...
+
+
+# 이 파일을 처리하기 위해 특정 작업처리를 수행하는 작은 제너레이터 함수의 컬렉션을 정의할 수 있다.
+
+import os
+import fnmatch
+import gzip
+import bz2
+import re
+
+    def gen_find(filepat, top):
+    '''
+    디렉터리 트리에서 와일드 카드 패턴에 매칭하는 모든 파일 이름을 찾는다.
+    '''
+        for path, dirlist, filelsit in os.walk(top):
+            for name in fnmatch.filter(filelsit, filepat):
+                yield os.path.join(path,name)
+
+    def gen_opener(filenames):
+    '''
+    파일 이름 시퀀스를 하나씩 열어 파일 객체를 생성한다.
+    다음 순환으로 넘어가는 순간 파일을 닫는다.
+    '''
+        for filename in filenames:
+            if filename.endswith('.gz'):
+                f = gzip.open(filename, 'rt')
+            elif filename.endswith('.bz2'):
+                f = bz2.open(filename, 'rt')
+            else:
+                f = open(filename, 'rt')
+            yield f
+            f.close()
+
+    def gen_concatenate(iterators):
+        '''
+        이터레이터 시퀀스를 합쳐 하나의 시퀀스로!
+        '''
+        for it in iterators:
+            yield from it
+
+    def gen_grep(pattern, lines):
+        '''
+        라인 시퀀스에서 정규식 패턴을 살펴본다
+        '''
+        pat = re.compile(pattern)
+        for line in lines:
+            if pat.search(line):
+                yield line
+
+
+### 위 코드의 정체는 뭐지...?
+
+# 이제 이 함수들을 모아서 어렵지 않게 처리 파이프라인을 만들 수 있다.
+
+# python 이라는 단어를 포함하는 로그를 찾으려면!
+
+lognames = gen_find('access-log*', 'www')
+files = gen_opener(lognames)
+lines = gen_concatenate(files)
+pylines = gen_grep('(?i)python', lines)
+for line in pylines:
+    print(line)
+
+# 파이프 라인을 확장하고 싶다면, 제너레이터 표현식으로 데이터를 넣을 수 있다.
+# 예를 들어 다음 버전은 전송한 바이트 수를 찾고 그 총합을 구한다.
+
+lognames = gen_find('access-log*', 'www')
+files = gen_opener(lognames)
+lines = gen_concatenate(files)
+pylines = gen_grep('(?i)python', lines)
+bytecolumn = (line.rsplit(None,1)[1] for line in pylines)
+bytes = (int(x) for x in bytecolumn if x != '-')
+print('Total', sum(bytes))
 
 
 
+
+###############################################################################
+#  4. 14. 중첩 시퀀스 풀기
+###############################################################################
+
+
+# 문제
+# 중첩된 시퀀스를 합쳐 하나의 리스트로 만들고 싶다면?/
+
+# 해결
+# 이 문제는 yield from 문이 있는 재귀 제너레이터를 만들어 쉽게 해결할 수 있다.
+
+from collections import Iterable
+
+def flatten(items, ignore_types=(str, bytes)):
+    for x in items:
+        if isinstance(x, Iterable) and not isinstance(x, ignore_types):
+            yield from flatten(x)
+        else:
+            yield x
+
+items = [1,2,[3,4, [5, 6], 7], 8]
+
+# 1 2 3 4 5 6 7 8 생성
+for x in flatten(items):
+    print(x)
+
+    # 1
+    # 2
+    # 3
+    # 4
+    # 5
+    # 6
+    # 7
+    # 8
+
+
+# 앞의 코드에서 isinstance(x, Iterable) 은 아이템이 순환 가능한 것인지 확인한다.
+# 순환이 가능하다면 yield from 으로 모든 값을 하나의 서브루틴으로 분출한다.
+# 결과적으로 중첩되지 않은 시퀀스 하나가 만들어진다.
+
+
+# 추가적으로 전달 가능한 인자 ignore_types 와 not isinstance(x, ignore_types) 로 문자열과 바이트가 순환 가능한 것으로 해석되지 않도록 했다.
+# 이렇게 해야만 리스트에 담겨 있는 문자열을 전달했을 때 문자를 하나하나 펼치지 않고 문자열 단위로 전개한다.
+
+items = ['Dave', 'Paula', ['Thomas', 'Lewis']]
+for x in flatten(items):
+    print(x)
+
+    # Dave
+    # Paula
+    # Thomas
+    # Lewis
+
+
+
+# 토론
+# 서브루틴으로써 다른 제너레이터를 호출할 떄 yield from 을 사용하면 편리하다. 이 구문을 사용하지 않으면 추가적인 for 문이 있는 코드를 작성해야 한다.
+
+def flatten(items, ignore_types=(str, bytes)):
+    for x in items:
+        if isinstance(x, Iterable) and not isinstance(x, ignore_types):
+            for i in flatten(x):
+                yield i
+        else:
+            yield x
+
+# 큰 차이는 아니지만 yield from 문이 더 깔끔하고 나은 코드를 만들어 준다.
+
+
+
+#################################################################
+#  4.15. 정렬된 여러 시퀀스를 병합 후 순환
+#################################################################
+
+
+# 문제
+# 정렬된 시퀀스가 있고, 이들을 하나로 합친 후 정렬된 시퀀스를 순환하고 싶다.
+
+# 해결
+# 간단하다. heapq.merge() 함수를 사용하면 된다.
+
+import heapq
+a = [1,4,7,10]
+b = [2,5,6,11]
+for c in heapq.merge(a,b):
+    print(c)
+
+# 1
+# 2
+# 4
+# 5
+# 6
+# 7
+# 10
+# 11
+
+
+# heapq.merge 는 아이템에 순환적으로 접근하며 제공한 시퀀스를 한꺼번에 읽지 않는다.
+# 따라서 아주 긴 시퀀스도 별다른 무리 없이 사용할 수 있다.
+# 예를 들어 정렬된 두 파이릉ㄹ 병합하려면 다음고 ㅏ같이 한다.
+
+with open('sorted_file_1', 'rt') as file1, \
+    open('sorted_file_2', 'rt') as file2, \
+    open('merged_file', 'wt') as outf:
+
+    for line in heapq.merge(file1, file2):
+        outf.write(line)
+
+
+
+######################################################################
+#  4. 16. 무한 while 순환문을 이터레이터로 치환
+######################################################################
+
+# 문제
+# 함수나 일반적이지 않은 조건 테스트로 인해 무한 while 순환문으로 데이터에 접근하는 코드를 만들었다.
+
+# 해결
+# 입출력과 관련있는 프로그램에 일반적으로 다음과 같은 코드를 사용한다.
+
+CHUNKSIZE = 8192
+
+def reader(s):
+    while True:
+        data = s.recv(CHUNKSIZE)
+        if data == b'':
+            break
+        #process_data(data)
+
+# 앞의 코드는 iter() 를 사용해 다음과 같이 수정할 수 있다.
+
+def reader(s):
+    while True:
+        data = s.recv(CHUNKSIZE)
+        if data == b'':
+            break
+
+        #process_data(data)
+
+# 앞의 코드는 iter() 를 사용해 다음과 같이 수정할 수 있다.
+
+def reader2(s):
+    for chunk in iter(lambda: s.recv(CHUNKSIZE), b''):
+        pass
+        # process_data(data)
+
+
+# 정말 이 코드가 동작하는지 믿음이 안 간다면 파일과 관련 있는 예제를 실행해보자.
+
+import sys
+f = open('/etc/passwd')
+for chunk in iter(lambda: f.read(10), ''):
+    n = sys.stdout.write(chunk)
+
+'''
+nobody:*:-2:-2:Unprivileged User:/var/empty:/usr/bin/false
+root:*:0:0:System Administrator:/var/root:/bin/sh
+daemon:*:1:1:System Services:/var/root:/usr/bin/false
+_uucp:*:4:4:Unix to Unix Copy Protocol:/var/spool/uucp:/usr/sbin/uucico
+'''
+
+# 토론
+
+# 내장 함수 iter() 의 기능은 거의 알려져 있지 않다.
+# 이 함수에는 선택적으로 인자 없는 호출 가능 객체와 종료 값을 입력으로 받는다....
+# 이런 방식을 사용하면 입출력과 관련 있는 반복 호출에 잘 동작한다.
