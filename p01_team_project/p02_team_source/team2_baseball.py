@@ -241,6 +241,7 @@ class Game:
         PITCH_LOCATION = (PITCH_LOCATION + '\n') * MATRIX
         PITCH_LOCATION = "---------" * MATRIX + "\n" + PITCH_LOCATION + "---------" * MATRIX
 
+
         if Game.OUT_CNT < 3:
             player = self.select_player(Game.BATTER_NUMBER[Game.CHANGE], player_list)
             print('====================================================================================================')
@@ -258,17 +259,20 @@ class Game:
                 print('====================================================================================================')
                 print('== 현재 타석 : {}번 타자[{}], 타율 : {}'.format(player.number, player.name, player.record.avg))
 
-                hit_yn = int(input('타격을 하시겠습니까?(타격 : 1 타격안함 : 0)'))
+                try :
+                    hit_yn = int(input('타격을 하시겠습니까?(타격 : 1 타격안함 : 0)'))
+                except ValueError:
+                    print('잘못된 숫자를 입력하였습니다. 다시 입력하세요.')
 
                 if hit_yn == 1:#################타격 시############################
 
                     try:
                         print('▶ 컴퓨터가 발생 시킨 숫자 : {}\n'.format(random_numbers))
-                        hit_numbers = list(int(hit_number) for hit_number in input('== 구질(0:직구 1:변화구)과 던질 위치(0~24)를 입력하세요 : ').split(' '))  # 유저가 직접 숫자 2개 입력
+                        hit_numbers = list(int(hit_number) for hit_number in input('== 구질(0:직구 1:변화구)과 타격할 위치(0~24)를 입력하세요 : ').split(' '))  # 유저가 직접 숫자 2개 입력
                         if self.hit_number_check(hit_numbers) is False:
                             raise Exception()
                         hit_cnt = self.hit_judgment(random_numbers, hit_numbers)  # 안타 판별
-                        print('----1231----123----123')
+                        print(hit_cnt,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
 
                     except Exception:
                         print('== ▣ 잘못된 숫자가 입력되었습니다.')
@@ -302,7 +306,7 @@ class Game:
 
                             if Game.STRIKE_CNT == 2: #스트라이크 카운트가 2일때가 문제. 2일때는 파울이어도 스트라이크 카운트가 늘어나선 안됨
                                 print('== ▣ 파울이므로 아웃이 아닙니다. 다시 치세요!!!!\n')
-                                break
+
 
                     else:
                         Game.STRIKE_CNT = 0
@@ -317,8 +321,9 @@ class Game:
                     #컴퓨터가 던진 공이 볼일때
                     if (random_numbers[1] >= 0 and random_numbers[1] <= 4) or (random_numbers[1] % 5 == 0) or (random_numbers[1] >= 20) or ((random_numbers[1]-4) % 5 ==0):
                         Game.BALL_CNT += 1
-                        print('== ▣ 볼넷 ! 1루 출루 !!!!!!!!!!!!!!!!!!!!!!')
+                        print('== ▣ 볼 !!!!!!!!!!!!!!!!!!!!!!')
                         if Game.BALL_CNT == 4:
+                            print('== ▣ 볼넷 1루출루 !!!!!!!!!!!!!!!!!!!!!! 투수가 정신을 못차리네요!')
                             self.advance_setting(1)
                             Game.STRIKE_CNT = 0
                             Game.BALL_CNT = 0
@@ -328,13 +333,12 @@ class Game:
                         Game.STRIKE_CNT += 1
                         print('== ▣ 스트라이크!!!!!!!!!!!!!')
                         if Game.STRIKE_CNT ==3:
-                            print('== ▣ 방망이도 안 휘두르고 삼진!!!!!!!!!!!!!!')
+                            print('== ▣ 방망이도 안 휘두르고 삼진!!!!!!!!!!!!!! 제구력이 훌륭하군요!')
                             Game.STRIKE_CNT = 0
                             Game.BALL_CNT = 0
                             Game.OUT_CNT += 1
                             break
-
-            player.hit_and_run(1 if hit_cnt[0] > 0 else 0, 1 if len(hit_cnt) ==0 else 0 , 1 if hit_cnt[0] == 4 else 0)
+            #player.hit_and_run(1 if hit_cnt[0] > 0 else 0, 1 if len(hit_cnt) ==0 else 0 , 1 if hit_cnt[0] == 4 else 0)
 
             if Game.BATTER_NUMBER[Game.CHANGE] == 9:
                 Game.BATTER_NUMBER[Game.CHANGE] = 1
@@ -434,9 +438,10 @@ class Game:
         return cnt,Foul
 
     # 선수가 입력한 숫자 확인
-    def hit_number_check(self, hit_numbers): #구질(0~1),위치(0~24)가 들어옴
+    #@staticmethod #self추가
+    def hit_number_check(self,hit_numbers): #구질(0~1),위치(0~24)가 들어옴
         if len(hit_numbers) == 2:
-            if hit_numbers[0] >= 0 and hit_numbers[0] <= 1 and hit_numbers[1] >= 0 and hit_numbers[1] <= 24:
+            if (hit_numbers[0] >= 0 and hit_numbers[0] <= 1) and (hit_numbers[1] >= 0 and hit_numbers[1] <= 24):
                 return True
             else:
                 return False
@@ -466,3 +471,5 @@ if __name__ == '__main__':
             break
         else:
             print('입력한 팀 정보가 존재하지 않습니다. 다시 입력해주세요.')
+
+
