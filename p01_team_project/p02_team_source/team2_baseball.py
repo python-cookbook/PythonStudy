@@ -103,8 +103,8 @@ class Player:
         return self.__team_name + ', ' + str(self.__number) + ', ' + self.__name
 
     # 선수 타율 관련 메서드
-    def hit_and_run(self, hit, homerun):
-        self.__record.batter_record(hit, homerun)
+    def hit_and_run(self, hit, bob, homerun):
+        self.__record.batter_record(hit, bob,homerun)
 
 
 ###################################################################################################
@@ -163,7 +163,7 @@ class Game:
     BATTER_NUMBER = [1, 1]  # [home, away] 타자 순번
     MATRIX = 5
     LOCATION = {0: [0, 0], 1: [0, 1], 2: [0, 2], 3: [0, 3], 4: [0, 4],
-                5: [1, 0], 6: [1, 1], 7: [1, 2], 8: [1, 3], 9: [1.4],
+                5: [1, 0], 6: [1, 1], 7: [1, 2], 8: [1, 3], 9: [1, 4],
                 10: [2, 0], 11: [2, 1], 12: [2, 2], 13: [2, 3], 14: [2, 4],
                 15: [3, 0], 16: [3, 1], 17: [3, 2], 18: [3, 3], 19: [3, 4],
                 20: [4, 0], 21: [4, 1], 22: [4, 2], 23: [4, 3], 24: [4, 4]
@@ -257,18 +257,20 @@ class Game:
                 print('====================================================================================================')
                 print(PITCH_LOCATION.format(*[str(idx) for idx in range(26)])) #투구 영역 5 * 5 출력
                 print('====================================================================================================')
-                print('== 현재 타석 : {}번 타자[{}], 타율 : {}'.format(player.number, player.name, player.record.avg))
+                print('== 현재 타석 : {}번 타자[{}], 타율 : {}, 볼넷 : {}, 홈런 : {}'.format(player.number, player.name, player.record.avg, player.record.bob, player.record.homerun))
 
                 try :
                     hit_yn = int(input('타격을 하시겠습니까?(타격 : 1 타격안함 : 0)'))
-                except ValueError:
+                except Exception:
                     print('잘못된 숫자를 입력하였습니다. 다시 입력하세요.')
+                    continue
 
                 if hit_yn == 1:#################타격 시############################
 
                     try:
                         print('▶ 컴퓨터가 발생 시킨 숫자 : {}\n'.format(random_numbers))
                         hit_numbers = list(int(hit_number) for hit_number in input('== 구질(0:직구 1:변화구)과 타격할 위치(0~24)를 입력하세요 : ').split(' '))  # 유저가 직접 숫자 2개 입력
+                        print(hit_numbers)
                         if self.hit_number_check(hit_numbers) is False:
                             raise Exception()
                         hit_cnt = self.hit_judgment(random_numbers, hit_numbers)  # 안타 판별
@@ -279,11 +281,11 @@ class Game:
                         print('====================================================================================================')
                         print('▶ 컴퓨터가 발생 시킨 숫자 : {}\n'.format(random_numbers))
                         continue
+
                     print('====================================================================================================')
                     print('▶ 컴퓨터가 발생 시킨 숫자 : {}\n'.format(random_numbers))
 
                     if hit_cnt[0] == 0:  # strike !!!
-
                         if hit_cnt[1] == False:#파울이 아닐 때
                             Game.STRIKE_CNT += 1
                             print('== ▣ 스트라이크!!!\n')
@@ -306,7 +308,7 @@ class Game:
 
                             if Game.STRIKE_CNT == 2: #스트라이크 카운트가 2일때가 문제. 2일때는 파울이어도 스트라이크 카운트가 늘어나선 안됨
                                 print('== ▣ 파울이므로 아웃이 아닙니다. 다시 치세요!!!!\n')
-
+                        player.hit_and_run(1 if hit_cnt[0] > 0 else 0, 1 if len(hit_cnt) == 0 else 0, 1 if hit_cnt[0]==4 else 0)
 
                     else:
                         Game.STRIKE_CNT = 0
@@ -328,6 +330,7 @@ class Game:
                             Game.STRIKE_CNT = 0
                             Game.BALL_CNT = 0
                             break
+
                     #컴퓨터가 던진 공이 스트라이크 일 때
                     if (random_numbers[1]>=6 and random_numbers[1]<=8) or (random_numbers[1]>=11 and random_numbers[1]<=13) or (random_numbers[1]>=16 and random_numbers[1]<=18):
                         Game.STRIKE_CNT += 1
@@ -338,7 +341,8 @@ class Game:
                             Game.BALL_CNT = 0
                             Game.OUT_CNT += 1
                             break
-            #player.hit_and_run(1 if hit_cnt[0] > 0 else 0, 1 if len(hit_cnt) ==0 else 0 , 1 if hit_cnt[0] == 4 else 0)
+                    player.hit_and_run(1 if hit_cnt[0] > 0 else 0, 1 if len(hit_cnt) == 0 else 0, 1 if hit_cnt[0] == 4 else 0)
+
 
             if Game.BATTER_NUMBER[Game.CHANGE] == 9:
                 Game.BATTER_NUMBER[Game.CHANGE] = 1
