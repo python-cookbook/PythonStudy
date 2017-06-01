@@ -9,7 +9,6 @@ import re
 #3 : 3루타
 #4 : 홈런
 
-
 ###################################################################################################
 ## 기록 관련 클래스
 ###################################################################################################
@@ -167,7 +166,7 @@ class Game:
                 10: [2, 0], 11: [2, 1], 12: [2, 2], 13: [2, 3], 14: [2, 4],
                 15: [3, 0], 16: [3, 1], 17: [3, 2], 18: [3, 3], 19: [3, 4],
                 20: [4, 0], 21: [4, 1], 22: [4, 2], 23: [4, 3], 24: [4, 4]
-                }
+                } #던지는 위치의 좌표를 리스트로 저장.
 
 
     def __init__(self, game_team_list):
@@ -191,7 +190,7 @@ class Game:
 
     # 게임 수행 메서드
     def start_game(self):
-        while Game.INNING <= 1:
+        while Game.INNING <= 1: #게임을 진행할 이닝을 설정. 현재는 1이닝만 진행하게끔 되어 있음.
             print('====================================================================================================')
             print('== {} 이닝 {} 팀 공격 시작합니다.'.format(Game.INNING, self.hometeam.team_name if Game.CHANGE == 0 else self.awayteam.team_name))
             print('====================================================================================================\n')
@@ -209,7 +208,6 @@ class Game:
     # 팀별 선수 기록 출력
     def show_record(self):
         print('===================================================================================================================')
-        #print(len('===================================================================================================================='))
         print('==  {} | {}  =='.format(self.hometeam.team_name.center(52, ' ') if re.search('[a-zA-Z]+', self.hometeam.team_name) is not None else self.hometeam.team_name.center(50, ' '),
                                         self.awayteam.team_name.center(52, ' ') if re.search('[a-zA-Z]+', self.awayteam.team_name) is not None else self.awayteam.team_name.center(50, ' ')))
         print('==  {} | {}  =='.format(('('+str(Game.SCORE[0])+')').center(52, ' '), ('('+str(Game.SCORE[1])+')').center(52, ' ')))
@@ -373,7 +371,7 @@ class Game:
             Game.SCORE[Game.CHANGE] += (Game.ADVANCE.count(1)+1)
             Game.ADVANCE = [0, 0, 0]
         else:
-            if bob==False:
+            if bob==False: #볼넷이 아닐때
                 for i in range(len(Game.ADVANCE), 0, -1):
                     if Game.ADVANCE[i-1] == 1:
                         if (i + hit_cnt) > 3:  # 기존에 출루한 선수들 중 득점 가능한 선수들에 대한 진루 설정
@@ -384,8 +382,8 @@ class Game:
                             Game.ADVANCE[i-1] = 0
                 Game.ADVANCE[hit_cnt-1] = 1  # 타석에 있던 선수에 대한 진루 설정
 
-            elif bob==True:
-                if Game.ADVANCE[0]==1:
+            elif bob==True: #볼넷일때
+                if Game.ADVANCE[0]==1: #1루에 주자가 있을때.
                     for i in range(len(Game.ADVANCE), 0, -1):
                         if Game.ADVANCE[i-1] == 1:
                             if (i + hit_cnt) > 3:  # 기존에 출루한 선수들 중 득점 가능한 선수들에 대한 진루 설정
@@ -395,10 +393,8 @@ class Game:
                                 Game.ADVANCE[i-1 + hit_cnt] = 1
                                 Game.ADVANCE[i-1] = 0
                     Game.ADVANCE[hit_cnt-1] = 1  # 타석에 있던 선수에 대한 진루 설정
-                else:
+                else: #1루에 주자가 없을때는 1루에만 주자를 채워 넣는다.
                     Game.ADVANCE[0] = 1
-
-
 
     # 컴퓨터가 생성한 랜덤 수와 플레이어가 입력한 숫자가 얼마나 맞는지 판단
     def hit_judgment(self, random_ball, hit_numbers): #(공던질위치, 구질)
@@ -499,5 +495,3 @@ if __name__ == '__main__':
             break
         else:
             print('입력한 팀 정보가 존재하지 않습니다. 다시 입력해주세요.')
-
-
