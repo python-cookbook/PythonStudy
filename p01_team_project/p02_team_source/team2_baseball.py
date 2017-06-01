@@ -201,21 +201,22 @@ class Game:
                 Game.INNING += 1
                 Game.CHANGE = 0
 
-        print('====================================================================================================')
+        print('============================================================================================================')
         print('== 게임 종료!!!')
-        print('====================================================================================================\n')
+        print('============================================================================================================\n')
         self.show_record()
 
     # 팀별 선수 기록 출력
     def show_record(self):
-        print('====================================================================================================')
-        print('==  {} | {}   =='.format(self.hometeam.team_name.center(44, ' ') if re.search('[a-zA-Z]+', self.hometeam.team_name) is not None else self.hometeam.team_name.center(42, ' '),
-                                        self.awayteam.team_name.center(44, ' ') if re.search('[a-zA-Z]+', self.awayteam.team_name) is not None else self.awayteam.team_name.center(42, ' ')))
-        print('==  {} | {}   =='.format(('('+str(Game.SCORE[0])+')').center(44, ' '), ('('+str(Game.SCORE[1])+')').center(44, ' ')))
-        print('====================================================================================================')
-        print('== {} | {} | {} | {} | {} '.format('이름'.center(8, ' '), '타율'.center(5, ' '), '타석'.center(4, ' '), '안타'.center(3, ' '), '홈런'.center(3, ' ')), end='')
-        print('| {} | {} | {} | {} | {}  =='.format('이름'.center(8, ' '), '타율'.center(5, ' '), '타석'.center(4, ' '), '안타'.center(3, ' '), '홈런'.center(3, ' ')))
-        print('====================================================================================================')
+        print('===================================================================================================================')
+        #print(len('===================================================================================================================='))
+        print('==  {} | {}  =='.format(self.hometeam.team_name.center(52, ' ') if re.search('[a-zA-Z]+', self.hometeam.team_name) is not None else self.hometeam.team_name.center(50, ' '),
+                                        self.awayteam.team_name.center(52, ' ') if re.search('[a-zA-Z]+', self.awayteam.team_name) is not None else self.awayteam.team_name.center(50, ' ')))
+        print('==  {} | {}  =='.format(('('+str(Game.SCORE[0])+')').center(52, ' '), ('('+str(Game.SCORE[1])+')').center(52, ' ')))
+        print('===================================================================================================================')
+        print('== {} | {} | {} | {} | {} | {} '.format('이름'.center(8, ' '), '타율'.center(5, ' '), '타석'.center(4, ' '), '안타'.center(3, ' '), '홈런'.center(3, ' '), '볼넷'.center(5, ' ')), end='')
+        print('| {} | {} | {} | {} | {} | {} =='.format('이름'.center(8, ' '), '타율'.center(5, ' '), '타석'.center(4, ' '), '안타'.center(3, ' '), '홈런'.center(3, ' '), '볼넷'.center(5, ' ')))
+        print('===================================================================================================================')
 
         hometeam_players = self.hometeam.player_list
         awayteam_players = self.awayteam.player_list
@@ -226,11 +227,11 @@ class Game:
             ap = awayteam_players[i]
             ap_rec = ap.record
 
-            print('== {} | {} | {} | {} | {} |'.format(hp.name.center(6+(4-len(hp.name)), ' '), str(hp_rec.avg).center(7, ' '),
-                                                      str(hp_rec.atbat).center(6, ' '), str(hp_rec.hit).center(5, ' '), str(hp_rec.homerun).center(5, ' ')), end='')
-            print(' {} | {} | {} | {} | {}  =='.format(ap.name.center(6+(4-len(ap.name)), ' '), str(ap_rec.avg).center(7, ' '),
-                                                        str(ap_rec.atbat).center(6, ' '), str(ap_rec.hit).center(5, ' '), str(ap_rec.homerun).center(5, ' ')))
-        print('====================================================================================================')
+            print('== {} | {} | {} | {} | {} | {} |'.format(hp.name.center(6+(4-len(hp.name)), ' '), str(hp_rec.avg).center(7, ' '),
+                                                      str(hp_rec.atbat).center(6, ' '), str(hp_rec.hit).center(5, ' '), str(hp_rec.homerun).center(5, ' '), str(hp_rec.bob).center(5,' ')), end='')
+            print(' {} | {} | {} | {} | {} | {} =='.format(ap.name.center(6+(4-len(ap.name)), ' '), str(ap_rec.avg).center(7, ' '),
+                                                        str(ap_rec.atbat).center(6, ' '), str(ap_rec.hit).center(5, ' '), str(ap_rec.homerun).center(5, ' ') , str(ap_rec.bob).center(5, ' ')))
+        print('===================================================================================================================')
 
     # 공격 수행 메서드
     def attack(self):
@@ -293,6 +294,7 @@ class Game:
                                 print('== ▣ 삼진 아웃!!!\n')
                                 Game.STRIKE_CNT = 0
                                 Game.OUT_CNT += 1
+                                player.hit_and_run(0,0,0)
                                 break
 
                         if hit_cnt[1] == True:#파울일 때
@@ -304,18 +306,21 @@ class Game:
                                     print('== ▣ 삼진 아웃!!!\n')
                                     Game.STRIKE_CNT = 0
                                     Game.OUT_CNT += 1
+                                    player.hit_and_run(0, 0, 0)
                                     break
 
                             if Game.STRIKE_CNT == 2: #스트라이크 카운트가 2일때가 문제. 2일때는 파울이어도 스트라이크 카운트가 늘어나선 안됨
                                 print('== ▣ 파울이므로 아웃이 아닙니다. 다시 치세요!!!!\n')
-                        player.hit_and_run(1 if hit_cnt[0] > 0 else 0, 1 if len(hit_cnt) == 0 else 0, 1 if hit_cnt[0]==4 else 0)
+                        #player.hit_and_run(1 if hit_cnt[0] > 0 else 0, 0, 1 if hit_cnt[0]==4 else 0)
 
                     else:
                         Game.STRIKE_CNT = 0
                         if hit_cnt[0] != 4:
                             print('== ▣ {}루타!!!\n'.format(hit_cnt[0]))
+                            player.hit_and_run(1 if hit_cnt[0] > 0 else 0, 0, 1 if hit_cnt[0] == 4 else 0)
                         else:
                             print('== ▣ 홈런!!!\n')
+                            player.hit_and_run(1 if hit_cnt[0] > 0 else 0, 0, 1 if hit_cnt[0] == 4 else 0)
                         self.advance_setting(hit_cnt[0])
                         break
 
@@ -326,9 +331,10 @@ class Game:
                         print('== ▣ 볼 !!!!!!!!!!!!!!!!!!!!!!')
                         if Game.BALL_CNT == 4:
                             print('== ▣ 볼넷 1루출루 !!!!!!!!!!!!!!!!!!!!!! 투수가 정신을 못차리네요!')
-                            self.advance_setting(1)
+                            self.advance_setting(1,True)
                             Game.STRIKE_CNT = 0
                             Game.BALL_CNT = 0
+                            player.hit_and_run(0,1,0)
                             break
 
                     #컴퓨터가 던진 공이 스트라이크 일 때
@@ -340,8 +346,9 @@ class Game:
                             Game.STRIKE_CNT = 0
                             Game.BALL_CNT = 0
                             Game.OUT_CNT += 1
+                            player.hit_and_run(0, 0, 0)
                             break
-                    player.hit_and_run(1 if hit_cnt[0] > 0 else 0, 1 if len(hit_cnt) == 0 else 0, 1 if hit_cnt[0] == 4 else 0)
+                    #player.hit_and_run(1 if hit_cnt[0] > 0 else 0, 1 if len(hit_cnt) == 0 else 0, 1 if hit_cnt[0] == 4 else 0)
 
 
             if Game.BATTER_NUMBER[Game.CHANGE] == 9:
@@ -361,20 +368,37 @@ class Game:
             print('====================================================================================================\n')
 
     # 진루 및 득점 설정하는 메서드
-    def advance_setting(self, hit_cnt):
+    def advance_setting(self, hit_cnt, bob=False):
         if hit_cnt == 4:  # 홈런인 경우
             Game.SCORE[Game.CHANGE] += (Game.ADVANCE.count(1)+1)
             Game.ADVANCE = [0, 0, 0]
         else:
-            for i in range(len(Game.ADVANCE), 0, -1):
-                if Game.ADVANCE[i-1] == 1:
-                    if (i + hit_cnt) > 3:  # 기존에 출루한 선수들 중 득점 가능한 선수들에 대한 진루 설정
-                        Game.SCORE[Game.CHANGE] += 1
-                        Game.ADVANCE[i-1] = 0
-                    else:  # 기존 출루한 선수들 중 득점권에 있지 않은 선수들에 대한 진루 설정
-                        Game.ADVANCE[i-1 + hit_cnt] = 1
-                        Game.ADVANCE[i-1] = 0
-            Game.ADVANCE[hit_cnt-1] = 1  # 타석에 있던 선수에 대한 진루 설정
+            if bob==False:
+                for i in range(len(Game.ADVANCE), 0, -1):
+                    if Game.ADVANCE[i-1] == 1:
+                        if (i + hit_cnt) > 3:  # 기존에 출루한 선수들 중 득점 가능한 선수들에 대한 진루 설정
+                            Game.SCORE[Game.CHANGE] += 1
+                            Game.ADVANCE[i-1] = 0
+                        else:  # 기존 출루한 선수들 중 득점권에 있지 않은 선수들에 대한 진루 설정
+                            Game.ADVANCE[i-1 + hit_cnt] = 1
+                            Game.ADVANCE[i-1] = 0
+                Game.ADVANCE[hit_cnt-1] = 1  # 타석에 있던 선수에 대한 진루 설정
+
+            elif bob==True:
+                if Game.ADVANCE[0]==1:
+                    for i in range(len(Game.ADVANCE), 0, -1):
+                        if Game.ADVANCE[i-1] == 1:
+                            if (i + hit_cnt) > 3:  # 기존에 출루한 선수들 중 득점 가능한 선수들에 대한 진루 설정
+                                Game.SCORE[Game.CHANGE] += 1
+                                Game.ADVANCE[i-1] = 0
+                            else:  # 기존 출루한 선수들 중 득점권에 있지 않은 선수들에 대한 진루 설정
+                                Game.ADVANCE[i-1 + hit_cnt] = 1
+                                Game.ADVANCE[i-1] = 0
+                    Game.ADVANCE[hit_cnt-1] = 1  # 타석에 있던 선수에 대한 진루 설정
+                else:
+                    Game.ADVANCE[0] = 1
+
+
 
     # 컴퓨터가 생성한 랜덤 수와 플레이어가 입력한 숫자가 얼마나 맞는지 판단
     def hit_judgment(self, random_ball, hit_numbers): #(공던질위치, 구질)
