@@ -304,7 +304,7 @@ name_sz_date = [(name, os.path.getsize(name), os.path.getmtime(name)) for name i
 for name, size, mtime in name_sz_date:
     print(name, size, mtime)
 
-# 대안 : 파일 메타 데이터 구하기 
+# 대안: 파일 메타 데이터 구하기
 file_metadata = [(name, os.stat(name)) for name in pyfiles]
 for name, meta in file_metadata:
     print(name, meta.st_size, meta.st_mtime)
