@@ -384,15 +384,20 @@ class Game:
 
             elif bob==True: #볼넷일때
                 if Game.ADVANCE[0]==1: #1루에 주자가 있을때.
-                    for i in range(len(Game.ADVANCE), 0, -1):
-                        if Game.ADVANCE[i-1] == 1:
-                            if (i + hit_cnt) > 3:  # 기존에 출루한 선수들 중 득점 가능한 선수들에 대한 진루 설정
-                                Game.SCORE[Game.CHANGE] += 1
-                                Game.ADVANCE[i-1] = 0
-                            else:  # 기존 출루한 선수들 중 득점권에 있지 않은 선수들에 대한 진루 설정
-                                Game.ADVANCE[i-1 + hit_cnt] = 1
-                                Game.ADVANCE[i-1] = 0
-                    Game.ADVANCE[hit_cnt-1] = 1  # 타석에 있던 선수에 대한 진루 설정
+                    if Game.ADVANCE[1]==0 and Game.ADVANCE[2]==1:#1,3루 일때
+                        Game.ADVANCE[1]=1
+                    else: #그 외의 경우
+                        for i in range(len(Game.ADVANCE), 0, -1):
+                            if Game.ADVANCE[i-1] == 1:
+                                if (i + hit_cnt) > 3:  # 기존에 출루한 선수들 중 득점 가능한 선수들에 대한 진루 설정
+                                    Game.SCORE[Game.CHANGE] += 1
+                                    Game.ADVANCE[i-1] = 0
+                                else:  # 기존 출루한 선수들 중 득점권에 있지 않은 선수들에 대한 진루 설정
+                                    Game.ADVANCE[i-1 + hit_cnt] = 1
+                                    Game.ADVANCE[i-1] = 0
+                        Game.ADVANCE[hit_cnt-1] = 1  # 타석에 있던 선수에 대한 진루 설정
+
+
                 else: #1루에 주자가 없을때는 1루에만 주자를 채워 넣는다.
                     Game.ADVANCE[0] = 1
 
