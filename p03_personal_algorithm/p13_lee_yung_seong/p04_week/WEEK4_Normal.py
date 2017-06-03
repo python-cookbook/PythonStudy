@@ -15,10 +15,8 @@ before_start = mem1[0]
 
 
 def algo(num):
-    cnt=0
     a=[]
     for i in range(1,num+5):
-        temp=a
         if i<=5:
             a.append(i)
         elif i>5:
