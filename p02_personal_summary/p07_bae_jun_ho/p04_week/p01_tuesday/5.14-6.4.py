@@ -118,4 +118,4 @@ with open('aa.csv') as f:
     for row in f_csv:
         d
 
-# 예7. 
+# 예7.
