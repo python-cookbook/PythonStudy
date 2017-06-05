@@ -90,6 +90,13 @@ ser = serial.Serial('/dev/tty.usbmoden641', baudrate=9600, bytesize=8, parity='N
 
 6장 1절 csv 데이터 읽고 쓰기 : CSV 파일로 인코딩 된 데이터를 읽거나 쓰고싶은 경우 csv 라이브러리를 사용한다.
 
+- csv에 데이터를 쓰는 법 : csv 모듈을 사용해서 쓰기 객체를 생성(open 옵션에 'w'를 준다)하고 헤더와 열(데이터)를 따로 입력한다. 
+                        데이터가 딕셔너리 시퀀스로 가지고 있다면 딕셔너리처럼 입력한다.
+                        
+- csv 데이터 인코딩을 다른 형식으로 바꾸는 방법 : csv.reader()에 delimiter 옵션을 준다. (예 - 탭 구분으로 읽고 싶으면 delimiter='\t' 를 붙여준다)
+- csv 데이터 형식 변환 
+
+
 
 '''
 
@@ -119,3 +126,170 @@ with open('aa.csv') as f:
         d
 
 # 예7.
+# 쓰기 객체로 데이터를 입력
+headers = ['Symbol', 'Price', 'Date', 'Time', 'Change', 'Volume']
+rows = [('AA', 39.48, '6/11/2007/', '9:36am', -0.18, 181800),
+        ('AIG', 71.38, '6/11/2007/', '9:36am', -0.15, 195500),
+        ('AXP', 62.58, '6/11/2007/', '9:36am', -0.46, 935000)]
+
+with open('stocks.csv', 'w') as f:
+    f_csv = csv.writer(f)
+    f_csv.writerow(headers)
+    f_csv.writerows(rows)
+
+# 딕셔너리 시퀀스의 경우 입력
+headers = ['Symbol', 'Price', 'Date', 'Time', 'Change', 'Volume']
+rows = [{'Symbol':'AA', 'Price':39.48, 'Date':'6/11/2007/', 'Time':'9:36am', 'Change':-0.18, 'Volume':181800},
+        {'Symbol':'AIG', 'Price':71.38, 'Date':'6/11/2007/', 'Time':'9:36am', 'Change':-0.15, 'Volume':195500},
+        {'Symbol':'AXP', 'Price':62.58, 'Date':'6/11/2007/', 'Time':'9:36am', 'Change':-0.46, 'Volume':935000}]
+
+with open('stocks.csv', 'w') as f:
+    f_csv = csv.DictWriter(f, headers)
+    f_csv.writeheader()
+    f_csv.writerows(rows)
+
+
+# 예8.
+with open('stocks.csv') as f:
+    f_tsv = csv.reader(f, delimiter='\t')
+
+
+'''
+
+6장 2절 JSON 데이터 읽고 쓰기 JSON(Java Script Object Notation)으로 인코딩된 데이터를 읽고나 쓰고 싶은 경우 json 모듈을 사용한다.
+
+
+* json
+
+- Java Script Object Notation 이라는 이름에서 알 수 있듯이 자바스크립트를 위한 것이고 객체 형식으로 자료를 표현하는 것이다.
+
+ JSON 그자체 는 단순히 데이터 포맷일 뿐이다. 어떠한 통신 방법도, 프로그래밍 문법도 아닌 단순히 데이터를 표시하는 표현 방법일 뿐이다.
+ 간단한 데이터를 xml보다 좀 더 간단하게 표현하기 위해 만든 것이다. 
+ XML보다 기능이 적기 때문에 파싱도 빠르고 간단하기 때문에 클라이언트 사이드에서, 특히 모바일에서 더욱 유용하다. 
+ 사실 서버 입장에서도 더 유용하기 때문에 많은 서비스들이 XML보다는 JSON을 권장한다.
+ 
+ 단순히 데이터를 받아서 객체나 변수로 할당해서 사용하기 위한 것이다.
+ 
+ 주고 받을 수 있는 자료형은 None, bool, int, float, str과 같은 기본 타입과 리스트, 튜플, 딕셔너리와 같은 컨테이너 타입을 지원한다.
+ 기본 데이터 배열은 KEY와 VALUE로 구성되어 있으며 중괄호로 감싼다.
+ KEY값은 문자열이기 때문에 반드시 "KEYNAME" 이렇게 쌍따옴표를 붙여줘야 하고 VALUE에는 기본 자료형이나 배열, 객체를 넣으면 된다.
+ 
+ 파이썬과 상당히 동일한 구조를 가지며 파이썬에서 True, False, None이 JSON에서 true, false, null 이다.
+ 
+ JSON의 기본표현 형태 예
+ 
+ 예1
+ {
+     "age": 29,
+     "name": "HIKI",
+     "family": {"father": "홍길동", "mother": "심청이"}
+ }
+
+ 예2
+ {
+    "member": [
+        {
+            "id": "hyunc87",
+            "blog": "tistory",
+            "from": "korea",
+            "memo": "HelloWorld"
+        },
+        {
+            "id": "abcd",
+            "blog": "tistory.com",
+            "from": "korea",
+            "memo": "HelloWorld2"
+        }
+    ]
+}
+
+ 
+- 일반적으로 JSON은 제공받은 데이터로부터 딕셔너리나 리스트를 생성한다. 다른 종류의 객체를 만들고 싶다면 json.loads()에 object_pairs_hook나 object_hook을 넣는다.
+
+
+'''
+
+# 예9.
+import json
+data = {
+    'name' : 'ACME',
+    'shares' : 100,
+    'price' : 542.23
+}
+
+json_str = json.dumps(data)
+data = json.loads(json_str)  # json 인코딩된 문자열을 파이썬 자료 구조로 돌리는 방법
+
+with open('data.json', 'w') as f:   # json 데이터 쓰기
+    json.dump(data, f)
+
+with open('data.json', 'r') as f:   # json 데이터 읽기
+    data = json.load(f)
+
+# 예10.
+json.dumps(False)
+# 'false'
+d = {'a': True,
+     'b': 'Hello',
+     'c': None}
+json.dumps(d)
+# '{"b": "Hello", "c": null, "a": true}'
+
+# 예11.
+s = '{"name": "ACME", "shares": 50, "price": 490.1}'
+from collections import OrderedDict
+data = json.loads(s, object_pairs_hook=OrderedDict)
+data
+
+# 예12.
+class JSONObject:
+    def __init__(self, d):
+        self.__dict__ = d   # json 딕셔너리를 파이썬 객체로 바꾼다.
+
+
+'''
+
+6장 3절 단순한 XML 데이터 파싱 : 단순한 XML 문서에서 데이터를 얻고 싶은 경우 xml.etree.ElementTree 모듈을 사용하면 된다.
+
+
+'''
+
+# 예13.
+from urllib.request import urlopen
+from xml.etree.ElementTree import parse
+u = urlopen('http://planet.python.org/rss20.xml')   # RSS 피드를 다운로드하고 파싱
+doc = parse(u)
+
+for item in doc.iterfind('channel/item'):
+    title = item.findtext('title')
+    date = item.findtext('pubDate')
+    link = item.findtext('link')
+
+'''
+
+6장 4절 매우 큰 XML 파일 증분 파싱하기 : 매우 큰 XML 파일에서 최소의 메모리만 사용하여 데이터를 추출하고 싶은 경우 이터레이터와 제너레이터를 사용해서 사용자함수를 만든다.
+
+
+'''
+
+from xml.etree.ElementTree import iterparse
+
+def parse_and_remove(filename, path):
+    path_parts = path.split('/')
+    doc = iterparse(filename, ('start', 'end'))
+    next(doc)
+
+    tag_stack = []
+    elem_stack = []
+    for event, elem in doc:
+        if event == 'start':
+            tag_stack.append(elem.tag)
+            elem_stack.append(elem)
+        elif event == 'end':
+            if tag_stack == path_parts:
+                yield elem_stack[-2].remove(elem)
+            try:
+                tag_stack.pop()
+                elem_stack.pop()
+            except IndexError:
+                pass
