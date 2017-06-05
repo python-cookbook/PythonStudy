@@ -50,15 +50,12 @@ class Domino:
         for z in range(0, self.n, 1):
             self.number_answer_list.append(int(self.number_list_a[0][self.n*z:self.n*z+self.n])+int(self.number_list_b[0][self.n*z:self.n*z+self.n]))
 
-    # def answer_print(self):
-    #     print(max(self.number_answer_lista))
 
     def run(self):
         self.input()
         sTime = time.time()
         self.array_number_add()
         self.number_split_sum()
-        # self.number_answer_print()
         eTime = time.time()
         proc = psutil.Process(os.getpid())
         mem = proc.memory_info()
