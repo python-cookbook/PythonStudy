@@ -1,0 +1,303 @@
+## 5.14 파일 이름 인코딩 우회
+import sys
+print(sys.getfilesystemencoding())
+with open('jalape\xf1o.txt', 'w') as f:
+    f.write('Spicy!')
+import os
+print(os.listdir('.'))
+print(os.listdir(b'.'))
+with open(b'jalapen\xcc\x83o.txt') as f:
+    print(f.read())
+
+
+## 5.15 망가진 파일 이름 출력
+def bad_filename(filename):
+    return repr(filename)[1:-1]
+
+try:
+    print(filename)
+except UnicodeEncodeError:
+    print(bad_filename(filename))
+import os
+files = os.listdir('.')
+files
+for name in files:
+    print(name)
+
+for name in files:
+    try:
+        print(name)
+    except UnicodeEncodeError:
+        print(bad_filename(name))
+def bad_filename(filename):
+    temp = filename.encode(sys.getfilesystemencoding(), errors='surrogateescape'
+    return temp.decode('latin-1')
+for name in files:
+    try:
+        print(name)
+    except UnicodeEncodeError:
+        print(bad_filename(name))
+
+
+## 5.16 이미 열려 있는 파일의 인코딩을 수정하거나 추가하기
+import urllib.request
+import io
+u = urllib.request.urlopen('http://www.python.org')
+f = io.TextIOWrapper(u,encoding='utf-8')
+text = f.read()
+import sys
+print(sys.stdout.encoding)
+sys.stdout = io.TextIOWrapper(sys.stdout.detach(), encoding='latin-1')
+print(sys.stdout.encoding)
+f = open('d:/data/sample.txt','w')
+print(f)
+print(f.buffer)
+print(f.buffer.raw)
+f = io.TextIOWrapper(f.buffer, encoding='latin-1')
+print(f)
+# f.write('Hello')
+f = open('sample.txt', 'w')
+print(f)
+b = f.detach()
+print(b)
+f = io.TextIOWrapper(b, encoding='latin-1')
+print(f)
+## 5.17 텍스트 파일에 바이트 쓰기
+import sys
+# sys.stdout.write(b'Hello\n')
+sys.stdout.buffer.write(b'Hello\n')
+
+
+##5.18 기존 파일 디스크립터를 파일 객체로 감싸기
+import os
+fd = os.open('d:/data/somefile.txt', os.O_WRONLY | os.O_CREAT)
+f = open(fd, 'wt')
+f.write('hello world\n')
+f.close()
+from socket import socket, AF_INET, SOCK_STREAM
+def echo_client(client_sock, addr):
+    print('Got connection from', addr)
+    client_in = open(client_sock.fileno(), 'rt', encoding='latin-1',closefd=False)
+    client_out = open(client_sock.fileno(), 'wt', encoding='latin-1',closefd=False)
+    for line in client_in:
+        client_out.write(line)
+        client_out.flush()
+    client_sock.close()
+
+def echo_server(address):
+    sock = socket(AF_INET, SOCK_STREAM)
+    sock.bind(address)
+    sock.listen(1)
+    while True:
+        client, addr = sock.accept()
+        echo_client(client, addr)
+import sys
+# Create a binary-mode file for stdout
+bstdout = open(sys.stdout.fileno(), 'wb', closefd=False)
+bstdout.write(b'Hello World\n')
+bstdout.flush()
+
+
+## 5.19 임시 파일과 디렉터리 만들기
+from tempfile import TemporaryFile
+with TemporaryFile('w+t') as f:
+    f.write('Hello World\n')
+    f.write('Testing\n')
+    f.seek(0)
+    data = f.read()
+f = TemporaryFile('w+t')
+from tempfile import NamedTemporaryFile
+with NamedTemporaryFile('w+t') as f:
+    print('filename is:', f.name)
+import tempfile
+tempfile.mkstemp()
+tempfile.gettempdir()
+f = NamedTemporaryFile(prefix='mytemp', suffix='.txt', dir='/tmp')
+f.name
+
+
+##6.1 csv 데이터 읽기와 쓰기
+import csv
+with open('d:/data/stocks.csv') as f:
+    f_csv = csv.reader(f)
+    headers = next(f_csv)
+    for row in f_csv:
+        print(row)
+
+from collections import namedtuple
+with open('d:/data/stocks.csv') as f:
+    f_csv = csv.reader(f)
+    headings = next(f_csv)
+    Row = namedtuple('Row', headings)
+    for r in f_csv:
+        row = Row(*r)
+        print(row)
+headers = ['Symbol', 'Price', 'Date', 'Time', 'Change', 'Volume']
+rows = [('AA', 39.48, '6/11/2007', '9:36am', -0.18, 181800),
+        ('AIG', 71.38, '6/11/2007', '9:36am', -0.15, 195500),
+        ('AXP', 62.58, '6/11/2007', '9:36am', -0.46, 935000),
+        ]
+with open('stocks.csv','w') as f:
+    f_csv = csv.writer(f)
+    f_csv.writerow(headers)
+    f_csv.writerows(rows)
+headers = ['Symbol', 'Price', 'Date', 'Time', 'Change', 'Volume']
+rows = [{'Symbol':'AA', 'Price':39.48, 'Date':'6/11/2007',
+'Time':'9:36am', 'Change':-0.18, 'Volume':181800},
+{'Symbol':'AIG', 'Price': 71.38, 'Date':'6/11/2007',
+'Time':'9:36am', 'Change':-0.15, 'Volume': 195500},
+{'Symbol':'AXP', 'Price': 62.58, 'Date':'6/11/2007',
+'Time':'9:36am', 'Change':-0.46, 'Volume': 935000},
+]
+with open('stocks.csv','w') as f:
+    f_csv = csv.DictWriter(f, headers)
+    f_csv.writeheader()
+    f_csv.writerows(rows)
+with open('stocks.csv') as f:
+    for line in f:
+    row = line.split(',')
+    print(row)
+import csv
+with open('d:/data/stocks.tsv') as f:
+    f_tsv = csv.reader(f, delimiter='\t')
+    for row in f_tsv:
+        print(row)
+import re
+with open('d:/data/stocks.csv') as f:
+    f_csv = csv.reader(f)
+    headers = [re.sub('[^a-zA-Z_]', '_', h) for h in next(f_csv)]
+    Row = namedtuple('Row', headers)
+    for r in f_csv:
+        row = Row(*r)
+        print(row)
+import csv
+col_types = [str, float, str, str, float, int]
+with open('d:/data/stocks.csv') as f:
+    f_csv = csv.reader(f)
+    headers = next(f_csv)
+    for row in f_csv:
+        row = tuple(convert(value) for convert, value in zip(col_types, row))
+        print(row)
+import csv
+print('Reading as dicts with type conversion')
+field_types = [('Price', float),
+               ('Change', float),
+               ('Volume', int)]
+with open('d:/data/stocks.csv') as f:
+    for row in csv.DictReader(f):
+        row.update((key, conversion(row[key]))
+                   for key, conversion in field_types)
+        print(row)
+
+
+##6.2 json 데이터 읽기 쓰기
+import json
+data = {
+    'name' : 'ACME',
+    'shares' : 100,
+    'price' : 542.23
+}
+json_str = json.dumps(data)
+print(json_str)
+
+data = json.loads(json_str)
+print(data)
+
+
+with open('d:/data/data.json', 'w') as f:
+    json.dump(data, f)
+
+with open('d:/data/data.json', 'r') as f:
+    data = json.load(f)
+
+json.dumps(False)
+
+from urllib.request import urlopen
+import json
+
+u = urlopen('http://search.twitter.com/search.json?q=python&rpp=5')
+resp = json.loads(u.read().decode('utf-8'))
+from pprint import pprint
+pprint(resp)
+
+s = '{"name": "ACME", "shares": 50, "price": 490.1}'
+from collections import OrderedDict
+data = json.loads(s, object_pairs_hook=OrderedDict)
+print(data)
+
+class JSONObject:
+    def __init__(self, d):
+        self.__dict__ = d
+
+data = json.loads(s, object_hook=JSONObject)
+print(data.name)
+print(data.shares)
+print(data.price)
+print(json.dumps(data))
+print(json.dumps(data, indent=4))
+
+
+##6.3 단순한 xml 데이터 파싱
+from urllib.request import urlopen
+from xml.etree.ElementTree import parse
+# Download the RSS feed and parse it
+u = urlopen('http://planet.python.org/rss20.xml')
+doc = parse(u)
+# Extract and output tags of interest
+for item in doc.iterfind('channel/item'):
+    title = item.findtext('title')
+    date = item.findtext('pubDate')
+    link = item.findtext('link')
+
+    print(title)
+    print(date)
+    print(link)
+    print()
+
+
+##6.4 매우 큰 xml 파일 중분 파싱하기
+from xml.etree.ElementTree import iterparse
+def parse_and_remove(filename, path):
+    path_parts = path.split('/')
+    doc = iterparse(filename, ('start', 'end'))
+    # Skip the root element
+    next(doc)
+    tag_stack = []
+    elem_stack = []
+    for event, elem in doc:
+        if event == 'start':
+            tag_stack.append(elem.tag)
+            elem_stack.append(elem)
+        elif event == 'end':
+            if tag_stack == path_parts:
+                yield elem
+                elem_stack[-2].remove(elem)
+            try:
+                tag_stack.pop()
+                elem_stack.pop()
+            except IndexError:
+                pass
+
+
+from xml.etree.ElementTree import parse
+from collections import Counter
+
+potholes_by_zip = Counter()
+
+doc = parse('potholes.xml')
+for pothole in doc.iterfind('row/row'):
+    potholes_by_zip[pothole.findtext('zip')] += 1
+
+for zipcode, num in potholes_by_zip.most_common():
+    print(zipcode, num)
+
+
+from collections import Counter
+potholes_by_zip = Counter()
+
+data = parse_and_remove('potholes.xml', 'row/row')
+for pothole in data:
+    potholes_by_zip[pothole.findtext('zip')] += 1
+
+for zipcode, num in potholes_by_zip.most_common():
+    print(zipcode, num)
