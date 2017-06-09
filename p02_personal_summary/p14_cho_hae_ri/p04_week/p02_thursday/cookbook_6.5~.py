@@ -361,6 +361,212 @@ def make_element(name, value, **attrs):
 
 
 
+#attrs 은 전달받은 매개변수를 저장하느 딕셔너리
 
+# 위치 매개변수와 키워드 매개변수를 동시에 받는 함수를 생성하려면, *과 **을 함께 사용하면 됨
+
+def anyargs(*args, **kwargs):
+    print(args) # A tuple
+    print(kwargs) # A dict
+
+
+
+
+def a(x, *args, y):
+    pass
+
+def b(x, *args, y, **kwargs):
+    pass
+
+
+
+
+############## 7.2. 키워드 매개변수만 받는 함수 작성 ##############
+
+# 문제
+# 키워드로 지정한 특정 매개변수만 받는 함수가 필요하다.
+
+# 해결
+# 이 기능은 키워드 매개변수를 * 뒤에 넣거나 이름없이 *만 사용하면 간단히 구할 수 있다.
+
+
+def recv(maxsize, *, block):
+    'Receives a message'
+    pass
+
+recv(1024, True) # TypeError
+recv(1024, block=True) # Ok
+
+
+
+
+def mininum(*values, clip=None):
+    m = min(values)
+    if clip is not None:
+        m = clip if clip > m else m
+    return m
+
+# minimum(1, 5, 2, -5, 10) # Returns -5
+# minimum(1, 5, 2, -5, 10, clip=0) # Returns 0
+
+
+
+############## 7.3. 함수 인자에 메타데이터 넣기 ##############
+
+# 문제
+# 인자에 정보를 추가해서 다른 사람이 함수를 어떻게 사용해야 하는지 알 수 있도록 하고 싶다
+
+# 해결
+# 함수 인자 주석으로 프로그래머에게 이 함수를 어떻게 사용해야 할 지 정보를 줄 수 있다.
+
+def add(x:int, y:int) -> int:
+    return x + y
+
+
+# 파이썬 인터프리터는 주석에 어떠한 의미도 부여하지 않는다.
+
+
+help(add)
+# Help on function add in module __main__:
+# add(x: int, y: int) -> int
+
+
+
+
+
+############## 7.4. 함수에서 여러 값을 반환 ##############
+
+# 문제
+# 함수에서 값을 여러 개 반환하고 싶다
+
+# 해결
+# 튜플을 사용한다.
+
+def myfun():
+    return 1, 2, 3
+
+a, b, c = myfun()
+ a
+# 1
+b
+# 2
+c
+# 3
+
+
+a = (1, 2) # With parentheses
+a
+#(1, 2)
+b = 1, 2 # Without parentheses
+b
+#(1, 2)
+
+
+
+
+############## 7.5. 기본인자를 사용하는 함수 정의 ##############
+
+# 문제
+# 함수나 메소드를 정의할 때 하나 혹은 그 이상 인자에 기본 값을 넣어 선택적으로 사용할 수 있도록 하고 싶다.
+
+# 해결
+# 표면적으로 선택적 인자를 사용하는 함수를 정의하기는 쉽다.
+# 함수 정의부에 값을 할당하고 가장 뒤에 이를 위치시키면된다.
+
+
+def spam(a, b=42):
+    print(a, b)
+
+spam(1) # Ok. a=1, b=42
+spam(1, 2) # Ok. a=1, b=2
+
+
+# 기본값으로 리스트 사용
+def spam(a, b=None):
+    if b is None:
+        b = []
+
+
+# 함수가 받은 값이 특정 값인지 아닌지 확인하려면
+
+_no_value = object()
+
+def spam(a, b=_no_value):
+    if b is _no_value:
+        print('No b value supplied')
+    ...
+
+
+
+
+############## 7.6. 이름없는 함수와 인라인 함수 정의 ##############
+
+# 문제
+# sort() 등에 사용할 짦은 콜백 함수를 만들어야 하는데, 한 줄짜리 함수를 만들면서 def 구문까지 사용하고 싶지는 않다.
+# 그 대신 인라인이라 불리는 짧은 함수를 만들고 싶다면
+
+# 해결
+# lambda 로 치환할 수 있다.
+
+
+add = lambda x, y: x + y
+add(2,3)
+# 5
+add('hello', 'world')
+# 'helloworld'
+
+
+
+def add(x, y):
+    return x + y
+...
+add(2,3)
+#5
+
+
+
+############## 7.7 이름없는 함수에서 변수 고정 ##############
+
+# 문제
+# lambda 를 사용해서 이름 없는 함수를 정의했는데, 정의할 떄 특정 변수의 값을 고정하고 싶다.
+
+# 해결
+# 다음 코드의 동작성을 고려해보자.
+
+
+x = 10
+a = lambda y: x + y
+x = 20
+b = lambda y: x + y
+
+
+a(10)
+#30
+b(10)
+#30
+
+
+#lambda 에서 사용한 x 값이 실행 시간에 따라 달라진다는 점을 주의하자
+
+
+x = 15
+a(10)
+#25
+x = 3
+a(10)
+#
+# 13
+
+
+
+x = 10
+a = lambda y, x=x: x + y
+x = 20
+b = lambda y, x=x: x + y
+a(10)
+#20
+b(10)
+#30
+##
 
 
