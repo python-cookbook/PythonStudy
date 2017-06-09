@@ -19,11 +19,11 @@ stime = time.time()
 #################################################
 
 def Nanugi(num):
-    while num//2 != 0 and num//2 == num/2:
+    while num//2 == num/2:
         num /= 2
-    while num//3 != 0 and num//3 == num/3:
+    while num//3 == num/3:
         num /= 3
-    while num//5 !=0 and num//5 == num/5 :
+    while num//5 == num/5 :
         num /= 5
     return num
 
