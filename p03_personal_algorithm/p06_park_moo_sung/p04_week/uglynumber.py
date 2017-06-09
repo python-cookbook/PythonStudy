@@ -27,21 +27,21 @@ def Nanugi(num):
         num /= 5
     return num
 
-def Uglynum(cnt):
-    uglylist = []
-    num = 1
-    while len(uglylist) <= cnt:
-        if Nanugi(num) == 1 :
-            uglylist.append(num)
-        num+=1
-    return uglylist[cnt-1]
-
-if __name__ == '__main__':
+def Uglynum():
     while True:
         cnt = int(input("숫자 입력(0 입력 시 exit) "))
         if cnt == 0:
-            break
-        print(Uglynum(cnt))
+            return
+        uglylist = []
+        num = 1
+        while len(uglylist) <= cnt:
+            if Nanugi(num) == 1 :
+                uglylist.append(num)
+            num+=1
+        print(uglylist[cnt-1])
+
+if __name__ == '__main__':
+    Uglynum()
 
 ################# 종료 시간 체크 #################
 etime = time.time()
