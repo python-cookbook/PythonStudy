@@ -1,0 +1,42 @@
+import os
+import psutil
+import time
+
+###################################################################################################
+## 1. 문제        : 스택
+## 2. 소요 시간    : 0.0 초 (소수점 6자리 반올림)
+## 3. 사용 메모리  : 16384
+## 4. 만든 사람    : 장경원
+###################################################################################################
+
+n = int(input('몇개의 명령어를 입력하시겠습니까?'))
+order_menu = []
+for i in range(n):
+    order_list = []
+    order = input('입력값 : ').split()
+    if len(order) == 2:
+        order_menu.append(order[1])
+    else:
+        order_list.append(order)
+    # 시작 메모리 체크
+    proc1 = psutil.Process(os.getpid())
+    mem1 = proc1.memory_info()
+    before_start = mem1[0]
+    # 시작 시간 체크
+    stime = time.time()
+    for i in order_list:
+        if i[0] == 'c':
+            print('출력값 :',len(order_menu))
+        elif i[0] == 'o':
+            if len(order_menu) == 0:
+                print('출력값 :EMPTY')
+            else:
+                print('출력값 :',order_menu.pop())
+    # 종료 시간 체크
+    etime = time.time()
+    print('consumption time : ', round(etime - stime, 6))
+    # 메모리 체크
+    proc = psutil.Process(os.getpid())
+    mem = proc.memory_info()
+    after_start = mem[0]
+    print('memory use : ', after_start-before_start)
