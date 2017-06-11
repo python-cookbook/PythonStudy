@@ -1,0 +1,204 @@
+# 6.5 딕셔너리를 XML로 바꾸기
+from xml.etree.ElementTree import Element
+def dict_to_xml(tag, d):
+    elem = Element(tag)
+    for key, val in d.items():
+        child = Element(key)
+        child.text = str(val)
+        elem.append(child)
+        return elem
+s = {'name': 'GOOG', 'shares': 100, 'price': 490.1}
+e = dict_to_xml('stock', s)
+print(e)
+from xml.etree.ElementTree import tostring
+print(tostring(e))
+# 요소에 속성을 넣고 싶다면
+e.set('_id','1234')
+print(tostring(e))
+def dict_to_xml_str(tag, d):
+    parts = ['<{}>'.format(tag)]
+    for key, val in d.items():
+        parts.append('<{0}>{1}</{0}>'.format(key,val))
+        parts.append('</{}>'.format(tag))
+        return ''.join(parts)
+d = {'name': '<spam>'}
+dict_to_xml_str('item',d)
+e = dict_to_xml('item',d)
+print(tostring(e))
+from xml.sax.saxutils import escape, unescape
+e = escape('<spam>')
+print(unescape(e))
+# 6.6 XML 파싱,수정,저장
+from xml.etree.ElementTree import parse, Element
+doc = parse('d:/data/pred.xml')
+root = doc.getroot()
+print(root)
+root.remove(root.find('sri'))
+root.remove(root.find('cr'))
+root.getchildren().index(root.find('nm'))
+e = Element('spam')
+e.text = 'This is a test'
+root.insert(2, e)
+doc.write('d:/data/newpred.xml', xml_declaration=True)
+# 6.7 네임스페이스로 XML 문서 파싱
+from xml.etree.ElementTree import parse, Element
+doc = parse('d:/data/sample.xml')
+print(doc.findtext('author'))
+print(doc.find('content'))
+print(doc.find('content/html'))
+print(doc.find('content/{http://www.w3.org/1999/xhtml}html'))
+print(doc.findtext('content/{http://www.w3.org/1999/xhtml}html/head/title'))
+print(doc.findtext('content/{http://www.w3.org/1999/xhtml}html/''{http://www.w3.org/1999/xhtml}head/{http://www.w3.org/1999/xhtml}title'))
+class XMLNamespaces:
+    def __init__(self, **kwargs):
+        self.namespaces = {}
+        for name, uri in kwargs.items():
+            self.register(name, uri)
+    def register(self, name, uri):
+        self.namespaces[name] = '{'+uri+'}'
+    def __call__(self, path):
+        return path.format_map(self.namespaces)
+ns = XMLNamespaces(html='http://www.w3.org/1999/xhtml')
+print(doc.find(ns('content/{html}html')))
+print(doc.findtext(ns('content/{html}html/{html}head/{html}title')))
+from xml.etree.ElementTree import iterparse
+for evt, elem in iterparse('ns2.xml', ('end', 'start-ns', 'end-ns')):
+    print(evt, elem)
+print(elem)
+# 6.8 관계형 데이터 베이스 작업
+stocks = [('GOOG', 100, 490.1),('AAPL', 50, 545.75),('FB', 150, 7.45),('HPQ', 75, 33.2)]
+import sqlite3
+db = sqlite3.connect('database.db')
+print(db)
+c = db.cursor()
+# print(c.execute('create table portfolio (symbol text, shares integer, price real)'))
+db.commit()
+c.executemany('insert into portfolio values (?,?,?)', stocks)
+db.commit()
+for row in db.execute('select * from portfolio'):
+    print(row)
+min_price = 100
+for row in db.execute('select * from portfolio where price >= ?',(min_price,)):
+    print(row)
+# 6.9 16진수 인코딩,디코딩
+s = b'hello'
+import binascii
+h = binascii.b2a_hex(s)
+print(h)
+print(binascii.a2b_hex(h))
+import base64
+h = base64.b16encode(s)
+print(h)
+print(base64.b16decode(h))
+h = base64.b16encode(s)
+print(h)
+print(h.decode('ascii'))
+# 7.1 매개변수 개수에 구애받지 않는 함수 작성
+def avg(first, *rest):
+    return (first + sum(rest)) / (1 + len(rest))
+print(avg(1, 2))
+print(avg(1, 2, 3, 4))
+
+import html
+def make_element(name, value, **attrs):
+    keyvals = [' %s="%s"' % item for item in attrs.items()]
+    attr_str = ''.join(keyvals)
+    element = '<{name}{attrs}>{value}</{name}>'.format(name=name,attrs=attr_str,value=html.escape(value))
+    return element
+print(make_element('item', 'Albatross', size='large', quantity=6))
+print(make_element('p', '<spam>'))
+def anyargs(*args, **kwargs):
+    print(args) # 튜플
+    print(kwargs) # 딕셔너리
+# 7.2 키워드 매개 변수만 받는 함수 작성
+def recv(maxsize, *, block):
+    'Receives a message'
+    pass
+# recv(1024, True) # 타입에러가 난다.
+print(recv(1024, block=True))
+def mininum(*values, clip=None):
+    m = min(values)
+    if clip is not None:
+        m = clip if clip > m else m
+    return m
+print(mininum(1, 5, 2, -5, 10))  # -5 출력
+print(mininum(1, 5, 2, -5, 10, clip=0)) # 0 출력
+msg = recv(1024, False)
+msg = recv(1024, block=False)
+# 7.3 함수 인자에 메타데이터 넣기
+def add(x:int, y:int) -> int:
+    return x + y
+# help(add)
+print(add.__annotations__)
+# 7.4 함수에서 여러 값을 반환
+def myfun():
+    return 1, 2, 3
+a, b, c = myfun()
+print(a)
+print(b)
+print(c)
+a = (1,2)
+print(a)
+b = 1,2
+print(b)
+x = myfun()
+print(x)
+# 7.5 기본 인자를 사용하는 함수 정의
+def spam(a, b=42):
+    print(a, b)
+spam(1)
+spam(1, 2)
+def spam(a, b=None):
+    if b is None:
+        b = []
+def spam(a, b=_no_value):
+    if b is _no_value:
+        print('No b value supplied')
+print(spam(1))
+print(spam(1,2))
+print(spam(1,None))
+x = 42
+def spam(a, b=x):
+    print(a, b)
+print(spam(1))
+x = 23
+print(spam(1))
+def spam(a, b=[]):
+    print(b)
+    return b
+x = spam(1)
+print(x)
+x.append(99)
+x.append('Yow!')
+print(x)
+print(spam(1))
+# 7.6 이름 없는 함수와 인라인 함수 정의
+add = lambda x, y: x + y
+print(add(2,3))
+print(add('hello', 'world'))
+def add(x, y):
+    return x + y
+print(add(2,3))
+names = ['David Beazley', 'Brian Jones','Raymond Hettinger', 'Ned Batchelder']
+print(sorted(names, key=lambda name: name.split()[-1].lower()))
+# 7.7 이름 없는 함수에서 변수 고정
+x = 10
+a = lambda y: x + y
+x = 20
+b = lambda y: x + y
+print(a(10))
+print(a(10))
+x = 10
+a = lambda y, x=x: x + y
+x = 20
+b = lambda y, x=x: x + y
+print(a(10))
+print(b(10))
+funcs = [lambda x: x+n for n in range(5)]
+for f in funcs:
+    print(f(0))
+funcs = [lambda x, n=n: x+n for n in range(5)]
+for f in funcs:
+    print(f(0))
+
+
