@@ -18,40 +18,44 @@ before_start = mem1[0]
 stime = time.time()
 
 import re
-def stack():
-    res = []
-    num = input('명령 개수를 입력하세요')
-    cnt = 0
-    inputs = input('명령어를 입력하세요 ')
-    while cnt != int(num):
-        if re.search('^i',inputs):
-            val = inputs.split()[1]
-            res.append(val)
-            cnt += 1
-            if cnt == int(num):
-                break
-            inputs = input('명령어를 입력하세요 ')
-        if inputs == 'o':
-            try :
-                res.pop()
-                cnt += 1
-                if cnt == int(num):
-                    break
-                inputs = input('명령어를 입력하세요 ')
-            except IndexError:
-                print('empty')
-                cnt += 1
-                if cnt == int(num):
-                    break
-                inputs = input('명령어를 입력하세요 ')
-        if inputs == 'c':
-            print( len(res))
-            cnt += 1
-            if cnt == int(num):
-                break
-            inputs = input('명령어를 입력하세요 ')
+res = []
 
-stack()
+while True: #명령수 1,100일때만 실행
+    try:
+        num = int(input('명령 개수를 입력하세요')) #num: 명령개수
+        if 1 <= num <= 100:
+            break
+        else:
+            raise ValueError
+    except ValueError:
+        print('다시 입력')
+
+while num > 0:
+    try:
+        execute_statement = input('명령어를 입력하세요 ') #실행할 명령문
+        if re.search('^i',execute_statement):
+            if len(execute_statement.split()) != 2:
+                raise ValueError
+            val = int(execute_statement.split()[1]) #숫자변환 해줘야함
+            res.append(val)
+            num -= 1
+        else:
+            if execute_statement== 'o' or execute_statement == 'c':
+                if execute_statement == 'o':
+                    try :
+                        print(res[-1])
+                        res.pop()
+                        num -= 1
+                    except IndexError:
+                        print('empty')
+                        num -= 1
+                else:
+                    print(len(res))
+                    num -= 1
+    except ValueError:
+        print('명령문을 잘못입력했습니다')
+
+
 
 
 ################# 종료 시간 체크 #################
