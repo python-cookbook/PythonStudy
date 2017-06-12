@@ -13,4 +13,7 @@ for i in range(commend_cnt):
     elif commend_list[0] == 'o':
         if len(stack_list) == 0:
             print('empty')
-        print(stack_list.pop())
+        try:
+            print(stack_list.pop())
+        except:
+            pass
