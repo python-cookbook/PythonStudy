@@ -784,9 +784,108 @@ def Stack():
 8장 1절 인스턴스의 문자열 표현식 변형 : 인스턴스를 출력하거나 볼 떄 생성되는 결과물을 좀 더 보기 좋게 바꾸고 싶은 경우 인스턴스의 문자열 표현식을 바꾸려면 __str__()과 __repr__() 메소드를 정의한다.
 
 - __repr__() : 인스턴스의 코드 표현식을 반환하고 일반적으로 인스턴스를 재생성 할 때 입력한다. 내장 repr() 함수는 인터프리터에서 값을 조사할 때와 마찬가지로 텍스트를 반환한다.
-- __str__() 메소드는 인스턴스를 문자열로 변환하고 str()과 print() 함수가 출력하는 결과를 가진다.
+- __str__() : 인스턴스를 문자열로 변환하고 str()과 print() 함수가 출력하는 결과를 가진다.
 
 
 '''
 
 # 예11.
+class Pair:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __repr__(self):
+        return 'Pair({0.x!r}, {0.y!r})'.format(self)    # {0.x} 는 인자0의 x속성을 의미한다. 따라서 이는 인스턴스 self의 x속성을 의미한다.
+
+    def __str__(self):
+        return '(P0.x!s}, {0.y!s})'.format(self)
+
+p = Pair(3, 4)
+p
+# Pair(3, 4)    # __repr__() 결과
+print(p)
+# (3, 4)    # __str__() 결과
+
+'''
+
+8장 2절 문자열 서식화 조절 : format() 함수와 문자열 메소드로 사용자가 정의한 서식화를 지원하고 싶은 경우 클래스에 __format__() 메소드를 정의한다.
+                         __format__() 메소드는 파이썬의 문자열 서식화 함수에 후크를 제공한다.
+
+
+
+'''
+
+# 예12.
+_formats = {'ymd' : '{d.year}-{d.month}-{d.day}',
+            'mdy' : '{d.month}/{d.day}/{d.year}',
+            'dmy' : '{d.day}/{d.month}/{d.day}',
+            }   # 포멧을 먼저 지정해준다.
+
+class Date:
+    def __init__(self, year, month, day):
+        self.year = year
+        self.month = month
+        self.day = day
+
+    def __format__(self, code):
+        if code == '':
+            code = 'ymd'
+        fmt = _formats[code]
+        return fmt.format(d=self)
+
+'''
+
+8장 3절 객체의 콘텍스트 관리 프로토콜 지원 : 객체가 콘텍스트 관리 프로토콜(with 구문)을 지원하게 만들고 싶은 경우 __enter__()와 __exit__() 메소드를 구현해야만 한다.
+
+
+'''
+
+'''
+
+8장 4절 인스턴스를 많이 생성할 때 메모리 절약 : __slots__ 속성을 클래스 정의에 추가하면 메모리 사용을 많이 절약할 수 있다.
+                                         __slots__를 정의하면 인스턴스마다 딕셔너리를 구성하지 않고 튜플이나 리스트같은 고정 배열로 인스턴스를 만든다.
+                                         대신 인스턴스에 새 속성을 추가할 수 없고 __slot__ 명시자에 나열한 속성만 사용 할 수 있게 된다.
+
+
+'''
+
+# 예13.
+class Date:
+    __slots__ = ['year', 'month', 'day']
+    def __init__(self, year, month, day):
+        self.year = year
+        self.month = month
+        self.day = day
+
+
+'''
+
+8장 5절 클래스 이름의 캡슐화 : 클래스 인스턴스의 private 데이터를 캡슐화 하고 싶은 경우 _와 __를 사용한다. 
+
+
+대부분의 경우 공용이 아닌 private 속성은 _ 하나만 주면 된다. 코드가 서브클래스를 사용하고 서브클래스에서 숨겨야 할 내부 속성이 있는 경우는 __를 붙인다. 
+
+예약단어들과 충돌을 피하고 싶은 경우 변수명 뒤에 _를 붙여준다 ( 예 - lambda_ )
+
+'''
+
+# 예14.
+class A:
+    def __init__(self):
+        self._internal = 0  # 내부 속성
+        self.public = 1     # 공용 속성
+
+    def public_method(self):
+        '''A public method'''
+
+    def _internal_method(self):
+
+class B:
+    def __init__(self):
+        self.__private = 0
+
+    def __private_method(self):
+
+    def public_method(self):
+        self.__private_method()
