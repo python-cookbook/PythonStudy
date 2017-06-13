@@ -236,7 +236,7 @@ class Game:
         curr_team = self.hometeam if Game.CHANGE == 0 else self.awayteam
         player_list = curr_team.player_list
         MATRIX = 5
-        PITCH_LOCATION = "| " + "{:^6s} | " * MATRIX + "\n" + "---------" * MATRIX #투구 영역
+        PITCH_LOCATION = "| " + "{:^6s} | " * MATRIX + "\n" + "---------" * MATRIX   # 투구 영역, 행간선-태흠
         PITCH_LOCATION = (PITCH_LOCATION + '\n') * MATRIX
         PITCH_LOCATION = "---------" * MATRIX + "\n" + PITCH_LOCATION
 
@@ -315,14 +315,14 @@ class Game:
                         Game.STRIKE_CNT = 0
                         if hit_cnt[0] != 4:
 
-                            if hit_cnt[0] == -1:   # 플라이볼일때
+                            if hit_cnt[0] == -1:   # 플라이볼일때, 태흠
                                 Game.OUT_CNT += 1
                                 print('== ▣ 높게 뜬공! 그대로 외야수에 잡혀 아웃됩니다. \n'.format(hit_cnt[0]))
                                 player.hit_and_run(1 if hit_cnt[0] > 0 else 0, 0, 1 if hit_cnt[0] == 4 else 0)
                                 self.advance_setting(hit_cnt[0])
                                 break
 
-                            elif hit_cnt[2] == True and 1 in Game.ADVANCE:   # 출루인줄 알았지만 병살타ㅜ({}루타, 병살타 판단)
+                            elif hit_cnt[2] == True and 1 in Game.ADVANCE:   # 출루인줄 알았지만 병살타ㅜ({}루타, 병살타 판단), 태흠
                                 Game.STRIKE_CNT = 0
                                 Game.BALL_CNT = 0
                                 Game.OUT_CNT += 2
@@ -392,10 +392,10 @@ class Game:
             Game.SCORE[Game.CHANGE] += (Game.ADVANCE.count(1)+1)
             Game.ADVANCE = [0, 0, 0]
 
-        elif hit_cnt == -1:
+        elif hit_cnt == -1:   # 태흠
             pass
 
-        elif double_play is True:
+        elif double_play is True:   # 태흠
             for i in range(len(Game.ADVANCE), 0, -1):
                 if Game.ADVANCE[i-1] == 1:
                     Game.ADVANCE[i-1] = 0
@@ -443,8 +443,8 @@ class Game:
     def hit_judgment(self, random_ball, hit_numbers): #(공던질위치, 구질)
         cnt = 0
         Foul = False
-        Double_Play = False
-        fly_ball = False
+        Double_Play = False   # 태흠
+        fly_ball = False   # 태흠
         UPDOWN = abs(Game.LOCATION[random_ball[1]][0] - Game.LOCATION[hit_numbers[1]][0]) #투수와 타자의 선택한 공 위치의 높낮이차이
         L_OR_R = abs(Game.LOCATION[random_ball[1]][1] - Game.LOCATION[hit_numbers[1]][1]) #투수와 타자의 선택한 공 위치의 좌우차이
         if random_ball[0] == hit_numbers[0]: #투수가 던진 공의 구질과 타자가 선택한 구질이 같을 때
@@ -453,25 +453,25 @@ class Game:
             elif UPDOWN == 0:   # 높낮이가 같은 선상일 때
                 if L_OR_R == 1:   # 좌우로 1칸 차이
                     cnt += 3
-                    if self.doble_play_OUT() is True:
+                    if self.doble_play_OUT() is True:   # 태흠
                         Double_Play = True
                 elif L_OR_R == 2: # 좌우로 2칸 차이
                     cnt += 2
-                    if self.doble_play_OUT() is True:
+                    if self.doble_play_OUT() is True:   # 태흠
                         Double_Play = True
                 elif L_OR_R >= 3:
                     cnt += 1
-                    if self.doble_play_OUT() is True:
+                    if self.doble_play_OUT() is True:   # 태흠
                         Double_Play = True
 
             elif UPDOWN == 1:   # 높낮이 차이가 하나일때
                 if L_OR_R ==1:    # 좌우로 1칸 차이
                     cnt += 2
-                    if self.doble_play_OUT() is True:
+                    if self.doble_play_OUT() is True:   # 태흠
                         Double_Play = True
                 elif L_OR_R == 2:  # 좌우로 2칸 차이
                     cnt += 1
-                    if self.doble_play_OUT() is True:
+                    if self.doble_play_OUT() is True:   # 태흠
                         Double_Play = True
                 elif L_OR_R >= 3: # 좌우로 3칸 차이
                     print(121213)
@@ -493,11 +493,11 @@ class Game:
             elif UPDOWN == 0:#높낮이가 같은 선상일 때
                 if L_OR_R == 1:
                     cnt += 2
-                    if self.doble_play_OUT() is True:
+                    if self.doble_play_OUT() is True:   # 태흠
                         Double_Play = True
                 elif L_OR_R == 2:
                     cnt += 1
-                    if self.doble_play_OUT() is True:
+                    if self.doble_play_OUT() is True:   # 태흠
                         Double_Play = True
                 elif L_OR_R >= 3:
                     cnt += 0
@@ -506,7 +506,7 @@ class Game:
             elif UPDOWN == 1:#높낮이 차이가 하나일때
                 if L_OR_R == 1:
                     cnt += 1
-                    if self.doble_play_OUT() is True:
+                    if self.doble_play_OUT() is True:   # 태흠
                         Double_Play = True
                 elif L_OR_R ==2:
                     cnt += 0
@@ -519,16 +519,16 @@ class Game:
                 cnt += 0
 
 
-        return cnt, Foul, Double_Play, fly_ball
+        return cnt, Foul, Double_Play, fly_ball   # 태흠
 
 
-    def doble_play_OUT(self):
+    def doble_play_OUT(self):   # 태흠
         self.r1 = random.random()
         if self.r1 < 0.25:
             return True
         return False
 
-    def flyball_OUT(self):
+    def flyball_OUT(self):   # 태흠
         self.r2 = random.random()
         if self.r2 < 0.1:
             return True
