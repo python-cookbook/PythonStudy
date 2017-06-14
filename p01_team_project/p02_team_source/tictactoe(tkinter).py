@@ -1,40 +1,39 @@
 from tkinter import Frame, Canvas, Label, Button, LEFT, RIGHT, ALL, Tk
-from random import randint
+from random import randint 
 
 
 class main:
     def __init__(self, master):
         self.frame = Frame(master)
         self.frame.pack(fill="both", expand=True)
-        self.canvas = Canvas(self.frame, width=1000, height=600)
+        self.canvas = Canvas(self.frame, width=300, height=300)
         self.canvas.pack(fill="both", expand=True)
-        self.label = Label(self.frame, text='야구 게임', height=6, bg='white', fg='black')
+        self.label = Label(self.frame, text='Tic Tac Toe Game', height=6, bg='black', fg='blue')
         self.label.pack(fill="both", expand=True)
-        self.label.place(x=0, y=0, width=1000, height = 100, bordermode='outside' )
         self.frameb = Frame(self.frame)
         self.frameb.pack(fill="both", expand=True)
-        self.loadgame = Button(self.frameb, text='Load Game', height=4, command=self.Loadgame,
+        self.Start1 = Button(self.frameb, text='Click here to start\ndouble player', height=4, command=self.start1,
                              bg='white', fg='purple')
-        self.loadgame.pack(fill="both", expand=True, side=RIGHT)
-        self.newgame = Button(self.frameb, text='New Game', height=4, command=self.Newgame,
+        self.Start1.pack(fill="both", expand=True, side=RIGHT)
+        self.Start2 = Button(self.frameb, text='Click here to start\nsingle player', height=4, command=self.start2,
                              bg='purple', fg='white')
-        self.newgame.pack(fill="both", expand=True, side=LEFT)
-        self.__board()
+        self.Start2.pack(fill="both", expand=True, side=LEFT)
+        self._board()
 
-    def Loadgame(self):
+    def start1(self):
         self.canvas.delete(ALL)
-        self.label['text'] = ('Choose Your Team')
+        self.label['text'] = ('Tic Tac Toe Game')
         self.canvas.bind("<ButtonPress-1>", self.sgplayer)
-        self.__board()
+        self._board()
         self.TTT = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
         self.i = 0
         self.j = False
 
-    def Newgame(self):
+    def start2(self):
         self.canvas.delete(ALL)
-        self.label['text'] = ('Choose Your Team')
+        self.label['text'] = ('Tic Tac Toe Game')
         self.canvas.bind("<ButtonPress-1>", self.dgplayer)
-        self.__board()
+        self._board()
         self.TTT = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
         self.i = 0
         self.j = False
@@ -44,19 +43,10 @@ class main:
         self.canvas.unbind("<ButtonPress-1>")
         self.j = True
 
-    def __board(self):
-        self.canvas.create_rectangle(500, 0, 1000, 600, outline="black")
-        self.canvas.create_rectangle(500, 0, 1000, 100, outline="black")
-        self.canvas.create_rectangle(600, 600, 700, 0, outline="black")
-        self.canvas.create_rectangle(500, 100, 1000, 200, outline="black")
-        self.canvas.create_rectangle(700, 600, 800, 0, outline="black")
-        self.canvas.create_rectangle(500, 200, 1000, 300, outline="black")
-        self.canvas.create_rectangle(800, 600, 900, 0, outline="black")
-        self.canvas.create_rectangle(500, 300, 1000, 400, outline="black")
-        self.canvas.create_rectangle(900, 600, 1000, 0, outline="black")
-        self.canvas.create_rectangle(500, 400, 1000, 500, outline="black")
-        self.canvas.create_rectangle(500, 600, 1000, 600, outline="black")
-        self.canvas.create_rectangle(0, 100, 500, 600, fill="green")
+    def _board(self):
+        self.canvas.create_rectangle(0, 0, 300, 300, outline="black")
+        self.canvas.create_rectangle(100, 300, 200, 0, outline="black")
+        self.canvas.create_rectangle(0, 100, 300, 200, outline="black")
 
     def sgplayer(self, event):
         for k in range(0, 300, 100):
@@ -238,3 +228,8 @@ class main:
             else:
                 k = (randint(0, 2)) * 100
                 j = (randint(0, 2)) * 100
+
+
+root = Tk()
+app = main(root)
+root.mainloop()
