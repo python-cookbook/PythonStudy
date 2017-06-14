@@ -1,5 +1,5 @@
 from tkinter import Frame, Canvas, Label, Button, LEFT, RIGHT, ALL, Tk
-from random import randint 
+from random import randint
 
 
 class main:
