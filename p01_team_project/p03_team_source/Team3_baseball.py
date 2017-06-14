@@ -57,9 +57,9 @@ class Record:
 class Status:
     def __init__(self):
         self.__hp = 100  # 체력(health point)
+        self.__hp_dec = 0.0  # 체력감소율
         self.__injure = 0  # 부상
         self.__condition = 0  # 컨디션
-        self.__hp_dec = 0.0  # 체력감소율
 
     @property
     def hp(self):
@@ -69,6 +69,13 @@ class Status:
     def hp(self, hp):
         self.__hp = hp
 
+    @property
+    def hp_dec(self):
+        return self.__hp_dec
+
+    @hp_dec.setter
+    def hp_dec(self, hp_dec):
+        self.__hp_dec = hp_dec
     @property
     def injure(self):
         return self.__injure
@@ -85,19 +92,17 @@ class Status:
     def condition(self, condition):
         self.__condition = condition
 
-    @property
-    def hp_dec(self):
-        return self.__hp_dec
-
-    @hp_dec.setter
-    def hp_dec(self, hp_dec):
-        self.__hp_dec = hp_dec
-
     # 타자 상태 관련 메서드
-    def batter_status(self, hp, injure, condition):
+    # def batter_record(self, hit, homerun):
+    #     self.hit += hit
+    #     self.homerun += homerun
+    #     self.atbat += 1
+    #     self.avg = self.hit / self.atbat
 
-
-
+    def batter_status(self, hp, hp_dec, injure, condition):
+        self.hp = hp - hp_dec
+        self.injure = injure
+        self.condition = condition
 
 
 
