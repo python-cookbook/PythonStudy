@@ -57,7 +57,7 @@ class Record:
 class Status:
     def __init__(self):
         self.__hp = 100  # 체력(health point)
-        self.__hp_dec = 0.0  # 체력감소율
+        self.__hp_dec = 4  # 체력감소율
         self.__injure = 0  # 부상
         self.__condition = 0  # 컨디션
 
@@ -239,8 +239,8 @@ class Game:
                                         self.awayteam.team_name.center(44, ' ') if re.search('[a-zA-Z]+', self.awayteam.team_name) is not None else self.awayteam.team_name.center(42, ' ')))
         print('==  {} | {}   =='.format(('('+str(Game.SCORE[0])+')').center(44, ' '), ('('+str(Game.SCORE[1])+')').center(44, ' ')))
         print('====================================================================================================')
-        print('== {} | {} | {} | {} | {} '.format('이름'.center(8, ' '), '타율'.center(5, ' '), '타석'.center(4, ' '), '안타'.center(3, ' '), '홈런'.center(3, ' ')), end='')
-        print('| {} | {} | {} | {} | {}  =='.format('이름'.center(8, ' '), '타율'.center(5, ' '), '타석'.center(4, ' '), '안타'.center(3, ' '), '홈런'.center(3, ' ')))
+        print('== {} | {} | {} | {} | {} | {} | {} | {} '.format('이름'.center(8, ' '), '타율'.center(5, ' '), '타석'.center(4, ' '), '안타'.center(3, ' '), '홈런'.center(3, ' '), '체력'.center(3, ' '), '부상'.center(3, ' '), '컨디션'.center(3, ' ')), end='')
+        print('| {} | {} | {} | {} | {} | {} | {} | {}  =='.format('이름'.center(8, ' '), '타율'.center(5, ' '), '타석'.center(4, ' '), '안타'.center(3, ' '), '홈런'.center(3, ' '), '체력'.center(3, ' '), '부상'.center(3, ' '), '컨디션'.center(3, ' ')))
         print('====================================================================================================')
 
         hometeam_players = self.hometeam.player_list
@@ -249,13 +249,19 @@ class Game:
         for i in range(9):
             hp = hometeam_players[i]
             hp_rec = hp.record
+            hp_stat = hp.status
             ap = awayteam_players[i]
             ap_rec = ap.record
-
-            print('== {} | {} | {} | {} | {} |'.format(hp.name.center(6+(4-len(hp.name)), ' '), str(hp_rec.avg).center(7, ' '),
-                                                      str(hp_rec.atbat).center(6, ' '), str(hp_rec.hit).center(5, ' '), str(hp_rec.homerun).center(5, ' ')), end='')
-            print(' {} | {} | {} | {} | {}  =='.format(ap.name.center(6+(4-len(ap.name)), ' '), str(ap_rec.avg).center(7, ' '),
-                                                        str(ap_rec.atbat).center(6, ' '), str(ap_rec.hit).center(5, ' '), str(ap_rec.homerun).center(5, ' ')))
+            ap_stat = ap.status
+                                             # 체력 부상 컨디션
+            # 홈팀 스탯
+            print('== {} | {} | {} | {} | {} | {} | {} | {} '.format(hp.name.center(6+(4-len(hp.name)), ' '), str(hp_rec.avg).center(7, ' '),
+                                                      str(hp_rec.atbat).center(6, ' '), str(hp_rec.hit).center(5, ' '), str(hp_rec.homerun).center(5, ' '),
+                                                      str(hp_stat.hp).center(5, ' '), str(hp_stat.injure).center(5, ' '), str(hp_stat.condition).center(5, ' ')), end='')
+            # 어웨이팀 스탯
+            print(' {} | {} | {} | {} | {} | {} | {} | {} =='.format(ap.name.center(6+(4-len(ap.name)), ' '), str(ap_rec.avg).center(7, ' '),
+                                                        str(ap_rec.atbat).center(6, ' '), str(ap_rec.hit).center(5, ' '), str(ap_rec.homerun).center(5, ' '),
+                                                        str(ap_stat.hp).center(5, ' '),str(ap_stat.injure).center(5, ' '), str(ap_stat.condition).center(5, ' ')))
         print('====================================================================================================')
 
     # 공격 수행 메서드
