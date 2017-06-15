@@ -1,8 +1,10 @@
 import random
 import re
 # 3조
+
+
 ###################################################################################################
-## 기록 관련 클래스
+## 기록 및 스테이터스 관련 클래스
 ###################################################################################################
 class Record:
     def __init__(self):
@@ -10,6 +12,10 @@ class Record:
         self.__homerun = 0  # 홈런 수
         self.__atbat = 0  # 타수
         self.__avg = 0.0  # 타율
+        self.__hp = 100  # 체력(health point)
+        self.__hp_dec = 4  # 체력감소율
+        self.__injure = 0  # 부상
+        self.__condition = 0  # 컨디션
 
     @property
     def hit(self):
@@ -43,24 +49,6 @@ class Record:
     def avg(self, avg):
         self.__avg = avg
 
-    # 타자 기록 관련 메서드
-    def batter_record(self, hit, homerun):
-        self.hit += hit
-        self.homerun += homerun
-        self.atbat += 1
-        self.avg = self.hit / self.atbat
-
-
-###################################################################################################
-## 스테이터스 관련 클래스
-###################################################################################################
-class Status:
-    def __init__(self):
-        self.__hp = 100  # 체력(health point)
-        self.__hp_dec = 4  # 체력감소율
-        self.__injure = 0  # 부상
-        self.__condition = 0  # 컨디션
-
     @property
     def hp(self):
         return self.__hp
@@ -92,18 +80,13 @@ class Status:
     def condition(self, condition):
         self.__condition = condition
 
-    # 타자 상태 관련 메서드
-    # def batter_record(self, hit, homerun):
-    #     self.hit += hit
-    #     self.homerun += homerun
-    #     self.atbat += 1
-    #     self.avg = self.hit / self.atbat
-
-    def batter_status(self, hp, hp_dec, injure, condition):
-        self.hp = hp - hp_dec
-        self.injure = injure
-        self.condition = condition
-
+    # 타자 기록 관련 메서드
+    def batter_record(self, hit, homerun, hp):
+        self.hit += hit
+        self.homerun += homerun
+        self.atbat += 1
+        self.avg = self.hit / self.atbat
+        self.hp = hp - self.hp_dec
 
 
 ###################################################################################################
@@ -115,7 +98,7 @@ class Player:
         self.__number = number  # 타순
         self.__name = name  # 이름
         self.__record = Record()  # 기록
-        self.__status = Status()  # 스테이터스
+
 
     @property
     def team_name(self):
@@ -138,8 +121,8 @@ class Player:
         return self.__team_name + ', ' + str(self.__number) + ', ' + self.__name
 
     # 선수 타율 관련 메서드
-    def hit_and_run(self, hit, homerun):
-        self.__record.batter_record(hit, homerun)
+    def hit_and_run(self, hit, homerun, hp):
+        self.__record.batter_record(hit, homerun, hp)
 
 
 ###################################################################################################
@@ -366,6 +349,7 @@ class Game:
     def select_player(self, number, player_list):
         for player in player_list:
             if number == player.number:
+                player.
                 return player
 
     # 랜덤으로 숫자 생성(1~20)
