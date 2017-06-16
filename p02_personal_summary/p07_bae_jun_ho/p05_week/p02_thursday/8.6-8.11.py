@@ -1036,3 +1036,36 @@ if __name__ == '__main__':
     s3 = Stock('ACME', shares=50, price=91.1)
 
 
+# _fields에 명시되지 않은 구조에 추가적인 속성을 추가하는 수단으로 키워드 매개변수를 사용하는 방법
+# 예15.
+class Structure:
+    _fields = []
+
+    def __init__(self, *args, **kwargs):
+        if len(args) > len(self._fields):
+            raise TypeError('Expected {} arguments'.format(len(self._fields)))
+
+        # 속성 설정
+        for name, value in zip(self._fields, args):
+            setattr(self, name, value)
+
+        # (있다면) 추가적인 매개변수 설정
+        extra_args = kwargs.keys() - self._fields
+        for name in extra_args:
+            setattr(self, name, kwargs.pop(name))
+        if kwargs:
+            raise TypeError('Duplicate values for P{'.format(','.join(kwargs)))
+
+
+
+        # 남아있는 기타 매개변수가 없는지 확인
+        if kwargs:
+            raise TypeError('Invalid argument(s): {}'.format(','.join(kwargs)))
+
+
+if __name__ == '__main__':
+    class Stock(Structure):
+        _fields = ['name', 'shares', 'price']
+
+    s1 = Stock('ACME', 50, 91.1)
+    s2 = Stock('ACME', 50, 91.1, date='8/2/2012')
