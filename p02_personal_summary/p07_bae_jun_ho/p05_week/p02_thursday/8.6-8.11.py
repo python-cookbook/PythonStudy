@@ -104,16 +104,19 @@ aParret = Parrot 으로 인스턴스를 만들고 난 뒤, aParret.voltage = 200
 
 
 # 예1.
+
 class Person:
     def __init__(self, first_name):
         self._first_name = first_name
 
     # 게터
+
     @property
     def first_name(self):
         return self._first_name
 
     # 세터
+
     @first_name.setter
     def first_name(self, value):
         if not isinstance(value, str):
@@ -143,6 +146,7 @@ a.first_name
 # 'Kim'
 
 # 예2.
+
 import math
 
 
@@ -286,6 +290,7 @@ super()를 사용할 땐 조심해야할 점이 있다. super()로 인해 원치
 '''
 
 # 예3.
+
 class A:
     def spam(self):
         print('A.spam')
@@ -296,6 +301,7 @@ class B(A):
         super().spam()  # 슈퍼 클래스의 spam() 호출
 
 # 예4.
+
 class A:
     def __init__(self):
         self.x = 0
@@ -306,15 +312,18 @@ class B(A):
         self.y = 1
 
 # 예5.
+
 class Proxy:
     def __init__(self, obj):
         self._obj = obj
 
     #내부 obj를 위해 delicate 속성 찾기
+
     def __getattr__(self, name):
         return getattr(self._obj, name)     # 아래 속성 할당에서 name을 key로 사용한다.
 
     #delicate 속성 할당
+
     def __setattr__(self, name, value):
         if name.startwith('_'):       # 이름이 _로 시작하면 super()를 사용해서 __setattr__()의 원본을 호출한다. 그렇지 않은 경우 self._obj를 부른다.
                                       # 명시적으로 super()를 하지 않아도 super()가 동작한다.
@@ -322,15 +331,24 @@ class Proxy:
         else:
             setattr(self._obj, name, value)
 
+
+
+
 '''
 
 8장 8절 서브 클래스에서 프로퍼티 확장 : 서브 클래스에서 슈퍼 클래스의 프로퍼티 기능을 확장하고 싶은 경우 상속을 받는다.
 
 
+서브 클래스의 프로퍼티를 확장하면 프로퍼티가 하나의 메소드가 아닌 게터, 세터, 딜리터 메소드의 컬렉션으로 정의된 사실로 인해 문제가 발생한다.
+따라서 프로퍼티를 확장할 땐 모든 메소드를 재 정의할지 메소드 하나만 재 정의할지 결정해야 한다.
+
+
 
 '''
 
+
 # 예6.
+
 class Person:
     def __init__(self, name):
         self.name = name
@@ -353,7 +371,9 @@ class Person:
         raise AttributeError("Can't delete attribute")
 
 
+
 # 예7.
+
 class SubPerson(Person):
     @property
     def name(self):
@@ -375,3 +395,324 @@ s.name
 # Getting name
 # 'Guido'
 s.name = 'Larry'
+# Setting name to Larry
+
+
+#프로퍼티의 메소드 하나를 확장하고 싶은 경우 (getter)
+
+class SubPerson(Person):
+    @Person.name.getter
+    def name(self):
+        print('Getting name')
+        return super().name
+
+
+#프로퍼티의 메소드 하나를 확장하고 싶은 경우 (setter)
+
+class SubPerson(Person):
+    @Person.name.setter
+    def name(self, value):
+        print('Setting name to', value)
+        super(SubPerson, SubPerson).name.__set__(self, value)
+
+
+# 예8.
+
+class SubPerson(Person):
+    @Person.getter      # getter를 상속을 통해 setter 처럼 사용할 수 있다.
+    def name(self):
+        print('Getting name')
+        return super().name
+
+s = SubPerson('Guido')
+s.name
+# Getting name
+# 'Guido'
+s.name = 'Larry'
+s.name
+# Getting name
+# 'Larry'
+
+
+
+# 예9.
+
+# 디스크립터
+
+class String:
+    def __init__(self, name):
+        self.name = name
+
+    def __get__(self, instance, cls):
+        if instance is None:
+            return self
+        return instance.__dict__[self.name]
+
+    def __set__(selfself, instance, value):
+        if not isinstance(value, str):
+            raise TypeError('Expected a string')
+        instance.__dict__[self.name] = value
+
+
+# 디스크립터를 가진 클래스
+
+class Person:
+    name = String('name')
+    def __init__(self, name):
+        self.name = name
+
+# 디스크립터를 프로퍼티에 넣어 확장
+
+class SubPerson(Person):
+    @property
+    def name(self):
+        print('Getting name')
+        return super().name
+
+    @name.setter
+    def name(self, value):
+        print('Setting name to', value)
+        super(SubPerson, SubPerson).name.__set__(self, value)
+
+    @name.deleter
+    def name(self):
+        print('Deleting name')
+        super(SubPerson, SubPerson).name.__delete__(self)
+
+
+
+
+'''
+
+
+8장 9절 새로운 클래스나 인스턴스 속성 만들기 : 타입 확인 등과 같은 추가 기능을 가진 새 인스턴스 속성을 만들고 싶은 경우 완전히 새로운 종류의 인스턴스 속성을 만드려면 그 기능을 디스크립터 클래스 형태로
+                                        정의해야 한다.
+                                        
+- 디스크립터는 get, set, delete를 특별 메소드인 __get__(), __set__(), __delete__() 형식으로 구현한 클래스다. 이 메소드는 인스턴스를 입력받으며 인스턴스의 기반 딕셔너리는 속성으로 만들어진다.
+- 디스크립터를 사용하려면 디스크립터의 인스턴스는 클래스 정의에 클래스 변수로 들어가야 한다.
+
+
+https://www.slideshare.net/dahlmoon/descriptor-20160403 참조.
+
+
+3. Descriptor 란  __get__(self, instance, class), __set__(self, instance, value), __delete__(self, instance )  3개의 메소드를 가지는 클래스 
+    Self는 Descriptor 클래스의 인스턴스  Instance는 class로 생성되는 인스턴스  다른 클래스 변수에 descriptor 인스턴스를 할 당해서 사용
+   
+4. Descriptor aggregation 구조 인스턴스에서 클래스변수(aggregation)를 호출하 면 descriptor 인스턴스가 descriptor 메소드를 호출하여 인스턴스 내부 변수와 할당값을 세팅 
+   Descriptor class User defined class 변수 Descriptor instance User defined instance _변수 __init__ __get__ __set__ __delete__ 
+    1. 인스턴스.변수 호출 2. 클래스 내의 변수 확 인 3. Descriptor 인스턴 스가 get/set 메소 드 호출 4. 인스턴스.__dict__에 _변수 할당
+    
+5. Descriptor aggregation 주의사 항 : 변수명 사용자 인스턴스 저장되는 변수를 클래스 내부에 정의된 변수와 구별 필요 ( _변수명) 
+
+   
+6. Descriptor aggregation 주의사 항 : get 인스턴스.변수명을 사용하면 __get__가 호출되므 로 인스턴스._변수명이 미존재하므로 초기값 정의 필요 
+
+   
+7. Descriptor 상속 구조 Descriptor 상속관계로 구현시 실제 descriptor 인 스턴스에 값을 보관하여 처, 실제 __get__을 사용 해서 값을 검색해야 함 
+
+8. Descriptor 상속 구조 사용 descriptor 클래스를 상속해서 get 만 사용하는 경우 
+
+class D(object): 
+    def __init__(self, x=None): 
+        self.x = x
+         
+    def __get__(self,instance=None,cls=None):
+        return self.x 
+        
+class D1(D): 
+def __init__(self, x,y): 
+    self.x = D(x) 
+    self.y = D(y) 
+    
+d1 = D1(2,3)
+print(" d1")
+print(d1.__dict__)
+print(d1.x)
+print(d1.y)
+print(" direct call",d1.x.__get__(), d1.y.__get__()) 
+print (" Class binding call x ", D1.__get__(d1.x,d1.x)) 
+print (" Class binding call y ", D1.__get__(d1.y,d1.y)) 
+print (" class binding",type(d1).__get__(d1.x,d1.x)) 
+
+D1 {'x': <__main__.D object at 0x113f46400>, 'y': <__main__.D object at 0x113f461d0>} 
+
+<__main__.D object at 0x113f46400> 
+<__main__.D object at 0x113f461d0> 
+direct call 2 3 Class binding call x 2 Class binding call y 3 class binding 2
+
+9. Descriptor 구성
+
+10. Descriptor 처리 절차 Descriptor class를 생성하여 실제 구현 클래스 내부의 속성에 대한 init/getter/setter/deleter 를 통제할 수 있도록 구조화 Class 
+    
+class Person(): 
+    name= Descriptor() 
+    user = Person() 
+    user.name = ‘Dahl’ 
+    
+Descriptor class 생성 구현 
+class 정의시 속성에 대한 인스턴스 생성 구현
+class에 대한 인스턴 스 생성 및 인스턴스 속성 에 값 세팅
+
+11. Descriptor class 정의 클래스에 인스턴스를 관리하는 생성자와 실제 인스 턴스의 값을 관리 
+
+get/set/delete 메소드 정의 
+
+class Descriptor(object): 
+    def __init__(self,name): 
+    
+        self.name = ‘_’ + str(name) 
+    def __get__(self, instance, owner): 
+    
+        return instance.__dict__[self.name] 
+    def __set__(self, instance, value): 
+        instance.__dict__[self.name] = value 
+    
+    def __delete__(self, instance): 
+        del instance.__dict__[self.name] 
+        
+인스턴스 객체의 변수명 으로 세팅될 변수명 저장
+    
+    
+12. __get__/__set__ 검색1  getattr,setattr 함수를 이용해서 내부의 값을 직접 검색 및 갱신 
+def __get__(self, instance, owner): 
+    return getattr(instance, self.name) 
+    
+def __set__(self, instance, value): 
+    setattr(instance,self.name,value)
+
+13. __get__/__set__ 검색2  Instance 내부의 값을 직접 검색 
+def __get__(self, instance, owner): 
+    return instance.__dict__[self.name] 
+    
+def __set__(self, instance, value): 
+    instance.__dict__[self.name] = value
+
+
+14. Data descriptor 여부 확인  Inspect 모듈을 이용해서 data descriptor 여 부 확인 i
+mport inspect 
+print(inspect.isdatadescriptor(descriptor()) #true
+
+
+
+15. Descriptor 사용 class 정의/실행 
+    1. 구현 클래스에는 속성에 descriptor인스턴스 생성 
+    2. 인스턴스 객체의 변수에 직접 값을 할당(set) 
+    3. 인스턴스 객체의 변수로 조회(get) 
+    
+class Person(object): 
+    name = Descriptor(“name”) 
+    user = Person() 
+    print(user.__dict__ ) # {} 
+    user.name = 'john smith‘ 
+    print(user.__dict__) # {'_name': 'john smith'} 
+    print "user.name ",user.name # user.name john smith 
+    
+    인스턴스의 변수와 내부 관리 변수의 name을 상이하게 관리도 가능
+
+
+
+16. Descriptor 메소드 호출 예시 2개 호출 처리는 동일 한 결과가 나온다. 실제 구현시 첫번째 방식이 가독성이 높음 
+user = Person() 
+user.name = 'john smith’ # Descriptor
+
+.__set__ 호출 
+print user.name # Descriptor
+
+.__get__ 호출 
+print(user.__dict__) 
+user1 = Person() 
+Descriptor.__set__(Descriptor(),user1,"dahl") 
+Descriptor.__get__(Descriptor(),user1,Descriptor) 
+print(user1.__dict__)
+
+
+
+17. Descriptor : 함수처리
+
+
+
+18. Descriptor 정의
+    Descriptor 클래스 정의 
+    
+    class descriptor(object) : def __init__(self,name,func): self.name = '_'+ str(name) self.func = func def __get__(self, instance, owner): return getattr(instance,self.name) def __set__(self, instance, value): setattr(instance,self.name,value) Value에 함수 할당
+
+
+
+19. Descriptor 실행 함수를 정의하고 할당해서 실행 def add(x,y) : return x+y class A(object) : add = descriptor("add",add) a = A() print(a.__dict__) print(A.__dict__) print(a.add(5,5)) print(type(a.__dict__['_add'])) print(A.__dict__['add']) print(a.add) print(A.__dict__['add'].__dict__) da = descriptor("aaa","") print(type(da), da.__dict__, da.name) {} {'add': <__main__.descriptor object at 0x114140358>, '__weakref__': <attribute '__weakref__' of 'A' objects>, '__dict__': <attribute '__dict__' of 'A' objects>, '__module__': '__main__', '__doc__': None}{'_add': <function add at 0x114135730>} 10 <class 'function'> <__main__.descriptor object at 0x114140358> <function add at 0x114135730> {'name': '_add', 'func': <function add at 0x114135730>} <class '__main__.descriptor'> {'name': '_aaa', 'func': ''} _aaa
+
+
+
+20. Descriptor 종류
+
+
+
+21. Descriptor 종류 Method descriptor와 Data descripter 로 구분  Method descriptor는 __get__(self, instance, owner) 구현  Data descriptor는 __get__(self, instance, owner), __set__(self,instance, value) or __delete__(self, instance) 구현
+
+
+
+22. Creating data descriptor Data Descriptor 클래스를 생성해서 처리하는 방법 class Descriptor(object): def __init__(self): self._name = '' def __get__(self, instance, owner): print "Getting: %s" % self._name return self._name def __set__(self, instance, name): print "Setting: %s" % name self._name = name.title() def __delete__(self, instance): print "Deleting: %s" %self._name del self._name class Person(object): name = Descriptor() >>> user = Person() >>> user.name = 'john smith' Setting: john smith >>> user.name Getting: John Smith 'John Smith‘ >>> del user.name Deleting: John Smith
+
+
+
+23. 여러 개 속성변수 처리하기
+
+
+
+24. Descriptor : init 메소드 수정 Descriptor class에 생성자 메소드에 변수명, 변 수 타입, 변수값을 받아 생성하도록 만듦 Class Decriptor : # 변수명, 값타입, 디폴트값, def __init__(self, var_name, var_type, var_default) : self.var_name = “_”+var_name self.var_type = var_type self.var_default = var_default if var_default else type()
+
+
+
+25. Descriptor : get/set 함수 수정 Descriptor class에 생성자 메소드에 변수명, 변 수 타입, 변수값을 받아 생성하도록 만듦 Class Decriptor : def __get__(self, instance, cls): return getattr(instance, self.name, self.default) def __set__(self,instance,value): if not isinstance(value,self.type): raise TypeError("Must be a %s" % self.type) setattr(instance,self.name,value) def __delete__(self,instance): raise AttributeError("Can't delete attribute") # 처리시 주의 사항 setattr(instance,self.name,va lue)  self.name의 “_” 없는 값을 넣을 경우 런타임오류 발생 RuntimeError: maximum recursion depth exceeded while calling a Python object
+
+
+
+26. 구현 class 처리: 클래스 내부의 변수에 descriptor 인스턴스를 생 성함. class Person(object): name =Descriptor ("name",str) age = Descriptor("age",int,42) user = Person()
+
+
+
+27. Property 처리
+
+
+
+28. Creating Property- 객체 직접 정의(1) 인스턴스 객체의 변수 접근을 메소드로 제약하기 위해서는 Property 객체로 인스턴스 객체의 변수를 Wrapping 해야 함 property(fget=None, fset=None, fdel=None, doc=None) class P: def __init__(self,x): self.x = x def getx(self) : return self.x def setx(self, x) : self.x = x def delx(self) : del self.x x = property(getx,setx,delx," property test ") Getter, setter, deleter 메 소드를 정의 인스턴스 객체의 변수명과 동일하게 Property 객체 생 성(내부에 _x 생김)
+
+
+
+29. Creating Property–객체 직접 정의(2) 실제 인스턴스 객체의 변수에 접근하면 Property 객체의 메소드를 호출하여 처리되고 인스턴스 객 체의 변수값이 변경됨 p1 = P(1001) print id(p1.x) print P.__dict__['x'] print id(p1.__dict__['x']) print p1.x p1.x = -12 print p1.x print p1.__dict__ #처리결과값 44625868 <property object at 0x02C1D4E0> 44625868 1001 -12 {'x': -12}
+
+
+
+30. Decorator 처리
+
+
+
+31. Creating Property decorator(1) 인스턴스 객체의 변수 접근을 메소드로 제약하기 위해서는 Property 객체로 인스턴스 객체의 변수를 Wrapping 해야 함 property(fget=None, fset=None, fdel=None, doc=None) class P: def __init__(self,x): self._x = x @property def x(self): return self._x @x.setter def x(self, x): self._x = x @x.deleter def x(self): del self._x Getter, setter, deleter 메 소드를 정의 인스턴스 객체의 변수명과 동일하게 Property 객체 생 성(내부에 _x 생김)
+
+
+
+32. Creating Property decorator(2) Property 객체 생성하여 처리하는 방식과 동일 p1 = P(1001) print(id(p1.x)) print(p1.x) p1.x = -12 print (p1.x) print (p1.__dict__) #처리결과값 46261915041001 -12 {'_x': -12}
+
+
+
+33. 내장함수를 통한 객체접근
+
+
+
+34. Built-in 내장함수 내장함수를 이용하여 객체의 속성에 대한 접근 object.x  getattr() object.x = value  setattr() del(object.x)  delattr() 함수 구조 getattr(object, name[, default]) setattr(object, name, value) delattr(object, name) hasattr(object, name) callable(object)
+
+
+
+35. Built-in 내장함수: 예시 1 객체의 속성을 접근하고변경 class A(): def __init__(self, name,age) : self.name = name self.age = age a = A('dahl',50) if hasattr(a,"name") : print getattr(a,"name") setattr(a,"name","Moon") print getattr(a,"name") else : pass if hasattr(a,"age") : print getattr(a,"age") else : pass #처리결과값 dahl Moon 50
+
+
+
+36. Built-in 내장함수: 예시 2 메소드 및 함수여부 확인 후 실행 class A(): def __init__(self, name,age) : self.name = name self.age = age def in_set(self,name,default) : self.__dict__[name] = default print self.__dict__[name] a = A('dahl',50) def add(x,y) : return x+y if callable(add) : add(5,6) else : pass if callable(a.in_set) : a.in_set('age',20) else: pass #처리결과값 dahl Moon 50 20
+
+
+
+
+
+
+
+
+'''
