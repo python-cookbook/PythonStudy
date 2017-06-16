@@ -30,7 +30,7 @@ def jewelry(jewelrycnt):
             jewelrydic[int(weight)] = int(value)
         elif int(value) >= jewelrydic[int(weight)] :
             jewelrydic[int(weight)] = int(value)
-
+    print(sorted(jewelrydic.items(), key=lambda kv : (kv[1]/kv[0], -kv[0]), reverse=True))
     return sorted(jewelrydic.items(), key=lambda kv : (kv[1]/kv[0], -kv[0]), reverse=True)
 
 def greedy(maxweight):

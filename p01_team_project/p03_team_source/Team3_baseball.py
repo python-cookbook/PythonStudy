@@ -1,8 +1,10 @@
 import random
 import re
 # 3조
+
+
 ###################################################################################################
-## 기록 관련 클래스
+## 기록 및 스테이터스 관련 클래스
 ###################################################################################################
 class Record:
     def __init__(self):
@@ -10,6 +12,10 @@ class Record:
         self.__homerun = 0  # 홈런 수
         self.__atbat = 0  # 타수
         self.__avg = 0.0  # 타율
+        self.__hp = 100  # 체력(health point)
+        self.__hp_dec = 4  # 체력감소율
+        self.__injure = 0  # 부상
+        self.__condition = 0  # 컨디션
 
     @property
     def hit(self):
@@ -43,12 +49,44 @@ class Record:
     def avg(self, avg):
         self.__avg = avg
 
+    @property
+    def hp(self):
+        return self.__hp
+
+    @hp.setter
+    def hp(self, hp):
+        self.__hp = hp
+
+    @property
+    def hp_dec(self):
+        return self.__hp_dec
+
+    @hp_dec.setter
+    def hp_dec(self, hp_dec):
+        self.__hp_dec = hp_dec
+    @property
+    def injure(self):
+        return self.__injure
+
+    @injure.setter
+    def injure(self, injure):
+        self.__injure = injure
+
+    @property
+    def condition(self):
+        return self.__condition
+
+    @condition.setter
+    def condition(self, condition):
+        self.__condition = condition
+
     # 타자 기록 관련 메서드
-    def batter_record(self, hit, homerun):
+    def batter_record(self, hit, homerun, hp):
         self.hit += hit
         self.homerun += homerun
         self.atbat += 1
         self.avg = self.hit / self.atbat
+        self.hp = hp - self.hp_dec
 
 
 ###################################################################################################
@@ -60,6 +98,7 @@ class Player:
         self.__number = number  # 타순
         self.__name = name  # 이름
         self.__record = Record()  # 기록
+
 
     @property
     def team_name(self):
@@ -82,8 +121,8 @@ class Player:
         return self.__team_name + ', ' + str(self.__number) + ', ' + self.__name
 
     # 선수 타율 관련 메서드
-    def hit_and_run(self, hit, homerun):
-        self.__record.batter_record(hit, homerun)
+    def hit_and_run(self, hit, homerun, hp):
+        self.__record.batter_record(hit, homerun, hp)
 
 
 ###################################################################################################
@@ -126,8 +165,8 @@ class Game:
         'KIA': ({1: '버나디나'}, {2: '이명기'}, {3: '나지완'}, {4: '최형우'}, {5: '이범호'}, {6: '안치홍'}, {7: '서동욱'}, {8: '김민식'}, {9: '김선빈'}),
         'SK': ({1: '노수광'}, {2: '정진기'}, {3: '최정'}, {4: '김동엽'}, {5: '한동민'}, {6: '이재원'}, {7: '박정권'}, {8: '김성현'}, {9: '박승욱'}),
         'LG': ({1: '이형종'}, {2: '김용의'}, {3: '박용택'}, {4: '히메네스'}, {5: '오지환'}, {6: '양석환'}, {7: '임훈'}, {8: '정상호'}, {9: '손주인'}),
-        '두산': ({1: '허경민'}, {2: '최주환'}, {3: '민병헌'}, {4: '김재환'}, {5: '에반스'}, {6: '양의지'}, {7: '김재호'}, {8: '신성현'}, {9: '정진호'}),
-        '넥센': ({1: '이정후'}, {2: '김하성'}, {3: '서건창'}, {4: '윤석민'}, {5: '허정협'}, {6: '채태인'}, {7: '김민성'}, {8: '박정음'}, {9: '주효상'}),
+        '두산': ({1: '허경민'}, {2: '최주환'}, {3: '민병헌'}, {4: '김재환'}, {5: '에반스'}, {6: '양의지'}, {7: '김재호'}, {8: '신성현'}, {9: '정진호'}, {10: '박세혁'}, {11: '조수행'}, {12: '류지혁'}, {13: '박건우'}),
+        '넥센': ({1: '이정후'}, {2: '김하성'}, {3: '서건창'}, {4: '윤석민'}, {5: '허정협'}, {6: '채태인'}, {7: '김민성'}, {8: '박정음'}, {9: '주효상'}, {10: '고종욱'}, {11: '이택근'}, {12: '박동원'}, {13: '김웅빈'}),
         'KT': ({1: '심우준'}, {2: '정현'}, {3: '박경수'}, {4: '유한준'}, {5: '장성우'}, {6: '윤요섭'}, {7: '김사연'}, {8: '오태곤'}, {9: '김진곤'}),
         'NC': ({1: '김성욱'}, {2: '모창민'}, {3: '나성범'}, {4: '스크럭스'}, {5: '권희동'}, {6: '박석민'}, {7: '지석훈'}, {8: '김태군'}, {9: '이상호'})
     }
@@ -183,8 +222,8 @@ class Game:
                                         self.awayteam.team_name.center(44, ' ') if re.search('[a-zA-Z]+', self.awayteam.team_name) is not None else self.awayteam.team_name.center(42, ' ')))
         print('==  {} | {}   =='.format(('('+str(Game.SCORE[0])+')').center(44, ' '), ('('+str(Game.SCORE[1])+')').center(44, ' ')))
         print('====================================================================================================')
-        print('== {} | {} | {} | {} | {} '.format('이름'.center(8, ' '), '타율'.center(5, ' '), '타석'.center(4, ' '), '안타'.center(3, ' '), '홈런'.center(3, ' ')), end='')
-        print('| {} | {} | {} | {} | {}  =='.format('이름'.center(8, ' '), '타율'.center(5, ' '), '타석'.center(4, ' '), '안타'.center(3, ' '), '홈런'.center(3, ' ')))
+        print('== {} | {} | {} | {} | {} | {} | {} | {} '.format('이름'.center(8, ' '), '타율'.center(5, ' '), '타석'.center(4, ' '), '안타'.center(3, ' '), '홈런'.center(3, ' '), '체력'.center(3, ' '), '부상'.center(3, ' '), '컨디션'.center(3, ' ')), end='')
+        print('| {} | {} | {} | {} | {} | {} | {} | {}  =='.format('이름'.center(8, ' '), '타율'.center(5, ' '), '타석'.center(4, ' '), '안타'.center(3, ' '), '홈런'.center(3, ' '), '체력'.center(3, ' '), '부상'.center(3, ' '), '컨디션'.center(3, ' ')))
         print('====================================================================================================')
 
         hometeam_players = self.hometeam.player_list
@@ -193,13 +232,19 @@ class Game:
         for i in range(9):
             hp = hometeam_players[i]
             hp_rec = hp.record
+            hp_stat = hp.status
             ap = awayteam_players[i]
             ap_rec = ap.record
-
-            print('== {} | {} | {} | {} | {} |'.format(hp.name.center(6+(4-len(hp.name)), ' '), str(hp_rec.avg).center(7, ' '),
-                                                      str(hp_rec.atbat).center(6, ' '), str(hp_rec.hit).center(5, ' '), str(hp_rec.homerun).center(5, ' ')), end='')
-            print(' {} | {} | {} | {} | {}  =='.format(ap.name.center(6+(4-len(ap.name)), ' '), str(ap_rec.avg).center(7, ' '),
-                                                        str(ap_rec.atbat).center(6, ' '), str(ap_rec.hit).center(5, ' '), str(ap_rec.homerun).center(5, ' ')))
+            ap_stat = ap.status
+                                             # 체력 부상 컨디션
+            # 홈팀 스탯
+            print('== {} | {} | {} | {} | {} | {} | {} | {} '.format(hp.name.center(6+(4-len(hp.name)), ' '), str(hp_rec.avg).center(7, ' '),
+                                                      str(hp_rec.atbat).center(6, ' '), str(hp_rec.hit).center(5, ' '), str(hp_rec.homerun).center(5, ' '),
+                                                      str(hp_stat.hp).center(5, ' '), str(hp_stat.injure).center(5, ' '), str(hp_stat.condition).center(5, ' ')), end='')
+            # 어웨이팀 스탯
+            print(' {} | {} | {} | {} | {} | {} | {} | {} =='.format(ap.name.center(6+(4-len(ap.name)), ' '), str(ap_rec.avg).center(7, ' '),
+                                                        str(ap_rec.atbat).center(6, ' '), str(ap_rec.hit).center(5, ' '), str(ap_rec.homerun).center(5, ' '),
+                                                        str(ap_stat.hp).center(5, ' '),str(ap_stat.injure).center(5, ' '), str(ap_stat.condition).center(5, ' ')))
         print('====================================================================================================')
 
     # 공격 수행 메서드
@@ -304,6 +349,7 @@ class Game:
     def select_player(self, number, player_list):
         for player in player_list:
             if number == player.number:
+                player.
                 return player
 
     # 랜덤으로 숫자 생성(1~20)
