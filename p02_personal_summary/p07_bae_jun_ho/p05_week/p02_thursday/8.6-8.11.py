@@ -634,23 +634,80 @@ print(user1.__dict__)
 18. Descriptor 정의
     Descriptor 클래스 정의 
     
-    class descriptor(object) : def __init__(self,name,func): self.name = '_'+ str(name) self.func = func def __get__(self, instance, owner): return getattr(instance,self.name) def __set__(self, instance, value): setattr(instance,self.name,value) Value에 함수 할당
+    class descriptor(object): 
+        def __init__(self,name,func): 
+            self.name = '_'+ str(name) 
+            self.func = func 
+        
+        def __get__(self, instance, owner): 
+            return getattr(instance,self.name) 
+        
+        def __set__(self, instance, value): 
+            setattr(instance,self.name,value)   # value에 함수 할당
 
 
 
-19. Descriptor 실행 함수를 정의하고 할당해서 실행 def add(x,y) : return x+y class A(object) : add = descriptor("add",add) a = A() print(a.__dict__) print(A.__dict__) print(a.add(5,5)) print(type(a.__dict__['_add'])) print(A.__dict__['add']) print(a.add) print(A.__dict__['add'].__dict__) da = descriptor("aaa","") print(type(da), da.__dict__, da.name) {} {'add': <__main__.descriptor object at 0x114140358>, '__weakref__': <attribute '__weakref__' of 'A' objects>, '__dict__': <attribute '__dict__' of 'A' objects>, '__module__': '__main__', '__doc__': None}{'_add': <function add at 0x114135730>} 10 <class 'function'> <__main__.descriptor object at 0x114140358> <function add at 0x114135730> {'name': '_add', 'func': <function add at 0x114135730>} <class '__main__.descriptor'> {'name': '_aaa', 'func': ''} _aaa
+19. Descriptor 실행 함수를 정의하고 할당해서 실행 
+    def add(x,y): 
+        return x+y 
+        
+    class A(object): 
+        add = descriptor("add",add) 
 
+    a = A() 
 
+    print(a.__dict__) 
+
+    print(A.__dict__) 
+
+    print(a.add(5,5)) 
+
+    print(type(a.__dict__['_add'])) 
+
+    print(A.__dict__['add']) 
+
+    print(a.add) 
+
+    print(A.__dict__['add'].__dict__) 
+
+    da = descriptor("aaa","") 
+
+    print(type(da), da.__dict__, da.name) 
+    
 
 20. Descriptor 종류
 
 
+21. Descriptor 종류 
+    Method descriptor와 Data descripter 로 구분
+      Method descriptor는 __get__(self, instance, owner) 구현 
+      Data descriptor는 __get__(self, instance, owner), __set__(self,instance, value) or __delete__(self, instance) 구현
 
-21. Descriptor 종류 Method descriptor와 Data descripter 로 구분  Method descriptor는 __get__(self, instance, owner) 구현  Data descriptor는 __get__(self, instance, owner), __set__(self,instance, value) or __delete__(self, instance) 구현
 
-
-
-22. Creating data descriptor Data Descriptor 클래스를 생성해서 처리하는 방법 class Descriptor(object): def __init__(self): self._name = '' def __get__(self, instance, owner): print "Getting: %s" % self._name return self._name def __set__(self, instance, name): print "Setting: %s" % name self._name = name.title() def __delete__(self, instance): print "Deleting: %s" %self._name del self._name class Person(object): name = Descriptor() >>> user = Person() >>> user.name = 'john smith' Setting: john smith >>> user.name Getting: John Smith 'John Smith‘ >>> del user.name Deleting: John Smith
+22. Creating data descriptor Data Descriptor 클래스를 생성해서 처리하는 방법 \
+    class Descriptor(object): 
+        def __init__(self): 
+            self._name = '' 
+            
+        def __get__(self, instance, owner): 
+            print "Getting: %s" % self._name 
+            return self._name 
+            
+        def __set__(self, instance, name): 
+            print "Setting: %s" % name 
+            self._name = name.title() 
+            
+        def __delete__(self, instance): 
+            print "Deleting: %s" %self._name 
+            del self._name 
+            
+    class Person(object): 
+        name = Descriptor() 
+        
+    >>> user = Person() 
+    >>> user.name = 'john smith' Setting: john smith 
+    >>> user.name Getting: John Smith 'John Smith‘ 
+    >>> del user.name Deleting: John Smith
 
 
 
@@ -658,61 +715,357 @@ print(user1.__dict__)
 
 
 
-24. Descriptor : init 메소드 수정 Descriptor class에 생성자 메소드에 변수명, 변 수 타입, 변수값을 받아 생성하도록 만듦 Class Decriptor : # 변수명, 값타입, 디폴트값, def __init__(self, var_name, var_type, var_default) : self.var_name = “_”+var_name self.var_type = var_type self.var_default = var_default if var_default else type()
+24. Descriptor : init 메소드 수정 
+    Descriptor class에 생성자 메소드에 변수명, 변 수 타입, 변수값을 받아 생성하도록 만듦 
+    Class Decriptor : # 변수명, 값타입, 디폴트값, 
 
 
-
-25. Descriptor : get/set 함수 수정 Descriptor class에 생성자 메소드에 변수명, 변 수 타입, 변수값을 받아 생성하도록 만듦 Class Decriptor : def __get__(self, instance, cls): return getattr(instance, self.name, self.default) def __set__(self,instance,value): if not isinstance(value,self.type): raise TypeError("Must be a %s" % self.type) setattr(instance,self.name,value) def __delete__(self,instance): raise AttributeError("Can't delete attribute") # 처리시 주의 사항 setattr(instance,self.name,va lue)  self.name의 “_” 없는 값을 넣을 경우 런타임오류 발생 RuntimeError: maximum recursion depth exceeded while calling a Python object
-
-
-
-26. 구현 class 처리: 클래스 내부의 변수에 descriptor 인스턴스를 생 성함. class Person(object): name =Descriptor ("name",str) age = Descriptor("age",int,42) user = Person()
+25. 구현 class 처리: 클래스 내부의 변수에 descriptor 인스턴스를 생 성함. class Person(object): name =Descriptor ("name",str) age = Descriptor("age",int,42) user = Person()
 
 
 
 27. Property 처리
 
 
+28. Creating Property- 객체 직접 정의(1) 
+인스턴스 객체의 변수 접근을 메소드로 제약하기 위해서는 Property 객체로 인스턴스 객체의 변수를 Wrapping 해야 함 
 
-28. Creating Property- 객체 직접 정의(1) 인스턴스 객체의 변수 접근을 메소드로 제약하기 위해서는 Property 객체로 인스턴스 객체의 변수를 Wrapping 해야 함 property(fget=None, fset=None, fdel=None, doc=None) class P: def __init__(self,x): self.x = x def getx(self) : return self.x def setx(self, x) : self.x = x def delx(self) : del self.x x = property(getx,setx,delx," property test ") Getter, setter, deleter 메 소드를 정의 인스턴스 객체의 변수명과 동일하게 Property 객체 생 성(내부에 _x 생김)
+property(fget=None, fset=None, fdel=None, doc=None) 
+class P: 
+    def __init__(self,x): 
+        self.x = x 
+        
+    def getx(self) : 
+        self.x 
+        
+    def setx(self, x) : 
+        self.x = x 
+        
+    def delx(self) : 
+        del self.x 
+        x = property(getx,setx,delx," property test ") # Getter, setter, deleter 메 소드를 정의 인스턴스 객체의 변수명과 동일하게 Property 객체 생성(내부에 _x 생김)
 
 
+29. Creating Property–객체 직접 정의(2) 
+실제 인스턴스 객체의 변수에 접근하면 Property 객체의 메소드를 호출하여 처리되고 인스턴스 객 체의 변수값이 변경됨 
 
-29. Creating Property–객체 직접 정의(2) 실제 인스턴스 객체의 변수에 접근하면 Property 객체의 메소드를 호출하여 처리되고 인스턴스 객 체의 변수값이 변경됨 p1 = P(1001) print id(p1.x) print P.__dict__['x'] print id(p1.__dict__['x']) print p1.x p1.x = -12 print p1.x print p1.__dict__ #처리결과값 44625868 <property object at 0x02C1D4E0> 44625868 1001 -12 {'x': -12}
-
+p1 = P(1001) 
+print id(p1.x) 
+print P.__dict__['x']
+print id(p1.__dict__['x']) 
+print p1.x p1.x = -12 
+print p1.x 
+print p1.__dict__ #처리결과값 44625868 <property object at 0x02C1D4E0> 44625868 1001 -12 {'x': -12}
 
 
 30. Decorator 처리
 
 
+31. Creating Property decorator(1) 인스턴스 객체의 변수 접근을 메소드로 제약하기 위해서는 Property 객체로 인스턴스 객체의 변수를 Wrapping 해야 함 
 
-31. Creating Property decorator(1) 인스턴스 객체의 변수 접근을 메소드로 제약하기 위해서는 Property 객체로 인스턴스 객체의 변수를 Wrapping 해야 함 property(fget=None, fset=None, fdel=None, doc=None) class P: def __init__(self,x): self._x = x @property def x(self): return self._x @x.setter def x(self, x): self._x = x @x.deleter def x(self): del self._x Getter, setter, deleter 메 소드를 정의 인스턴스 객체의 변수명과 동일하게 Property 객체 생 성(내부에 _x 생김)
+property(fget=None, fset=None, fdel=None, doc=None) 
+class P: 
+    def __init__(self,x): 
+        self._x = x @property 
+    
+    def x(self): 
+        return self._x 
+        
+    @x.setter 
+    def x(self, x): 
+        self._x = x 
+            
+    @x.deleter 
+    def x(self): 
+        del self._x # Getter, setter, deleter 메 소드를 정의 인스턴스 객체의 변수명과 동일하게 Property 객체 생성(내부에 _x 생김)
 
 
+32. Creating Property decorator(2) 
+Property 객체 생성하여 처리하는 방식과 동일 
 
-32. Creating Property decorator(2) Property 객체 생성하여 처리하는 방식과 동일 p1 = P(1001) print(id(p1.x)) print(p1.x) p1.x = -12 print (p1.x) print (p1.__dict__) #처리결과값 46261915041001 -12 {'_x': -12}
-
+p1 = P(1001) print(id(p1.x)) 
+print(p1.x) p1.x = -12 
+print (p1.x) 
+print (p1.__dict__) #처리결과값 46261915041001 -12 {'_x': -12}
 
 
 33. 내장함수를 통한 객체접근
 
 
+34. Built-in 내장함수 내장함수를 이용하여 객체의 속성에 대한 접근 
 
-34. Built-in 내장함수 내장함수를 이용하여 객체의 속성에 대한 접근 object.x  getattr() object.x = value  setattr() del(object.x)  delattr() 함수 구조 getattr(object, name[, default]) setattr(object, name, value) delattr(object, name) hasattr(object, name) callable(object)
+object.x  getattr() object.x = value  setattr() del(object.x)  delattr() 
+
+함수 구조 
+
+    getattr(object, name[, default]) 
+    setattr(object, name, value) 
+    delattr(object, name) 
+    hasattr(object, name) 
+    callable(object)
 
 
 
-35. Built-in 내장함수: 예시 1 객체의 속성을 접근하고변경 class A(): def __init__(self, name,age) : self.name = name self.age = age a = A('dahl',50) if hasattr(a,"name") : print getattr(a,"name") setattr(a,"name","Moon") print getattr(a,"name") else : pass if hasattr(a,"age") : print getattr(a,"age") else : pass #처리결과값 dahl Moon 50
+35. Built-in 내장함수: 예시 1 객체의 속성을 접근하고변경 
+
+class A():
+    def __init__(self, name,age): 
+        self.name = name 
+        self.age = age 
+        a = A('dahl',50) 
+        if hasattr(a,"name"): 
+            print getattr(a,"name") setattr(a,"name","Moon") 
+            print getattr(a,"name") 
+        else: 
+            pass 
+        
+        if hasattr(a,"age"): 
+            print getattr(a,"age") 
+        else: 
+            pass #처리결과값 dahl Moon 50
 
 
 
-36. Built-in 내장함수: 예시 2 메소드 및 함수여부 확인 후 실행 class A(): def __init__(self, name,age) : self.name = name self.age = age def in_set(self,name,default) : self.__dict__[name] = default print self.__dict__[name] a = A('dahl',50) def add(x,y) : return x+y if callable(add) : add(5,6) else : pass if callable(a.in_set) : a.in_set('age',20) else: pass #처리결과값 dahl Moon 50 20
+36. Built-in 내장함수: 예시 2 메소드 및 함수여부 확인 후 실행 
+class A(): 
+    def __init__(self, name,age): 
+        self.name = name 
+        self.age = age 
+    
+    def in_set(self,name,default): 
+        self.__dict__[name] = default 
+        print self.__dict__[name]
+ 
+    a = A('dahl',50) 
+    
+    def add(x,y): return x+y 
+        if callable(add): 
+            add(5,6) 
+        else: 
+            pass 
+        ifcallable(a.in_set):
+            a.in_set('age',20) 
+        else:
+            pass #처리결과값 dahl Moon 50 20
 
 
+'''
 
+# 예10.
+
+# 타입을 확인하는 정수형 드스크립터 속성
+class Integer:
+    def __init__(self, name):
+        self.name = name
+
+    def __get__(self, instance, cls):
+        if instance is None:
+            return self
+        else:
+            return instance.__dict__[self.name]
+
+    def __set__(self, instance, value):
+        if not isinstance(value, int):
+            raise TypeError('Expected an int')
+        instance.__dict__[self.name] = value
+
+    def __delete__(self, instance):
+        del instance.__dict__[self.name]
+
+# 예11.
+class Point:
+    x = Integer('x')
+    y = Integer('y')
+
+'''
+
+8장 10절 게으른 계산을 하는 프로퍼티 사용 : 읽기 전용 속성을 프로퍼티로 정의하고 이 속성에 접근할 때만 계산하도록 할 때 한번 접근하고 나면 이 값을 캐시해 놓고 다음 번에 접근할 때에는 다시 계산하지 않게 하고 싶으면 아래 디스크립터 클래스를 사용한다.
+
+- 게으른 프로퍼티(값 수정이 가능)
+class lazyproperty:
+    def __init__(self, func):
+        self.func = func
+    
+    del __get__(self, instance, cls):
+        if instance is None:
+            return self
+        else:
+            value = self.func(instance)
+            setattr(instance, self.func.__name__, value)
+            return value
+
+- 게으른 프로퍼티(값 수정이 불가능)
+def lazyproperty(func):
+    name = '_lazy_' + func.__name__
+
+    @property
+    def lazy(self):
+        if hasattr(self, name):
+            return getattr(self, name)
+        else:
+            value = func(self)
+            setattr(self, name, value)
+            return value
+    return lazy
+    
+    이 방법을 사용하면 값 설정이 불가능하다. 읽기 전용으로만 실행되기 때문에 값을 얻기 위해서 항상 프로퍼티의 getter 함수를 사용해야만 한다.
+
+- lazyproperty 클래스는 프로퍼티와 동일한 이름을 사용해서 인스턴스 __get__() 메소드에 계산한 값을 저장하는 식으로 이를 활용한다. 이렇게 하면 그 값은 인스턴스 딕셔너리에 저장되고 추후 프로퍼티의 계산을 하지 않도록 한다.            
+       
+- 디스크립터가 __get__() 메소드만 정의하면 접근하는 속성이 인스턴스 딕셔너리에 없을 때만 실행된다.             
+
+            
+'''
+
+# 예12.
+class lazyproperty:
+    def __init__(self, func):
+        self.func = func
+
+    def __get__(self, instance, cls):
+        if instance is None:
+            return self
+        else:
+            value = self.func(instance)
+            setattr(instance, self.func.__name__, value)
+            return value
+
+import math
+
+class Circle:
+    def __init__(self, radius):
+        self.radius = radius
+
+    @lazyproperty
+    def area(self):
+        print('Computing area')
+        return 2 * math.pi * self.radius
+
+    @lazyproperty
+    def perimeter(self):
+        print('Conputing perimeter')
+        return 2 * math.pi * self.radius
+
+c = Circle(4.0)
+vars(c)     # 인스턴스 변수 구하는 법
+# {'radius': 4.0}
+c.radius
+# 4.0
+c.area      # 면적을 계산하고 추후 변수 확인
+# Computing area
+# 50.2654824
+vars(c)
+# {'area': 50.2654824, 'radius': 4.0}
+c.area
+# 50.2654824  # 두 번째 실행에서 Computing area 메세지가 없어졌다. 즉 속성에 접근해도 더 이상 프로퍼티를 실행하지 않는다. 인스턴스 딕셔너리에 저장되고 프로퍼티의 계산을 하지 않았기 때문이다.
+c.perimeter
+# Computing perimeter
+# 25.1327412
+c.perimeter
+# 25.1327412    # 두 번째 실행에서 Computing perimeter 메세지가 없어졌다. 위와 동일하다. 프로퍼티를 다시 실행하려면 변수 c를 삭제하고 다시 생성한 다음 실행하면 된다.
+
+'''
+
+8장 11절 자료 구조 초기화 단순화 하기 : 자료 구조로 사용하는 클래스를 작성하고 있는데, 반복적으로 비슷한 __init__() 함수를 작성해서 사용해야 한다면 베이스 클래스의 __init__() 함수를 정의하는 식으로 단순화 할 수 있다.
 
 
 
 
 
 '''
+
+# 예13.
+
+class Structure:
+    # 예상되는 필드를 명시하는 클래스 변수
+    _fields = []
+    def __init__(self, *args):
+        if len(args) != len(self._fields):
+            raise TypeError('Expected {} arguments'.format(len(self._fields)))
+
+        # 속성 설정
+        for name, value in zip(self._fields, args):
+            setattr(self, name, value)
+
+        # 예제 클래스 정의
+
+if __name__ == '__main__':
+    class Stock(Structure):
+        _fields = ['name', 'shares', 'price']
+
+    class Point(Structure):
+        _fields = ['x', 'y']
+
+    class Circle(Structure):
+        _fields = ['radius']
+        def area(self):
+            return math.pi * self.radius ** 2
+
+s = Stock('ACME', 50, 91.1)     # 여기서 이미 3개의 매개변수를 입력해서
+p = Point(2, 3)
+c = Circle(4.5)
+s2 = Stock('ACME', 50)      # s의 매개변수 개수와 다르므로 정의한 TypeError: Expected 3 arguments 가 발생한다.
+
+# 키워드 매개변수를 매핑해서 _fields에 명시된 속성 이름에만 일치하도록 만드는 방법
+# 예14.
+class Structure:
+    _fields = []
+    def __init__(self, *args, **kwargs):
+        if len(args) > len(self._fields):
+            raise TypeError('Expected {} arguments'.format(len(self._fields)))
+
+        # 모든 위치 매개변수 설정
+        for name, value in zip(self._fields, args):
+            setattr(self, name, value)
+
+        # 남아있는 키워드 매개변수 설정
+        for name in self._fields[len(args):]:
+            setattr(self, name, kwargs.pop(name))
+
+        # 남아있는 기타 매개변수가 없는지 확인
+        if kwargs:
+            raise TypeError('Invalid argument(s): {}'.format(','.join(kwargs)))
+
+
+if __name__ == '__main__':
+    class Stock(Structure):
+        _fields = ['name', 'shares', 'price']
+
+    s1 = Stock('ACME', 50, 91.1)
+    s2 = Stock('ACME', 50, price=91.1)
+    s3 = Stock('ACME', shares=50, price=91.1)
+
+
+# _fields에 명시되지 않은 구조에 추가적인 속성을 추가하는 수단으로 키워드 매개변수를 사용하는 방법
+# 예15.
+class Structure:
+    _fields = []
+
+    def __init__(self, *args, **kwargs):
+        if len(args) > len(self._fields):
+            raise TypeError('Expected {} arguments'.format(len(self._fields)))
+
+        # 속성 설정
+        for name, value in zip(self._fields, args):
+            setattr(self, name, value)
+
+        # (있다면) 추가적인 매개변수 설정
+        extra_args = kwargs.keys() - self._fields
+        for name in extra_args:
+            setattr(self, name, kwargs.pop(name))
+        if kwargs:
+            raise TypeError('Duplicate values for P{'.format(','.join(kwargs)))
+
+
+
+        # 남아있는 기타 매개변수가 없는지 확인
+        if kwargs:
+            raise TypeError('Invalid argument(s): {}'.format(','.join(kwargs)))
+
+
+if __name__ == '__main__':
+    class Stock(Structure):
+        _fields = ['name', 'shares', 'price']
+
+    s1 = Stock('ACME', 50, 91.1)
+    s2 = Stock('ACME', 50, 91.1, date='8/2/2012')
