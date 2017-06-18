@@ -15,9 +15,9 @@ class Record:
         self.__avg = 0.0  # 타율
         # 상태
         self.__hp = 100  # 체력(health point)
-        self.__hp_dec = 4  # 체력감소율
+        self.__hp_dec = random.randint(0,2)  # 체력감소율
         self.__injure = 0  # 부상
-        self.__condition = 0  # 컨디션
+        self.__condition = {0:'good',1:'normal',2:'bad'}  # 컨디션
 
     @property
     def hit(self):
@@ -66,6 +66,7 @@ class Record:
     @hp_dec.setter
     def hp_dec(self, hp_dec):
         self.__hp_dec = hp_dec
+
     @property
     def injure(self):
         return self.__injure
@@ -91,7 +92,19 @@ class Record:
 
     # 타자 상태 관련 메소드
     def batter_status(self, hp_dec):
-        self.hp = self.hp - hp_dec
+        if hp_dec == 0:
+            self.hp -= 5
+        elif hp_dec == 1:
+            self.hp -= 7
+        else: self.hp -= 10
+
+    # 타자 컨디션 상태 출력 메소드
+    def show_condition(self,hp_dec):
+        keys = self.condition.keys()
+        for key in keys:
+            if key == hp_dec:
+                return self.condition[key]
+
 
 ###################################################################################################
 ## 선수 관련 클래스
@@ -102,7 +115,6 @@ class Player:
         self.__number = number  # 타순
         self.__name = name  # 이름
         self.__record = Record()  # 기록
-
 
     @property
     def team_name(self):
@@ -177,7 +189,6 @@ class Game:
         'KT': ({1: '심우준'}, {2: '정현'}, {3: '박경수'}, {4: '유한준'}, {5: '장성우'}, {6: '윤요섭'}, {7: '김사연'}, {8: '오태곤'}, {9: '김진곤'}),
         'NC': ({1: '김성욱'}, {2: '모창민'}, {3: '나성범'}, {4: '스크럭스'}, {5: '권희동'}, {6: '박석민'}, {7: '지석훈'}, {8: '김태군'}, {9: '이상호'})
     }
-
     INNING = 1  # 1 이닝부터 시작
     CHANGE = 0  # 0 : hometeam, 1 : awayteam
     STRIKE_CNT = 0  # 스트라이크 개수
@@ -245,17 +256,19 @@ class Game:
             # 홈팀 스탯
             print('== {} | {} | {} | {} | {} | {} | {} | {} '.format(hp.name.center(6+(4-len(hp.name)), ' '), str(hp_rec.avg).center(7, ' '),
                                                       str(hp_rec.atbat).center(6, ' '), str(hp_rec.hit).center(5, ' '), str(hp_rec.homerun).center(5, ' '),
-                                                      str(hp_rec.hp).center(5, ' '), str(hp_rec.injure).center(5, ' '), str(hp_rec.condition).center(5, ' ')), end='')
+                                                      str(hp_rec.hp).center(5, ' '), str(hp_rec.injure).center(5, ' '), str(hp_rec.show_condition).center(5, ' ')), end='')
             # 어웨이팀 스탯
             print(' {} | {} | {} | {} | {} | {} | {} | {} =='.format(ap.name.center(6+(4-len(ap.name)), ' '), str(ap_rec.avg).center(7, ' '),
                                                         str(ap_rec.atbat).center(6, ' '), str(ap_rec.hit).center(5, ' '), str(ap_rec.homerun).center(5, ' '),
-                                                        str(ap_rec.hp).center(5, ' '),str(ap_rec.injure).center(5, ' '), str(ap_rec.condition).center(5, ' ')))
+                                                        str(ap_rec.hp).center(5, ' '),str(ap_rec.injure).center(5, ' '), str(ap_rec.show_condition).center(5, ' ')))
         print('====================================================================================================')
 
     # 공격 수행 메서드
     def attack(self):
         curr_team = self.hometeam if Game.CHANGE == 0 else self.awayteam
         player_list = curr_team.player_list
+        # record = Record()
+        # player_dec = record.hp_dec
 
         if Game.OUT_CNT < 3:
             player = self.select_player(Game.BATTER_NUMBER[Game.CHANGE], player_list)
@@ -271,7 +284,7 @@ class Game:
                 print('== [OUT : {}, STRIKE : {}]'.format(Game.OUT_CNT, Game.STRIKE_CNT))
                 print('====================================================================================================')
                 print('== 현재 타석 : {}번 타자[{}], 타율 : {}'.format(player.number, player.name, player.record.avg))
-
+                print('== 컨디션 : {}, 체력 : {}'.format(player.record.condition[player.record.hp_dec], player.record.hp))
                 try:
                     hit_numbers = set(int(hit_number) for hit_number in input('== 숫자를 입력하세요(1~40) : ').split(' '))  # 유저가 직접 숫자 4개 입력
                     if self.hit_number_check(hit_numbers) is False:
