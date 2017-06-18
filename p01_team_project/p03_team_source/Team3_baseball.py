@@ -256,11 +256,11 @@ class Game:
             # 홈팀 스탯
             print('== {} | {} | {} | {} | {} | {} | {} | {} '.format(hp.name.center(6+(4-len(hp.name)), ' '), str(hp_rec.avg).center(7, ' '),
                                                       str(hp_rec.atbat).center(6, ' '), str(hp_rec.hit).center(5, ' '), str(hp_rec.homerun).center(5, ' '),
-                                                      str(hp_rec.hp).center(5, ' '), str(hp_rec.injure).center(5, ' '), str(hp_rec.show_condition).center(5, ' ')), end='')
+                                                      str(hp_rec.hp).center(5, ' '), str(hp_rec.injure).center(5, ' '), str(hp_rec.condition[hp_rec.hp_dec]).center(5, ' ')), end='')
             # 어웨이팀 스탯
             print(' {} | {} | {} | {} | {} | {} | {} | {} =='.format(ap.name.center(6+(4-len(ap.name)), ' '), str(ap_rec.avg).center(7, ' '),
                                                         str(ap_rec.atbat).center(6, ' '), str(ap_rec.hit).center(5, ' '), str(ap_rec.homerun).center(5, ' '),
-                                                        str(ap_rec.hp).center(5, ' '),str(ap_rec.injure).center(5, ' '), str(ap_rec.show_condition).center(5, ' ')))
+                                                        str(ap_rec.hp).center(5, ' '),str(ap_rec.injure).center(5, ' '), str(ap_rec.condition[ap_rec.hp_dec]).center(5, ' ')))
         print('====================================================================================================')
 
     # 공격 수행 메서드
@@ -314,7 +314,7 @@ class Game:
                     break
 
             player.hit_and_run(1 if hit_cnt > 0 else 0, 1 if hit_cnt == 4 else 0)
-            player.player_status(4)
+            player.player_status(player.record.hp_dec)
 
             if Game.BATTER_NUMBER[Game.CHANGE] == 9:
                 Game.BATTER_NUMBER[Game.CHANGE] = 1
