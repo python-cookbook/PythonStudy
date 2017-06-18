@@ -50,7 +50,6 @@ class Domino:
         for z in range(0, self.n, 1):
             self.number_answer_list.append(int(self.number_list_a[0][self.n*z:self.n*z+self.n])+int(self.number_list_b[0][self.n*z:self.n*z+self.n]))
 
-
     def run(self):
         self.input()
         sTime = time.time()
@@ -70,3 +69,4 @@ class Domino:
 if __name__ == '__main__':
     domino = Domino()
     domino.run()
+

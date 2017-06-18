@@ -30,6 +30,7 @@ class Student:                  # 클래스 Student 생성
     def input(self):    # 학생 수, 뽑은 표를 input 받아 question_list에 저장
         self.n = int(input('학생 인원 수 : '))
         self.question_list = list(input('각각의 학생이 뽑은 숫자 : ').split(' '))
+        print(self.question_list)
 
     def timechk(self):  # 구동 시간 체크하기 위한 시작시간 체크
         self.sTime = time.time()
