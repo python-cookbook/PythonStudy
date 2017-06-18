@@ -93,18 +93,10 @@ class Record:
     # 타자 상태 관련 메소드
     def batter_status(self, hp_dec):
         if hp_dec == 0:
-            self.hp -= 5
+            self.hp -= 1
         elif hp_dec == 1:
-            self.hp -= 7
-        else: self.hp -= 10
-
-    # 타자 컨디션 상태 출력 메소드
-    def show_condition(self,hp_dec):
-        keys = self.condition.keys()
-        for key in keys:
-            if key == hp_dec:
-                return self.condition[key]
-
+            self.hp -= 3
+        else: self.hp -= 5
 
 ###################################################################################################
 ## 선수 관련 클래스
