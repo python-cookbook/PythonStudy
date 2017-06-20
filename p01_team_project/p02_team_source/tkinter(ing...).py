@@ -253,45 +253,47 @@ class Game(object):
         PITCH_LOCATION = (PITCH_LOCATION + '\n') * MATRIX #융
         PITCH_LOCATION = "---------" * MATRIX + "\n" + PITCH_LOCATION + "---------" * MATRIX #융
 
-        if Game.INNERFLAG:
-            Game.OUTERFLAG=False
+
         if Game.OUT_CNT < 3:
             player = self.select_player(Game.BATTER_NUMBER[Game.CHANGE], player_list)
             print('====================================================================================================')
             print('== [{}] {}번 타자[{}] 타석에 들어섭니다.'.format(curr_team.team_name, player.number, player.name))
             print('====================================================================================================\n')
 
-            if Game.OUTERFLAG:
-                random_numbers = self.throws_numbers()  # 컴퓨터가 랜덤으로 숫자 2개 생성(구질[0](0~1), 던질위치[1](0~24))
-                print('== [전광판] =========================================================================================')
-                print('==    {}      | {} : {}'.format(Game.ADVANCE[1], self.hometeam.team_name, Game.SCORE[0]))
-                print('==  {}   {}    | {} : {}'.format(Game.ADVANCE[2], Game.ADVANCE[0], self.awayteam.team_name, Game.SCORE[1]))
-                print('== [OUT : {}, BALL : {}, STRIKE : {}]'.format(Game.OUT_CNT, Game.BALL_CNT, Game.STRIKE_CNT))
-                print('====================================================================================================')
-                print(PITCH_LOCATION.format(*[str(idx) for idx in range(26)])) #투구 영역 5 * 5 출력 융
-                print('====================================================================================================')
-                print('== 현재 타석 : {}번 타자[{}], 타율 : {}, 볼넷 : {}, 홈런 : {}'.format(player.number, player.name, player.record.avg, player.record.bob, player.record.homerun))
 
-                while True:
-                    self.root.update()
-                    if Main.Hitornot != -1:
-                        # hit_yn = int(input('타격을 하시겠습니까?(타격 : 1 타격안함 : 0)'))
-                        hit_yn = Main.Hitornot
-                        print(hit_yn)
-                        break
+            random_numbers = self.throws_numbers()  # 컴퓨터가 랜덤으로 숫자 2개 생성(구질[0](0~1), 던질위치[1](0~24))
+            print('== [전광판] =========================================================================================')
+            print('==    {}      | {} : {}'.format(Game.ADVANCE[1], self.hometeam.team_name, Game.SCORE[0]))
+            print('==  {}   {}    | {} : {}'.format(Game.ADVANCE[2], Game.ADVANCE[0], self.awayteam.team_name, Game.SCORE[1]))
+            print('== [OUT : {}, BALL : {}, STRIKE : {}]'.format(Game.OUT_CNT, Game.BALL_CNT, Game.STRIKE_CNT))
+            print('====================================================================================================')
+            print(PITCH_LOCATION.format(*[str(idx) for idx in range(26)])) #투구 영역 5 * 5 출력 융
+            print('====================================================================================================')
+            print('== 현재 타석 : {}번 타자[{}], 타율 : {}, 볼넷 : {}, 홈런 : {}'.format(player.number, player.name, player.record.avg, player.record.bob, player.record.homerun))
 
-                    else:
-                        print('Hit 여부 선택하세요.')
-                        print(Main.Hitornot)
-                        # self.attack()
-                        time.sleep(5)
-                        continue
+            while True:
+                self.root.update()
+                if Main.Hitornot != -1:
+                    # hit_yn = int(input('타격을 하시겠습니까?(타격 : 1 타격안함 : 0)'))
+                    hit_yn = Main.Hitornot
+                    print(hit_yn)
+                    break
 
+                else:
+                    #print('Hit 여부 선택하세요.')
+                    #print(Main.Hitornot)
+                    # self.attack()
+                    time.sleep(0.05)
+                    continue
+
+            while True:
+                self.root.update()
+                time.sleep(0.05)
                 if hit_yn == 1:#################타격 시############################ #융
-
                     try:
                         print('▶ 컴퓨터가 발생 시킨 숫자 : {}\n'.format(random_numbers))
-                        hit_numbers = list(int(hit_number) for hit_number in input('== 구질(0:직구 1:변화구)과 타격할 위치(0~24)를 입력하세요 : ').split(' '))  # 유저가 직접 숫자 2개 입력 #융
+                        if Main.ForB != -1:  # 유저가 직접 숫자 2개 입력 #융
+                            hit_number.append(Main.ForB,)
                         print(hit_numbers)
                         if self.hit_number_check(hit_numbers) is False:
                             raise Exception()
@@ -302,7 +304,7 @@ class Game(object):
                         print('== ▣ 잘못된 숫자가 입력되었습니다.')
                         print('====================================================================================================')
                         print('▶ 컴퓨터가 발생 시킨 숫자 : {}\n'.format(random_numbers))
-                        self.attack()
+                        continue
 
                     print('====================================================================================================')
                     print('▶ 컴퓨터가 발생 시킨 숫자 : {}\n'.format(random_numbers))
@@ -316,8 +318,7 @@ class Game(object):
                                 Game.STRIKE_CNT = 0
                                 Game.OUT_CNT += 1
                                 player.hit_and_run(0,0,0)
-                                Game.INNERFLAG=True
-                                self.attack()
+                                break
 
 
                         if hit_cnt[1] == True:#파울일 때
@@ -330,8 +331,7 @@ class Game(object):
                                     Game.STRIKE_CNT = 0
                                     Game.OUT_CNT += 1
                                     player.hit_and_run(0, 0, 0)
-                                    Game.INNERFLAG = True
-                                    self.attack()
+                                    break
 
                             if Game.STRIKE_CNT == 2: #스트라이크 카운트가 2일때가 문제. 2일때는 파울이어도 스트라이크 카운트가 늘어나선 안됨 융
                                 print('== ▣ 파울이므로 아웃이 아닙니다. 다시 치세요!!!!\n')
@@ -345,8 +345,7 @@ class Game(object):
                             print('== ▣ 홈런!!!\n')
                             player.hit_and_run(1 if hit_cnt[0] > 0 else 0, 0, 1 if hit_cnt[0] == 4 else 0)
                         self.advance_setting(hit_cnt[0])
-                        Game.INNERFLAG = True
-                        self.attack()
+                        break
 
                 elif hit_yn==0:######타격안하고 지켜보기 시전########################### 융
                     #컴퓨터가 던진 공이 볼일때 융
@@ -360,7 +359,7 @@ class Game(object):
                             Game.BALL_CNT = 0
                             player.hit_and_run(0,1,0)
                             Game.INNERFLAG = True
-                            self.attack()
+                            break
 
                     #컴퓨터가 던진 공이 스트라이크 일 때 융
                     if (random_numbers[1]>=6 and random_numbers[1]<=8) or (random_numbers[1]>=11 and random_numbers[1]<=13) or (random_numbers[1]>=16 and random_numbers[1]<=18):
@@ -373,7 +372,7 @@ class Game(object):
                             Game.OUT_CNT += 1
                             player.hit_and_run(0, 0, 0)
                             Game.INNERFLAG = True
-                            self.attack()
+                            break
 
 
             if Game.BATTER_NUMBER[Game.CHANGE] == 9:
@@ -382,7 +381,6 @@ class Game(object):
                 Game.BATTER_NUMBER[Game.CHANGE] += 1
             self.attack()
 
-        else:
             Game.CHANGE += 1
             Game.STRIKE_CNT = 0
             Game.BALL_CNT = 0
@@ -517,6 +515,7 @@ class Game(object):
 
 class Main():
     Hitornot = -1
+    ForB = -1
 
 
 
@@ -536,10 +535,14 @@ class Main():
         self.newgame.pack(fill="both", expand=True, side=LEFT)
         self.loadgame = Button(self.frameb, text='Load Game', height=4, command=self.Loadgame,bg='white', fg='purple')
         self.loadgame.pack(fill="both", expand=True, side=LEFT)
-        self.hit = Button(self.frameb, text='hit', width= 5, height=2, command=Main.Hitbutton, bg='purple', fg='white')
+        self.hit = Button(self.frameb, text='타격', width= 5, height=2, command=Main.Hitbutton, bg='purple', fg='white')
         self.hit.pack(fill="both", expand=True)
-        self.nohit = Button(self.frameb, text='No hit', width= 5, height=2, command=Main.Nohitbutton, bg='purple', fg='white')
+        self.nohit = Button(self.frameb, text='타격안함', width= 5, height=2, command=Main.Nohitbutton, bg='purple', fg='white')
         self.nohit.pack(fill="both", expand=True, side=TOP)
+        self.fastball = Button(self.frameb, text='직구', width=5, height=2, command=Main.Nohitbutton, bg='purple',fg='white')
+        self.fastball.pack(fill="both", expand=True, side=TOP)
+        self.breakingball = Button(self.frameb, text='변화구', width=5, height=2, command=Main.Nohitbutton, bg='purple', fg='white')
+        self.breakingball.pack(fill="both", expand=True, side=TOP)
         self.__board()
 
 
@@ -585,15 +588,29 @@ class Main():
         # self.canvas.create_line(240, 135, 35, 330, width=4, fill="white")
         # self.canvas.create_line(X + 20, Y + 20, X - 20, Y - 20, width=4, fill="black")
         # self.canvas.create_line(X + 20, Y + 20, X - 20, Y - 20, width=4, fill="black")
+    #
+    # def Throwandhit(self, event):
+    #     for k in range(500, 1000, 100):
+    #         for j in range(100, 600, 100):
+    #             if event.x in range(k, k + 100) and event.y in range(j, j + 100):
+    #                 self.X1 = int((k-500) / 100)
+    #                 self.Y1 = int((j-100) / 100)
+    #     print(self.X1, self.Y1)
+    #     self.King(self.X1,self.Y1)
 
     def Throwandhit(self, event):
+        loclist = [[5 * i + j for j in range(5)] for i in range(5)]
         for k in range(500, 1000, 100):
             for j in range(100, 600, 100):
                 if event.x in range(k, k + 100) and event.y in range(j, j + 100):
-                    self.X1 = int((k-500) / 100)
-                    self.Y1 = int((j-100) / 100)
-        print(self.X1, self.Y1)
-        self.King(self.X1,self.Y1)
+                    X1 = int((k - 500) / 100)
+                    Y1 = int((j - 100) / 100)
+
+        print('마우스 위치 좌표', X1, Y1)
+        print('리턴 좌표', loclist[X1, Y1])
+        self.King(X1, Y1)
+        return loclist[X1, Y1]
+
 
     def King(self, x, y):
         pass
@@ -602,12 +619,23 @@ class Main():
     def Hitbutton():
         print('hit')
         Main.Hitornot = 1
-        return 1
+
     @staticmethod
     def Nohitbutton():
         print('no hit')
         Main.Hitornot = 0
-        return 0
+
+    @staticmethod
+    def FastBall():
+        print('Fastball')
+        Main.ForB = 1
+
+    @staticmethod
+    def BreakingBall():
+        print('Brakingball')
+        Main.ForB = 0
+
+
 
 # if __name__ == '__main__':
 #
