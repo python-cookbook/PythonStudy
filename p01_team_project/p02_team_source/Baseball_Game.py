@@ -344,7 +344,7 @@ class Game:
 
                 elif hit_yn==0:######타격안하고 지켜보기 시전###########################
                     #컴퓨터가 던진 공이 볼일때
-                    if (random_numbers[1] >= 0 and random_numbers[1] <= 4) or (random_numbers[1] % 5 == 0) or (random_numbers[1] >= 20) or ((random_numbers[1]-4) % 5 ==0):
+                    if (random_numbers[1] >= 0 and random_numbers[1] <= 4) or (random_numbers[1] % 5 == 0) or (random_numbers[1] >= 20) or ((random_numbers[1]-4) % 5 == 0) or ((random_numbers[1]-3) % 5 == 0):
                         Game.BALL_CNT += 1
                         print('== ▣ 볼 !!!!!!!!!!!!!!!!!!!!!!')
                         if Game.BALL_CNT == 4:

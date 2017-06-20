@@ -1,0 +1,240 @@
+# 8.6 관리 속성 만들기
+class Person:
+    def __init__(self, first_name):
+        self.first_name = first_name
+    @property
+    def first_name(self):
+        return self._first_name
+    @first_name.setter
+    def first_name(self, value):
+        if not isinstance(value, str):
+            raise TypeError('Expected a string')
+        self._first_name = value
+    @first_name.deleter
+    def first_name(self):
+        raise AttributeError("Can't delete attribute")
+
+a = Person('Guido')
+print(a.first_name)
+a.first_name = 42
+del a.first_name
+class Person:
+    def __init__(self, first_name):
+        self.set_first_name(first_name)
+    def get_first_name(self):
+        return self._first_name
+    def set_first_name(self, value):
+        if not isinstance(value, str):
+            raise TypeError('Expected a string')
+        self._first_name = value
+    def del_first_name(self):
+        raise AttributeError("Can't delete attribute")
+    name = property(get_first_name, set_first_name, del_first_name)
+import math
+class Circle:
+    def __init__(self, radius):
+        self.radius = radius
+    @property
+    def area(self):
+        return math.pi * self.radius ** 2
+    @property
+    def perimeter(self):
+        return 2 * math.pi * self.radius
+
+c = Circle(4.0)
+print(c.radius)
+print(c.area)
+print(c.perimeter)
+# 8.7 부모 클래스의 메소드 호출
+class A:
+    def spam(self):
+        print('A.spam')
+class B(A):
+    def spam(self):
+        print('B.spam')
+        super().spam()  # 부모의 spam호출
+## super()는 일반적으로 __init__() 메소드에서 부모를 제대로 초기화 하기 위해 사용한다.
+class A:
+    def __init__(self):
+        self.x = 0
+class B(A):
+    def __init__(self):
+        super().__init__()
+        self.y = 1
+## 그리고 파이썬의 특별 메소드르 ㄹ오버라이드한 코드에서 super()를 사용하기도 한다.
+class Proxy:
+    def __init__(self, obj):
+        self._obj = obj
+    def __getattr__(self, name):
+        return getattr(self._obj, name)
+    def __setattr__(self, name, value):
+        if name.startswith('_'):
+            super().__setattr__(name, value) # Call original __setattr__
+        else:
+            setattr(self._obj, name, value)
+class Base:
+    def __init__(self):
+        print('Base.__init__')
+class A(Base):
+    def __init__(self):
+        Base.__init__(self)
+        print('A.__init__')
+class B(Base):
+    def __init__(self):
+        Base.__init__(self)
+        print('B.__init__')
+class C(A,B):
+    def __init__(self):
+        A.__init__(self)
+        B.__init__(self)
+        print('C.__init__')
+c = C()
+print(C.__mro__)  # mro리스트는 모든 베이스 클래스를 단순히 순차적으로 나열한 리스트이다.
+# 8.8 서브클래스에서 프로퍼티 확장
+class Person:
+    def __init__(self, name):
+        self.name = name
+    @property
+    def name(self):
+        return self._name
+    @name.setter
+    def name(self, value):
+        if not isinstance(value, str):
+            raise TypeError('Expected a string')
+        self._name = value
+    @name.deleter
+    def name(self):
+        raise AttributeError("Can't delete attribute")
+
+class SubPerson(Person):
+    @property
+    def name(self):
+        print('Getting name')
+        return super().name
+    @name.setter
+    def name(self, value):
+        print('Setting name to', value)
+        super(SubPerson, SubPerson).name.__set__(self, value)
+    @name.deleter
+    def name(self):
+        print('Deleting name')
+        super(SubPerson, SubPerson).name.__delete__(self)
+
+s = SubPerson('Guido')
+print(s)
+print(s.name)
+s.name = 'Larry'
+print(s)
+s.name = 42
+print(s)
+# 8.9 새로운 클래스나 인스턴스 속성 만들기
+class Integer:
+    def __init__(self, name):
+        self.name = name
+    def __get__(self, instance, cls):
+        if instance is None:
+            return self
+        else:
+            return instance.__dict__[self.name]
+    def __set__(self, instance, value):
+        if not isinstance(value, int):
+            raise TypeError('Expected an int')
+        instance.__dict__[self.name] = value
+    def __delete__(self, instance):
+        del instance.__dict__[self.name]
+
+class Point:
+    x = Integer('x')
+    y = Integer('y')
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+p = Point(2, 3)
+print(p.x)
+p.y = 5
+p.x = 2.3
+# 8.10 게으른 계산을 하는 프로퍼티 사용
+class lazyproperty:
+    def __init__(self, func):
+        self.func = func
+    def __get__(self, instance, cls):
+        if instance is None:
+            return self
+        else:
+            value = self.func(instance)
+            setattr(instance, self.func.__name__, value)
+            return value
+import math
+class Circle:
+    def __init__(self, radius):
+
+        self.radius = radius
+    @lazyproperty
+    def area(self):
+        print('Computing area')
+        return math.pi * self.radius ** 2
+    @lazyproperty
+    def perimeter(self):
+        print('Computing perimeter')
+        return 2 * math.pi * self.radius
+c = Circle(4.0)
+print(c.radius)
+print(c.area)
+print(c.perimeter)
+# 8.11 자료 구조 초기화 단순화 하기
+class Structure:
+    _fields= []
+    def __init__(self, *args):
+        if len(args) != len(self._fields):
+            raise TypeError('Expected {} arguments'.format(len(self._fields)))
+        for name, value in zip(self._fields, args):
+            setattr(self, name, value)
+if __name__ == '__main__':
+    class Stock(Structure):
+        _fields = ['name', 'shares', 'price']
+    class Point(Structure):
+        _fields = ['x','y']
+    class Circle(Structure):
+        _fields = ['radius']
+        def area(self):
+            return math.pi * self.radius ** 2
+s = Stock('ACME', 50, 91.1)
+p = Point(2, 3)
+c = Circle(4.5)
+s2 = Stock('ACME', 50)
+class Structure:
+    _fields= []
+    def __init__(self, *args, **kwargs):
+        if len(args) > len(self._fields):
+            raise TypeError('Expected {} arguments'.format(len(self._fields)))
+
+        for name, value in zip(self._fields, args):
+            setattr(self, name, value)
+        for name in self._fields[len(args):]:
+            setattr(self, name, kwargs.pop(name))
+        if kwargs:
+            raise TypeError('Invalid argument(s): {}'.format(','.join(kwargs)))
+if __name__ == '__main__':
+    class Stock(Structure):
+        _fields = ['name', 'shares', 'price']
+    s1 = Stock('ACME', 50, 91.1)
+    s2 = Stock('ACME', 50, price=91.1)
+    s3 = Stock('ACME', shares=50, price=91.1)
+class Structure:
+    _fields= []
+    def __init__(self, *args, **kwargs):
+        if len(args) != len(self._fields):
+            raise TypeError('Expected {} arguments'.format(len(self._fields)))
+
+        for name, value in zip(self._fields, args):
+            setattr(self, name, value)
+        extra_args = kwargs.keys() - self._fields
+        for name in extra_args:
+            setattr(self, name, kwargs.pop(name))
+        if kwargs:
+            raise TypeError('Duplicate values for {}'.format(','.join(kwargs)))
+if __name__ == '__main__':
+    class Stock(Structure):
+        _fields = ['name', 'shares', 'price']
+    s1 = Stock('ACME', 50, 91.1)
+    s2 = Stock('ACME', 50, 91.1, date='8/2/2012')

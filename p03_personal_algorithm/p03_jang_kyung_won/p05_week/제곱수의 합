@@ -1,0 +1,44 @@
+import os
+import psutil
+import time
+
+###################################################################################################
+## 1. 문제        : 제곱수의 합
+## 2. 소요 시간    : 0.0 초 (소수점 6자리 반올림)
+## 3. 사용 메모리  : 20280
+## 4. 만든 사람    : 장경원
+###################################################################################################
+
+
+def square_number(num):
+    for i in range(num+1,0,-1):      # 입력한수의 큰 수 부터 loop문을 실행한다.
+        # 시작 메모리 체크
+        proc1 = psutil.Process(os.getpid())
+        mem1 = proc1.memory_info()
+        before_start = mem1[0]
+        # 시작 시간 체크
+        stime = time.time()
+        if pow(i,2) <= num:          # 입력한 숫자와 같거나 작아야 하므로 조건문을 걸어준다.
+            square_member.append(i)    # 위의 조건에 맞는 i를 담아줍니다.
+            result = num-pow(i,2)      # 그리고 남은 숫자를 result에 담고
+            return square_number(result)    # 다시 같은 함수에 담습니다.
+    print(len(square_member),'개 입니다.')       # 마지막으로 갯수를 출력합니다.
+    # 종료 시간 체크
+    etime = time.time()
+    print('consumption time : ', round(etime - stime, 6))
+    # 메모리 체크
+    proc = psutil.Process(os.getpid())
+    mem = proc.memory_info()
+    after_start = mem[0]
+    print('memory use : ', after_start - before_start)
+
+square_member = []
+square_number(555)
+
+
+# 답 확인
+re11=0
+for i in square_member:
+    re11 += pow(i,2)
+print(re11)
+
