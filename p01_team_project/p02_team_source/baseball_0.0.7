@@ -1,6 +1,8 @@
+#-*- coding:utf-8 -*-
+
 import random
 import re
-
+from collections import defaultdict,namedtuple
 #판정관련
 #0 : 헛스윙
 #0 : 파울
@@ -12,14 +14,15 @@ import re
 ###################################################################################################
 ## 기록 관련 클래스
 ###################################################################################################
+from  tkinter import *
+
 class Record:
     def __init__(self):
         self.__hit = 0  # 안타 수
-        self.__bob = 0  # 볼넷 수
+        self.__bob = 0  # 볼넷 수 융
         self.__homerun = 0  # 홈런 수
         self.__atbat = 0  # 타수
         self.__avg = 0.0  # 타율
-
     @property
     def hit(self):
         return self.__hit
@@ -72,6 +75,102 @@ class Record:
 
 
 ###################################################################################################
+## 저장 및 불러오기 관련 클래스  -원주/지은
+#####################################################################################################
+
+"""
+d:/data/ 폴더 만들어야 합니다.
+
+"""
+class Saveandload:
+    DATA_SET = []
+    FILE_PATH = 'd:/data/'
+    CHECK = 0
+    LOAD_YN = True
+    print('LOAD_YN = ',LOAD_YN)
+
+
+    def __init__(self):
+        self.__hometeam = Team(game_team_list[0], Game.TEAM_LIST[game_team_list[0]])
+        self.__awayteam = Team(game_team_list[1], Game.TEAM_LIST[game_team_list[1]])
+        self.data_set = []
+        self.__ADV = []
+        self.__INNING = 0
+
+    @property
+    def hometeam(self):
+        return self.__hometeam
+
+    @property
+    def awayteam(self):
+        return self.__awayteam
+
+
+
+    def make_data_set(self,player_info,cnt,game_info,adv):
+        self.player_info = player_info
+        self.cnt = cnt
+        self.game_info = game_info
+        self.adv = adv
+    # 저장할때 join 을 통해 저장하다보니, str타입이 필요했음
+    # 어차피 리스트 형태로 매개변수를 받다보니, 아래 코드를 통해, 리스트 요소에 접근하여 str으로 변환함.
+    # 사실 save함수에서바꿔도됨.
+        self.player_info = [str(data) for data in self.player_info]
+        self.cnt = [str(data) for data in self.cnt]
+        self.game_info = [str(data) for data in self.game_info]
+        self.adv = [str(data) for data in self.adv]
+        Saveandload.DATA_SET.append([self.player_info,self.cnt,self.game_info, self.adv])
+
+    def save(self):
+
+    # writerow로 저장하려 했으나, 잘 구동되지 않아 아래와 같이 함.
+    # 파일명은 홈팀VS어웨이팀.txt로 저장됨
+    # csv파일은 with open으로 csv저장할 때, 한글파일이 있는경우 인코딩 문제가 해결되지 않아 쨟꺍 거림..
+    # 위 문제는 용현이형한테도 여쭤보았으나, 본인도 이 문제를 해결하지 못했다고 함!
+        with open(Saveandload.FILE_PATH + self.__hometeam.team_name+"VS"+self.__awayteam.team_name+".txt", "wt", encoding="utf-8") as f:
+            for line in Saveandload.DATA_SET:
+                for idx, data_list in enumerate(line, 1):
+                    if idx != 4:
+                        f.write(','.join(data_list)+',')
+                    else:
+                        f.write(','.join(data_list)+'\n')
+# [4,1,1,1]    4이닝 / [1, 1, 1]
+
+    @staticmethod
+    def load():
+        temp = 0
+        adv = []
+        print('함수 호출되었다.')
+        import csv
+        f = open('d:/data/test.txt')
+        reader = csv.reader(f, delimiter=',')
+        for i in reader:
+            print(i)
+        # print(data)
+        # for idx,i in enumerate(data,1):
+        #     if idx ==1:
+        #         temp = i
+        #     elif idx ==2 or idx == 3 or idx == 4:
+        #         adv.append(i)
+
+
+            # f.close()
+        return [temp ,adv]
+
+    def load_chk(self):
+        if Saveandload.LOAD_YN == False:
+            Saveandload.LOAD_YN = True
+            print(Saveandload.LOAD_YN)
+        else:
+            pass
+
+
+
+
+
+
+
+###################################################################################################
 ## 선수 관련 클래스
 ###################################################################################################
 class Player:
@@ -103,7 +202,7 @@ class Player:
 
     # 선수 타율 관련 메서드
     def hit_and_run(self, hit, bob, homerun):
-        self.__record.batter_record(hit, bob, homerun)
+        self.__record.batter_record(hit, bob,homerun)
 
 
 ###################################################################################################
@@ -130,9 +229,6 @@ class Team:
             temp.append(Player(self.__team_name, number, name))
         return temp
 
-    def show_players(self):
-        for player in self.__player_list:
-            print(player.player_info)
 
 
 ###################################################################################################
@@ -152,22 +248,29 @@ class Game:
         'NC': ({1: '김성욱'}, {2: '모창민'}, {3: '나성범'}, {4: '스크럭스'}, {5: '권희동'}, {6: '박석민'}, {7: '지석훈'}, {8: '김태군'}, {9: '이상호'})
     }
 
-    INNING = 1  # 1 이닝부터 시작
+
+    # INNING = 1  # 1 이닝부터 시작
+    if Saveandload.LOAD_YN == True:
+        print('여기까지')
+        temp = Saveandload.load()   #list
+        print(temp)
+    # INNING = 0
+    INNING = 0 if Saveandload.LOAD_YN == False else temp[0]
     CHANGE = 0  # 0 : hometeam, 1 : awayteam
     STRIKE_CNT = 0  # 스트라이크 개수
-    BALL_CNT = 0 #볼 개수
+    BALL_CNT = 0 #볼 개수 융
     OUT_CNT = 0  # 아웃 개수
-    ADVANCE = [0, 0, 0]  # 진루 상황, 1루, 2루, 3루 순서
+    ADVANCE = [0, 0, 0]  # 진루 상황
     SCORE = [0, 0]  # [home, away]
     BATTER_NUMBER = [1, 1]  # [home, away] 타자 순번
     MATRIX = 5
+
     LOCATION = {0: [0, 0], 1: [0, 1], 2: [0, 2], 3: [0, 3], 4: [0, 4],
                 5: [1, 0], 6: [1, 1], 7: [1, 2], 8: [1, 3], 9: [1, 4],
                 10: [2, 0], 11: [2, 1], 12: [2, 2], 13: [2, 3], 14: [2, 4],
                 15: [3, 0], 16: [3, 1], 17: [3, 2], 18: [3, 3], 19: [3, 4],
                 20: [4, 0], 21: [4, 1], 22: [4, 2], 23: [4, 3], 24: [4, 4]
                 } #던지는 위치의 좌표를 리스트로 저장.
-
 
     def __init__(self, game_team_list):
         print('====================================================================================================')
@@ -190,6 +293,7 @@ class Game:
 
     # 게임 수행 메서드
     def start_game(self):
+
         while Game.INNING <= 1: #게임을 진행할 이닝을 설정. 현재는 1이닝만 진행하게끔 되어 있음.
             print('====================================================================================================')
             print('== {} 이닝 {} 팀 공격 시작합니다.'.format(Game.INNING, self.hometeam.team_name if Game.CHANGE == 0 else self.awayteam.team_name))
@@ -236,43 +340,48 @@ class Game:
         curr_team = self.hometeam if Game.CHANGE == 0 else self.awayteam
         player_list = curr_team.player_list
         MATRIX = 5
-        PITCH_LOCATION = "| " + "{:^6s} | " * MATRIX + "\n" + "---------" * MATRIX   # 투구 영역, 행간선-태흠
-        PITCH_LOCATION = (PITCH_LOCATION + '\n') * MATRIX
-        PITCH_LOCATION = "---------" * MATRIX + "\n" + PITCH_LOCATION
+        PITCH_LOCATION = "| " + "{:^6s} | " * MATRIX #투구 영역 융
+        PITCH_LOCATION = (PITCH_LOCATION + '\n') * MATRIX #융
+        PITCH_LOCATION = "---------" * MATRIX + "\n" + PITCH_LOCATION + "---------" * MATRIX #융
 
-
-        if Game.OUT_CNT < 3:
+        if Game.OUT_CNT < 3 and Saveandload.LOAD_YN == False:
             player = self.select_player(Game.BATTER_NUMBER[Game.CHANGE], player_list)
             print('====================================================================================================')
             print('== [{}] {}번 타자[{}] 타석에 들어섭니다.'.format(curr_team.team_name, player.number, player.name))
             print('====================================================================================================\n')
 
             while True:
+                # 저장되는 변수를 아래 리스트에 담아 make_data_set함수의 매개변수로 넣습니다.
+                PLAYER_INFO = [player.number, player.name, player.record.avg, player.record.bob,player.record.homerun]
+                CNT = [Game.STRIKE_CNT, Game.BALL_CNT, Game.OUT_CNT]
+                GAME_INFO = [Game.INNING, Game.CHANGE]
+                ADV = Game.ADVANCE
+                Saveandload().make_data_set(PLAYER_INFO, CNT, GAME_INFO, ADV)
                 random_numbers = self.throws_numbers()  # 컴퓨터가 랜덤으로 숫자 2개 생성(구질[0](0~1), 던질위치[1](0~24))
                 print('== [전광판] =========================================================================================')
                 print('==    {}      | {} : {}'.format(Game.ADVANCE[1], self.hometeam.team_name, Game.SCORE[0]))
                 print('==  {}   {}    | {} : {}'.format(Game.ADVANCE[2], Game.ADVANCE[0], self.awayteam.team_name, Game.SCORE[1]))
                 print('== [OUT : {}, BALL : {}, STRIKE : {}]'.format(Game.OUT_CNT, Game.BALL_CNT, Game.STRIKE_CNT))
                 print('====================================================================================================')
-                print(PITCH_LOCATION.format(*[str(idx) for idx in range(26)])) #투구 영역 5 * 5 출력
+                print(PITCH_LOCATION.format(*[str(idx) for idx in range(26)])) #투구 영역 5 * 5 출력 융
                 print('====================================================================================================')
                 print('== 현재 타석 : {}번 타자[{}], 타율 : {}, 볼넷 : {}, 홈런 : {}'.format(player.number, player.name, player.record.avg, player.record.bob, player.record.homerun))
 
                 try :
-                    hit_yn = int(input('타격을 하시겠습니까?(타격 : 1 타격안함 : 0)'))
+                    hit_yn = int(input('타격을 하시겠습니까?(타격 : 1 타격안함 : 0  저장 : 333,  불러오기  : 444)'))
                 except Exception:
                     print('잘못된 숫자를 입력하였습니다. 다시 입력하세요.')
                     continue
 
-                if hit_yn == 1:#################타격 시############################
-
+                if hit_yn == 1:#################타격 시############################ #융
                     try:
                         print('▶ 컴퓨터가 발생 시킨 숫자 : {}\n'.format(random_numbers))
-                        hit_numbers = list(int(hit_number) for hit_number in input('== 구질(0:직구 1:변화구)과 타격할 위치(0~24)를 입력하세요 : ').split(' '))  # 유저가 직접 숫자 2개 입력
+                        hit_numbers = list(int(hit_number) for hit_number in input('== 구질(0:직구 1:변화구)과 타격할 위치(0~24)를 입력하세요 : ').split(' '))  # 유저가 직접 숫자 2개 입력 #융
+                        print(hit_numbers)
                         if self.hit_number_check(hit_numbers) is False:
                             raise Exception()
-                        hit_cnt = self.hit_judgment(random_numbers, hit_numbers)
-
+                        hit_cnt = self.hit_judgment(random_numbers, hit_numbers)  # 안타 판별
+                        print(hit_cnt,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
 
                     except Exception:
                         print('== ▣ 잘못된 숫자가 입력되었습니다.')
@@ -284,7 +393,7 @@ class Game:
                     print('▶ 컴퓨터가 발생 시킨 숫자 : {}\n'.format(random_numbers))
 
                     if hit_cnt[0] == 0:  # strike !!!
-                        if hit_cnt[1] == False: #파울이 아닐 때
+                        if hit_cnt[1] == False:#파울이 아닐 때 융
                             Game.STRIKE_CNT += 1
                             print('== ▣ 스트라이크!!!\n')
                             if Game.STRIKE_CNT == 3:
@@ -295,10 +404,10 @@ class Game:
                                 break
 
                         if hit_cnt[1] == True:#파울일 때
-                            if Game.STRIKE_CNT <= 1: #스트라이크 카운트가 1 이하일때는 원래대로 진행
+                            if Game.STRIKE_CNT <= 1: #스트라이크 카운트가 1 이하일때는 원래대로 진행 융
                                 Game.STRIKE_CNT += 1
                                 print('== ▣ 파울!!!\n')
-                                print('== ▣ 스트라이크!!!\n')
+                                print('== ▣ 스트라이크!!!\n')   #여기도 나중에 func(0,0,1) 이런식으로 하면 됨.  원주
                                 if Game.STRIKE_CNT == 3:
                                     print('== ▣ 삼진 아웃!!!\n')
                                     Game.STRIKE_CNT = 0
@@ -306,70 +415,60 @@ class Game:
                                     player.hit_and_run(0, 0, 0)
                                     break
 
-
-                            if Game.STRIKE_CNT == 2: #스트라이크 카운트가 2일때가 문제. 2일때는 파울이어도 스트라이크 카운트가 늘어나선 안됨
+                            if Game.STRIKE_CNT == 2: #스트라이크 카운트가 2일때가 문제. 2일때는 파울이어도 스트라이크 카운트가 늘어나선 안됨 융
                                 print('== ▣ 파울이므로 아웃이 아닙니다. 다시 치세요!!!!\n')
 
-
-                    else:   # hit_cnt[0] == 1 이상일 때, 즉 1루타 이상일 때
-                        Game.STRIKE_CNT = 0
-                        if hit_cnt[0] != 4:
-
-                            if hit_cnt[0] == -1:   # 플라이볼일때, 태흠
-                                Game.OUT_CNT += 1
-                                print('== ▣ 높게 뜬공! 그대로 외야수에 잡혀 아웃됩니다. \n'.format(hit_cnt[0]))
-                                player.hit_and_run(1 if hit_cnt[0] > 0 else 0, 0, 1 if hit_cnt[0] == 4 else 0)
-                                self.advance_setting(hit_cnt[0])
-                                break
-
-                            elif hit_cnt[2] == True and 1 in Game.ADVANCE:   # 출루인줄 알았지만 병살타ㅜ({}루타, 병살타 판단), 태흠
-                                Game.STRIKE_CNT = 0
-                                Game.BALL_CNT = 0
-                                Game.OUT_CNT += 2
-                                player.hit_and_run(1 if hit_cnt[0] > 0 else 0, 0, 1 if hit_cnt[0] == 4 else 0)  # 진루타, 볼넷, 홈런
-                                print('== ▣ 병살타!!! 아~ 이게 무슨일입니까!! \n'.format(hit_cnt[0]))
-                                self.advance_setting(hit_cnt[0], False, True)
-                                break
-
+                    else:
+                        Game.STRIKE_CNT = 0     #진루했으니, 0처리
+                        if hit_cnt[0] != 4:     #1,2,3루타 라면
                             print('== ▣ {}루타!!!\n'.format(hit_cnt[0]))
-                            player.hit_and_run(1 if hit_cnt[0] > 0 else 0, 0, 1 if hit_cnt[0] == 4 else 0)
-                            self.advance_setting(hit_cnt[0])
-                            break
-
-                        else:   # 홈런일 때
+                            player.hit_and_run(1, 0, 0) # 1,0,0 #원주
+                        else:
                             print('== ▣ 홈런!!!\n')
-                            player.hit_and_run(1 if hit_cnt[0] > 0 else 0, 0, 1 if hit_cnt[0] == 4 else 0)
+                            player.hit_and_run(1, 0, 1)  # 1,0,1 #원주
                         self.advance_setting(hit_cnt[0])
                         break
 
-                elif hit_yn==0:######타격안하고 지켜보기 시전###########################
-                    #컴퓨터가 던진 공이 볼일때
-                    if (random_numbers[1] >= 0 and random_numbers[1] <= 4) or (random_numbers[1] % 5 == 0) or (random_numbers[1] >= 20) or ((random_numbers[1]-4) % 5 == 0) or ((random_numbers[1]-3) % 5 == 0):
+                elif hit_yn==0:######타격안하고 지켜보기 시전########################### 융
+                    #컴퓨터가 던진 공이 볼일때 융
+                    if (random_numbers[1] >= 0 and random_numbers[1] <= 4) or (random_numbers[1] % 5 == 0) or (random_numbers[1] >= 20) or ((random_numbers[1]-4) % 5 ==0):
                         Game.BALL_CNT += 1
                         print('== ▣ 볼 !!!!!!!!!!!!!!!!!!!!!!')
                         if Game.BALL_CNT == 4:
                             print('== ▣ 볼넷 1루출루 !!!!!!!!!!!!!!!!!!!!!! 투수가 정신을 못차리네요!')
-                            return self.advance_setting(1,True)
+                            self.advance_setting(1,True)
                             Game.STRIKE_CNT = 0
                             Game.BALL_CNT = 0
+                            Game.OUT_CNT = 0  #원주
                             player.hit_and_run(0,1,0)
                             break
 
-                    #컴퓨터가 던진 공이 스트라이크 일 때
+                    #컴퓨터가 던진 공이 스트라이크 일 때 융
                     if (random_numbers[1]>=6 and random_numbers[1]<=8) or (random_numbers[1]>=11 and random_numbers[1]<=13) or (random_numbers[1]>=16 and random_numbers[1]<=18):
                         Game.STRIKE_CNT += 1
                         print('== ▣ 스트라이크!!!!!!!!!!!!!')
                         if Game.STRIKE_CNT ==3:
-                            print('== ▣ 방망이도 못 휘두르고 삼진!!!!!!!!!!!!!! 제구력이 훌륭하군요!')
+                            print('== ▣ 방망이도 안 휘두르고 삼진!!!!!!!!!!!!!! 제구력이 훌륭하군요!')
                             Game.STRIKE_CNT = 0
                             Game.BALL_CNT = 0
                             Game.OUT_CNT += 1
                             player.hit_and_run(0, 0, 0)
-                            print(player.hit_and_run)
                             break
-                    #player.hit_and_run(1 if hit_cnt[0] > 0 else 0, 1 if len(hit_cnt) == 0 else 0, 1 if hit_cnt[0] == 4 else 0)
+            #일단 333입력하면 저장하도록 했습니다.
+            #무성이형이 액션기능 넣어서 활성화해주세욬ㅋㅋ
+                elif hit_yn == 333:
+                    Saveandload().save()
+                elif hit_yn == 444:
+                    Saveandload().load_chk()   #LOAD_YN 을 TRUE로 변환
+                    break
 
 
+
+            PLAYER_INFO = [player.number, player.name, player.record.avg, player.record.bob, player.record.homerun]
+            CNT = [Game.STRIKE_CNT, Game.BALL_CNT, Game.OUT_CNT]
+            GAME_INFO = [Game.INNING, Game.CHANGE]
+            ADV = Game.ADVANCE
+            Saveandload().make_data_set(PLAYER_INFO, CNT, GAME_INFO, ADV)
             if Game.BATTER_NUMBER[Game.CHANGE] == 9:
                 Game.BATTER_NUMBER[Game.CHANGE] = 1
             else:
@@ -385,41 +484,18 @@ class Game:
             print('====================================================================================================')
             print('== 공수교대 하겠습니다.')
             print('====================================================================================================\n')
-
     # 진루 및 득점 설정하는 메서드
-    def advance_setting(self, hit_cnt, bob=False, double_play=False):   # {}루타~!
+    def advance_setting(self, hit_cnt, bob=False):
         if hit_cnt == 4:  # 홈런인 경우
             Game.SCORE[Game.CHANGE] += (Game.ADVANCE.count(1)+1)
             Game.ADVANCE = [0, 0, 0]
-
-        elif hit_cnt == -1:   # 태흠
-            pass
-
-        elif double_play is True:   # 태흠
-            for i in range(len(Game.ADVANCE), 0, -1):
-                if Game.ADVANCE[i-1] == 1:
-                    Game.ADVANCE[i-1] = 0
-                    break
-                    # 여기서 병살주자 비워주고 시작
-
-
-            for i in range(len(Game.ADVANCE), 0, -1):
-                if Game.ADVANCE[i-1] == 1:
-                    if (i + hit_cnt) > 3:  # 기존에 출루한 선수들 중 득점 가능한 선수들에 대한 진루 설정 예, 1루+3루타 / 2루+2루타 / 3루+1루타
-                        Game.SCORE[Game.CHANGE] += 1  # 득점 해주고
-                        Game.ADVANCE[i - 1] = 0  # 자리 다시 비워주고
-                    else:  # 기존 출루한 선수들 중 득점권에 있지 않은 선수들에 대한 진루 설정
-                        Game.ADVANCE[i - 1 + hit_cnt] = 1
-                        Game.ADVANCE[i - 1] = 0
-
-
         else:
             if bob==False: #볼넷이 아닐때
                 for i in range(len(Game.ADVANCE), 0, -1):
                     if Game.ADVANCE[i-1] == 1:
-                        if (i + hit_cnt) > 3:  # 기존에 출루한 선수들 중 득점 가능한 선수들에 대한 진루 설정 예, 1루+3루타 / 2루+2루타 / 3루+1루타
-                            Game.SCORE[Game.CHANGE] += 1   # 득점 해주고
-                            Game.ADVANCE[i-1] = 0   # 자리 다시 비워주고
+                        if (i + hit_cnt) > 3:  # 기존에 출루한 선수들 중 득점 가능한 선수들에 대한 진루 설정
+                            Game.SCORE[Game.CHANGE] += 1
+                            Game.ADVANCE[i-1] = 0
                         else:  # 기존 출루한 선수들 중 득점권에 있지 않은 선수들에 대한 진루 설정
                             Game.ADVANCE[i-1 + hit_cnt] = 1
                             Game.ADVANCE[i-1] = 0
@@ -427,122 +503,91 @@ class Game:
 
             elif bob==True: #볼넷일때
                 if Game.ADVANCE[0]==1: #1루에 주자가 있을때.
-                    for i in range(len(Game.ADVANCE), 0, -1):
-                        if Game.ADVANCE[i-1] == 1:
-                            if (i + hit_cnt) > 3:  # 기존에 출루한 선수들 중 득점 가능한 선수들에 대한 진루 설정
-                                Game.SCORE[Game.CHANGE] += 1
-                                Game.ADVANCE[i-1] = 0
-                            else:  # 기존 출루한 선수들 중 득점권에 있지 않은 선수들에 대한 진루 설정
-                                Game.ADVANCE[i-1 + hit_cnt] = 1
-                                Game.ADVANCE[i-1] = 0
-                    Game.ADVANCE[hit_cnt-1] = 1  # 타석에 있던 선수에 대한 진루 설정
+                    if Game.ADVANCE[1]==0 and Game.ADVANCE[2]==1:#1,3루 일때
+                        Game.ADVANCE[1]=1
+                    else: #그 외의 경우
+                        for i in range(len(Game.ADVANCE), 0, -1):
+                            if Game.ADVANCE[i-1] == 1:
+                                if (i + hit_cnt) > 3:  # 기존에 출루한 선수들 중 득점 가능한 선수들에 대한 진루 설정
+                                    Game.SCORE[Game.CHANGE] += 1
+                                    Game.ADVANCE[i-1] = 0
+                                else:  # 기존 출루한 선수들 중 득점권에 있지 않은 선수들에 대한 진루 설정
+                                    Game.ADVANCE[i-1 + hit_cnt] = 1
+                                    Game.ADVANCE[i-1] = 0
+                        Game.ADVANCE[hit_cnt-1] = 1  # 타석에 있던 선수에 대한 진루 설정
+
+
                 else: #1루에 주자가 없을때는 1루에만 주자를 채워 넣는다.
                     Game.ADVANCE[0] = 1
 
     # 컴퓨터가 생성한 랜덤 수와 플레이어가 입력한 숫자가 얼마나 맞는지 판단
-    def hit_judgment(self, random_ball, hit_numbers): #(공던질위치, 구질)
+    def hit_judgment(self, random_ball, hit_numbers): #(공던질위치, 구질) #융
         cnt = 0
         Foul = False
-        Double_Play = False   # 태흠
-        fly_ball = False   # 태흠
-        UPDOWN = abs(Game.LOCATION[random_ball[1]][0] - Game.LOCATION[hit_numbers[1]][0]) #투수와 타자의 선택한 공 위치의 높낮이차이
-        L_OR_R = abs(Game.LOCATION[random_ball[1]][1] - Game.LOCATION[hit_numbers[1]][1]) #투수와 타자의 선택한 공 위치의 좌우차이
-        if random_ball[0] == hit_numbers[0]: #투수가 던진 공의 구질과 타자가 선택한 구질이 같을 때
-            if random_ball[1] == hit_numbers[1]:#위치까지 같으니까 홈런
+        UPDOWN = abs(Game.LOCATION[random_ball[1]][0] - Game.LOCATION[hit_numbers[1]][0]) #투수와 타자의 선택한 공 위치의 높낮이차이 #융
+        L_OR_R = abs(Game.LOCATION[random_ball[1]][1] - Game.LOCATION[hit_numbers[1]][1]) #투수와 타자의 선택한 공 위치의 좌우차이 #융
+        if random_ball[0] == hit_numbers[0]: #투수가 던진 공의 구질과 타자가 선택한 구질이 같을 때 #융
+            if random_ball[1] == hit_numbers[1]:#위치가 같으니까 홈런 #융
                 cnt += 4
-            elif UPDOWN == 0:   # 높낮이가 같은 선상일 때
-                if L_OR_R == 1:   # 좌우로 1칸 차이
+            elif UPDOWN == 0:#높낮이가 같은 선상일 때 #융
+                if L_OR_R == 1: #좌우로 1칸 차이 #융
+                    print('3루타~')
                     cnt += 3
-                    if self.doble_play_OUT() is True:   # 태흠
-                        Double_Play = True
-                elif L_OR_R == 2: # 좌우로 2칸 차이
+                elif L_OR_R == 2: #좌우로 2칸 차이 #융
+                    print('2루타~')
                     cnt += 2
-                    if self.doble_play_OUT() is True:   # 태흠
-                        Double_Play = True
+                elif L_OR_R >= 3: #좌우로 3칸 차이 #융
+                    print('1루타~')
+                    cnt += 1
+            elif UPDOWN == 1:#높낮이 차이가 하나일때 #융
+                if L_OR_R ==1:
+                    print('2루타~')
+                    cnt += 2
+                elif L_OR_R ==2:
+                    print('1루타~')
+                    cnt += 1
                 elif L_OR_R >= 3:
-                    cnt += 1
-                    if self.doble_play_OUT() is True:   # 태흠
-                        Double_Play = True
-
-            elif UPDOWN == 1:   # 높낮이 차이가 하나일때
-                if L_OR_R ==1:    # 좌우로 1칸 차이
-                    cnt += 2
-                    if self.doble_play_OUT() is True:   # 태흠
-                        Double_Play = True
-                elif L_OR_R == 2:  # 좌우로 2칸 차이
-                    cnt += 1
-                    if self.doble_play_OUT() is True:   # 태흠
-                        Double_Play = True
-                elif L_OR_R >= 3: # 좌우로 3칸 차이
-                    print(121213)
+                    print('파울')
                     cnt += 0
                     Foul = True
-
-
-            elif UPDOWN >= 2:   # 높낮이가 두개이상 차이날때
+            elif UPDOWN >= 2:#높낮이가 두개이상 차이날때 #융
                 print('헛스윙~!')
                 cnt += 0
 
-        else: #투수가 던진 공의 구질과 타자가 선택한 구질이 다를 때
-            if random_ball[1] == hit_numbers[1]:
+        else: #투수가 던진 공의 구질과 타자가 선택한 구질이 다를 때 융
+            if random_ball[0] == hit_numbers[0]:#위치가 같지만 구질은 다르니 3루타 융
                 cnt += 3
-                if self.flyball_OUT() is True:   # 플라이볼 판정
-                    cnt = -1   # 0이면 스트라이크 판정 나서 -1로 해줌     ###### 여기 버그 내일 고치시오!@#!@#!@#!@#!@
-
-
-            elif UPDOWN == 0:#높낮이가 같은 선상일 때
+            elif UPDOWN == 0:#높낮이가 같은 선상일 때 #융
                 if L_OR_R == 1:
+                    print('2루타~')
                     cnt += 2
-                    if self.doble_play_OUT() is True:   # 태흠
-                        Double_Play = True
                 elif L_OR_R == 2:
+                    print('1루타~')
                     cnt += 1
-                    if self.doble_play_OUT() is True:   # 태흠
-                        Double_Play = True
                 elif L_OR_R >= 3:
+                    print('파울 ㅜㅜ')
                     cnt += 0
                     Foul = True
-
-            elif UPDOWN == 1:#높낮이 차이가 하나일때
-                if L_OR_R == 1:
+            elif UPDOWN == 1:#높낮이 차이가 하나일때 융
+                if L_OR_R ==1:
+                    print('1루타~')
                     cnt += 1
-                    if self.doble_play_OUT() is True:   # 태흠
-                        Double_Play = True
                 elif L_OR_R ==2:
+                    print('파울ㅠㅠ')
                     cnt += 0
                     Foul = True
                 elif L_OR_R >= 3:
-
+                    print('헛스윙')
                     cnt += 0
-
-            elif UPDOWN >= 2:#높낮이가 두개이상 차이날때
+            elif UPDOWN >= 2:#높낮이가 두개이상 차이날때 융
+                print('헛스윙~!')
                 cnt += 0
 
-
-        return cnt, Foul, Double_Play, fly_ball   # 태흠
-
-
-    def doble_play_OUT(self):   # 태흠
-        self.r1 = random.random()
-        if self.r1 < 0.25:
-            return True
-        return False
-
-    def flyball_OUT(self):   # 태흠
-        self.r2 = random.random()
-        if self.r2 < 0.1:
-            return True
-        return False
-
-
-
-
-
-
+        return cnt,Foul
 
     # 선수가 입력한 숫자 확인
-    #@staticmethod #self추가
-    def hit_number_check(self,hit_numbers): #구질(0~1),위치(0~24)가 들어옴
+    #융
+    def hit_number_check(self,hit_numbers): #구질(0~1),위치(0~24)가 들어옴 융
         if len(hit_numbers) == 2:
             if (hit_numbers[0] >= 0 and hit_numbers[0] <= 1) and (hit_numbers[1] >= 0 and hit_numbers[1] <= 24):
                 return True
@@ -566,6 +611,7 @@ if __name__ == '__main__':
     while True:
         game_team_list = []
         print('====================================================================================================')
+
         game_team_list = input('=> 게임을 진행할 두 팀을 입력하세요 : ').split(' ')
         print('====================================================================================================\n')
         if (game_team_list[0] in Game.TEAM_LIST) and (game_team_list[1] in Game.TEAM_LIST):
