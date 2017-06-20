@@ -549,6 +549,7 @@ class Main():
         self.fastball.pack(fill="both", expand=True, side=TOP)
         self.breakingball = Button(self.frameb, text='변화구', width=5, height=2, command=Main.BreakingBall, bg='purple', fg='white')
         self.breakingball.pack(fill="both", expand=True, side=TOP)
+        self.canvas.bind("<ButtonPress-1>", Main.Throwandhit)
         self.__board()
 
 
@@ -561,11 +562,11 @@ class Main():
         self.i = 0
         self.j = False
 
-    def Newgame(self):
-        self.canvas.delete(ALL)
-        self.__board()
-        # self.label['text'] = '{}\n{}'.format(self.Game.printhometeam, self.Game.printawayteam)
-        self.canvas.bind("<ButtonPress-1>", self.Throwandhit)
+    # def Newgame(self):
+    #     self.canvas.delete(ALL)
+    #     self.__board()
+    #     # self.label['text'] = '{}\n{}'.format(self.Game.printhometeam, self.Game.printawayteam)
+    #     self.canvas.bind("<ButtonPress-1>", Main.Throwandhit)
 
     def __board(self):
         self.canvas.create_rectangle(500, 0, 1000, 600, outline="black")
@@ -604,7 +605,8 @@ class Main():
     #     print(self.X1, self.Y1)
     #     self.King(self.X1,self.Y1)
 
-    def Throwandhit(self, event):
+    @staticmethod
+    def Throwandhit(event):
         loclist = [[5 * i + j for j in range(5)] for i in range(5)]
         for k in range(500, 1000, 100):
             for j in range(100, 600, 100):
@@ -613,13 +615,8 @@ class Main():
                     Y1 = int((j - 100) / 100)
 
         print('마우스 위치 좌표', X1, Y1)
-        print('리턴 좌표', loclist[X1, Y1])
-        Main.BallLoc = loclist[X1,Y1]
-        self.King(X1, Y1)
-
-
-    def King(self, x, y):
-        pass
+        print('리턴 좌표', loclist[X1][Y1])
+        Main.BallLoc = loclist[X1][Y1]
 
     @staticmethod
     def Hitbutton():
@@ -631,10 +628,12 @@ class Main():
         print('no hit')
         Main.Hitornot = 0
 
+
     @staticmethod
     def FastBall():
         print('Fastball')
         Main.ForB = 1
+
 
     @staticmethod
     def BreakingBall():
