@@ -11,7 +11,7 @@ from tkinter import Frame, Canvas, Label, Button, LEFT,  ALL, Tk, StringVar, Ent
 
 
 
-import random
+import random,threading
 import re,time
 
 #판정관련
@@ -181,6 +181,8 @@ class Game(object):
                 20: [4, 0], 21: [4, 1], 22: [4, 2], 23: [4, 3], 24: [4, 4]
                 } #던지는 위치의 좌표를 리스트로 저장.
 
+    INNERFLAG = False
+    OUTERFLAG = True
 
     def __init__(self, game_team_list):
         print('Home Team : ' + game_team_list[0]+' : ', Game.TEAM_LIST[game_team_list[0]])
@@ -199,8 +201,7 @@ class Game(object):
 
     # 게임 수행 메서드
     def start_game(self):
-        #def callback():
-        while Game.INNING <= 1: #게임을 진행할 이닝을 설정. 현재는 1이닝만 진행하게끔 되어 있음.
+        if Game.INNING <= 2: #게임을 진행할 이닝을 설정. 현재는 1이닝만 진행하게끔 되어 있음.
             print('====================================================================================================')
             print('== {} 이닝 {} 팀 공격 시작합니다.'.format(Game.INNING, self.hometeam.team_name if Game.CHANGE == 0 else self.awayteam.team_name))
             print('====================================================================================================\n')
@@ -209,7 +210,7 @@ class Game(object):
             if Game.CHANGE == 2:  # 이닝 교체
                 Game.INNING += 1
                 Game.CHANGE = 0
-
+            self.start_game()
         print('============================================================================================================')
         print('== 게임 종료!!!')
         print('============================================================================================================\n')
@@ -243,6 +244,7 @@ class Game(object):
 
     # 공격 수행 메서드
     def attack(self):
+
         curr_team = self.hometeam if Game.CHANGE == 0 else self.awayteam
         player_list = curr_team.player_list
         MATRIX = 5
@@ -250,14 +252,15 @@ class Game(object):
         PITCH_LOCATION = (PITCH_LOCATION + '\n') * MATRIX #융
         PITCH_LOCATION = "---------" * MATRIX + "\n" + PITCH_LOCATION + "---------" * MATRIX #융
 
-
+        if Game.INNERFLAG:
+            Game.OUTERFLAG=False
         if Game.OUT_CNT < 3:
             player = self.select_player(Game.BATTER_NUMBER[Game.CHANGE], player_list)
             print('====================================================================================================')
             print('== [{}] {}번 타자[{}] 타석에 들어섭니다.'.format(curr_team.team_name, player.number, player.name))
             print('====================================================================================================\n')
 
-            while True:
+            if Game.OUTERFLAG:
                 random_numbers = self.throws_numbers()  # 컴퓨터가 랜덤으로 숫자 2개 생성(구질[0](0~1), 던질위치[1](0~24))
                 print('== [전광판] =========================================================================================')
                 print('==    {}      | {} : {}'.format(Game.ADVANCE[1], self.hometeam.team_name, Game.SCORE[0]))
@@ -272,7 +275,7 @@ class Game(object):
                     hit_yn = int(input('타격을 하시겠습니까?(타격 : 1 타격안함 : 0)'))
                 except Exception:
                     print('잘못된 숫자를 입력하였습니다. 다시 입력하세요.')
-                    continue
+                    self.attack()
 
                 if hit_yn == 1:#################타격 시############################ #융
 
@@ -289,7 +292,7 @@ class Game(object):
                         print('== ▣ 잘못된 숫자가 입력되었습니다.')
                         print('====================================================================================================')
                         print('▶ 컴퓨터가 발생 시킨 숫자 : {}\n'.format(random_numbers))
-                        continue
+                        self.attack()
 
                     print('====================================================================================================')
                     print('▶ 컴퓨터가 발생 시킨 숫자 : {}\n'.format(random_numbers))
@@ -303,7 +306,9 @@ class Game(object):
                                 Game.STRIKE_CNT = 0
                                 Game.OUT_CNT += 1
                                 player.hit_and_run(0,0,0)
-                                break
+                                Game.INNERFLAG=True
+                                self.attack()
+
 
                         if hit_cnt[1] == True:#파울일 때
                             if Game.STRIKE_CNT <= 1: #스트라이크 카운트가 1 이하일때는 원래대로 진행 융
@@ -315,7 +320,8 @@ class Game(object):
                                     Game.STRIKE_CNT = 0
                                     Game.OUT_CNT += 1
                                     player.hit_and_run(0, 0, 0)
-                                    break
+                                    Game.INNERFLAG = True
+                                    self.attack()
 
                             if Game.STRIKE_CNT == 2: #스트라이크 카운트가 2일때가 문제. 2일때는 파울이어도 스트라이크 카운트가 늘어나선 안됨 융
                                 print('== ▣ 파울이므로 아웃이 아닙니다. 다시 치세요!!!!\n')
@@ -329,7 +335,8 @@ class Game(object):
                             print('== ▣ 홈런!!!\n')
                             player.hit_and_run(1 if hit_cnt[0] > 0 else 0, 0, 1 if hit_cnt[0] == 4 else 0)
                         self.advance_setting(hit_cnt[0])
-                        break
+                        Game.INNERFLAG = True
+                        self.attack()
 
                 elif hit_yn==0:######타격안하고 지켜보기 시전########################### 융
                     #컴퓨터가 던진 공이 볼일때 융
@@ -342,7 +349,8 @@ class Game(object):
                             Game.STRIKE_CNT = 0
                             Game.BALL_CNT = 0
                             player.hit_and_run(0,1,0)
-                            break
+                            Game.INNERFLAG = True
+                            self.attack()
 
                     #컴퓨터가 던진 공이 스트라이크 일 때 융
                     if (random_numbers[1]>=6 and random_numbers[1]<=8) or (random_numbers[1]>=11 and random_numbers[1]<=13) or (random_numbers[1]>=16 and random_numbers[1]<=18):
@@ -354,7 +362,8 @@ class Game(object):
                             Game.BALL_CNT = 0
                             Game.OUT_CNT += 1
                             player.hit_and_run(0, 0, 0)
-                            break
+                            Game.INNERFLAG = True
+                            self.attack()
 
 
             if Game.BATTER_NUMBER[Game.CHANGE] == 9:
@@ -614,12 +623,9 @@ if __name__ == '__main__':
         #     root = Tk()
         #     Main(root, game_team_list)
         #     root.mainloop()
+
         root = Tk()
-        Main(root,game_team_list)
-        LOOP_ACTIVE = True
-        #root.after()
-        #while LOOP_ACTIVE:
-        root.after(2000)
+        app = Main(root,game_team_list)
         root.mainloop()
 
 
