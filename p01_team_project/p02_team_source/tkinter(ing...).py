@@ -252,6 +252,7 @@ class Game(object):
         PITCH_LOCATION = "| " + "{:^6s} | " * MATRIX #투구 영역 융
         PITCH_LOCATION = (PITCH_LOCATION + '\n') * MATRIX #융
         PITCH_LOCATION = "---------" * MATRIX + "\n" + PITCH_LOCATION + "---------" * MATRIX #융
+        hit_numbers = []
 
 
         if Game.OUT_CNT < 3:
@@ -289,25 +290,28 @@ class Game(object):
             while True:
                 self.root.update()
                 time.sleep(0.05)
-                if hit_yn == 1:#################타격 시############################ #융
-                    try:
-                        print('▶ 컴퓨터가 발생 시킨 숫자 : {}\n'.format(random_numbers))
-                        if Main.ForB != -1:  # 유저가 직접 숫자 2개 입력 #융
-                            hit_number.append(Main.ForB,)
-                        print(hit_numbers)
-                        if self.hit_number_check(hit_numbers) is False:
-                            raise Exception()
-                        hit_cnt = self.hit_judgment(random_numbers, hit_numbers)  # 안타 판별
-                        print(hit_cnt,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+                if hit_yn == 1 :#################타격 시############################ #융
+                    while True :
+                        self.root.update()
+                        time.sleep(0.05)
+                        hit_numbers = [Main.ForB, Main.BallLoc]
 
-                    except Exception:
-                        print('== ▣ 잘못된 숫자가 입력되었습니다.')
-                        print('====================================================================================================')
-                        print('▶ 컴퓨터가 발생 시킨 숫자 : {}\n'.format(random_numbers))
-                        continue
+                        if Main.ForB != -1 and Main.BallLoc != -1 :
+                            print('▶ 컴퓨터가 발생 시킨 숫자 : {}\n'.format(random_numbers))
+                            hit_numbers = [Main.ForB, Main.BallLoc]
+                            print(hit_numbers)
+                            if self.hit_number_check(hit_numbers) is False:
+                                raise Exception()
+                            hit_cnt = self.hit_judgment(random_numbers, hit_numbers)  # 안타 판별
+                            print(hit_cnt,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+                            break
 
-                    print('====================================================================================================')
-                    print('▶ 컴퓨터가 발생 시킨 숫자 : {}\n'.format(random_numbers))
+                        else :
+                            print('== ▣ 잘못된 숫자가 입력되었습니다.')
+                            print(hit_numbers)
+                            print('====================================================================================================')
+                            print('▶ 컴퓨터가 발생 시킨 숫자 : {}\n'.format(random_numbers))
+                            continue
 
                     if hit_cnt[0] == 0:  # strike !!!
                         if hit_cnt[1] == False:#파울이 아닐 때 융
@@ -373,6 +377,8 @@ class Game(object):
                             player.hit_and_run(0, 0, 0)
                             Game.INNERFLAG = True
                             break
+                else :
+                    continue
 
 
             if Game.BATTER_NUMBER[Game.CHANGE] == 9:
@@ -516,7 +522,7 @@ class Game(object):
 class Main():
     Hitornot = -1
     ForB = -1
-
+    BallLoc = -1
 
 
     def __init__(self, master, game_team_list, root):
@@ -539,9 +545,9 @@ class Main():
         self.hit.pack(fill="both", expand=True)
         self.nohit = Button(self.frameb, text='타격안함', width= 5, height=2, command=Main.Nohitbutton, bg='purple', fg='white')
         self.nohit.pack(fill="both", expand=True, side=TOP)
-        self.fastball = Button(self.frameb, text='직구', width=5, height=2, command=Main.Nohitbutton, bg='purple',fg='white')
+        self.fastball = Button(self.frameb, text='직구', width=5, height=2, command=Main.FastBall, bg='purple',fg='white')
         self.fastball.pack(fill="both", expand=True, side=TOP)
-        self.breakingball = Button(self.frameb, text='변화구', width=5, height=2, command=Main.Nohitbutton, bg='purple', fg='white')
+        self.breakingball = Button(self.frameb, text='변화구', width=5, height=2, command=Main.BreakingBall, bg='purple', fg='white')
         self.breakingball.pack(fill="both", expand=True, side=TOP)
         self.__board()
 
@@ -608,8 +614,8 @@ class Main():
 
         print('마우스 위치 좌표', X1, Y1)
         print('리턴 좌표', loclist[X1, Y1])
+        Main.BallLoc = loclist[X1,Y1]
         self.King(X1, Y1)
-        return loclist[X1, Y1]
 
 
     def King(self, x, y):
