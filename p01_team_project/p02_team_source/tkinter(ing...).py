@@ -181,8 +181,10 @@ class Game(object):
                 20: [4, 0], 21: [4, 1], 22: [4, 2], 23: [4, 3], 24: [4, 4]
                 } #던지는 위치의 좌표를 리스트로 저장.
 
-    INNERFLAG = False
-    OUTERFLAG = True
+    a = ADVANCE[0]
+    b = ADVANCE[1]
+    c = ADVANCE[2]
+    d = {0: "white", 1: "black"}
 
     def __init__(self, game_team_list, root):
         print('Home Team : ' + game_team_list[0]+' : ', Game.TEAM_LIST[game_team_list[0]])
@@ -190,7 +192,6 @@ class Game(object):
         self.__hometeam = Team(game_team_list[0], Game.TEAM_LIST[game_team_list[0]])
         self.__awayteam = Team(game_team_list[1], Game.TEAM_LIST[game_team_list[1]])
         self.root = root
-
 
     @property
     def hometeam(self):
@@ -294,24 +295,24 @@ class Game(object):
                     while True :
                         self.root.update()
                         time.sleep(0.05)
-                        hit_numbers = [Main.ForB, Main.BallLoc]
+                        #hit_numbers = [Main.ForB, Main.BallLoc]
 
                         if Main.ForB != -1 and Main.BallLoc != -1 :
                             print('▶ 컴퓨터가 발생 시킨 숫자 : {}\n'.format(random_numbers))
                             hit_numbers = [Main.ForB, Main.BallLoc]
                             print(hit_numbers)
-                            if self.hit_number_check(hit_numbers) is False:
-                                raise Exception()
+                            # if self.hit_number_check(hit_numbers) is False:
+                            #     raise Exception()
                             hit_cnt = self.hit_judgment(random_numbers, hit_numbers)  # 안타 판별
                             print(hit_cnt,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
                             break
 
-                        else :
-                            print('== ▣ 잘못된 숫자가 입력되었습니다.')
-                            print(hit_numbers)
-                            print('====================================================================================================')
-                            print('▶ 컴퓨터가 발생 시킨 숫자 : {}\n'.format(random_numbers))
-                            continue
+                        # else :
+                        #     print('== ▣ 잘못된 숫자가 입력되었습니다.')
+                        #     print(hit_numbers)
+                        #     print('====================================================================================================')
+                        #     print('▶ 컴퓨터가 발생 시킨 숫자 : {}\n'.format(random_numbers))
+                        #     continue
 
                     if hit_cnt[0] == 0:  # strike !!!
                         if hit_cnt[1] == False:#파울이 아닐 때 융
@@ -362,7 +363,6 @@ class Game(object):
                             Game.STRIKE_CNT = 0
                             Game.BALL_CNT = 0
                             player.hit_and_run(0,1,0)
-                            Game.INNERFLAG = True
                             break
 
                     #컴퓨터가 던진 공이 스트라이크 일 때 융
@@ -375,7 +375,6 @@ class Game(object):
                             Game.BALL_CNT = 0
                             Game.OUT_CNT += 1
                             player.hit_and_run(0, 0, 0)
-                            Game.INNERFLAG = True
                             break
                 else :
                     continue
@@ -387,11 +386,6 @@ class Game(object):
                 Game.BATTER_NUMBER[Game.CHANGE] += 1
             self.attack()
 
-            Game.CHANGE += 1
-            Game.STRIKE_CNT = 0
-            Game.BALL_CNT = 0
-            Game.OUT_CNT = 0
-            Game.ADVANCE = [0, 0, 0]
 
     # 진루 및 득점 설정하는 메서드
     def advance_setting(self, hit_cnt, bob=False):
@@ -409,6 +403,7 @@ class Game(object):
                             Game.ADVANCE[i-1 + hit_cnt] = 1
                             Game.ADVANCE[i-1] = 0
                 Game.ADVANCE[hit_cnt-1] = 1  # 타석에 있던 선수에 대한 진루 설정
+
 
             elif bob==True: #볼넷일때
                 if Game.ADVANCE[0]==1: #1루에 주자가 있을때.
@@ -494,6 +489,10 @@ class Game(object):
             elif UPDOWN >= 2:#높낮이가 두개이상 차이날때 융
                 print('헛스윙~!')
                 cnt += 0
+            Main.ForB = -1
+            Main.BallLoc = -1
+            Main.Hitornot = -1
+
 
         return cnt,Foul
 
@@ -550,14 +549,14 @@ class Main():
         self.breakingball = Button(self.frameb, text='변화구', width=5, height=2, command=Main.BreakingBall, bg='purple', fg='white')
         self.breakingball.pack(fill="both", expand=True, side=TOP)
         self.canvas.bind("<ButtonPress-1>", Main.Throwandhit)
-        self.__board()
+        self.board()
 
 
     def Loadgame(self):
         self.canvas.delete(ALL)
         self.label['text'] = ('Choose Your Team')
         self.canvas.bind("<ButtonPress-1>")
-        self.__board()
+        self.board()
         self.TTT = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
         self.i = 0
         self.j = False
@@ -568,7 +567,7 @@ class Main():
     #     # self.label['text'] = '{}\n{}'.format(self.Game.printhometeam, self.Game.printawayteam)
     #     self.canvas.bind("<ButtonPress-1>", Main.Throwandhit)
 
-    def __board(self):
+    def board(self):
         self.canvas.create_rectangle(500, 0, 1000, 600, outline="black")
         self.canvas.create_rectangle(500, 0, 1000, 100, outline="black")
         self.canvas.create_rectangle(600, 600, 700, 0, outline="black")
@@ -587,11 +586,26 @@ class Main():
         self.canvas.create_line(40, 330, 240, 515, width=4, fill="white")
         self.canvas.create_line(445, 330, 240, 515, width=4, fill="white")
 
-        self.canvas.create_oval(225, 120, 255, 150, fill="white")
-        self.canvas.create_oval(20, 315, 50, 345, fill="white")
-        self.canvas.create_oval(430, 315, 460, 345, fill="white")
+        self.canvas.create_oval(225, 120, 255, 150, fill="white",tag="B2") #2루
+        self.canvas.create_oval(20, 315, 50, 345, fill="white", tag="B3")#3루
+        self.canvas.create_oval(430, 315, 460, 345, fill="white",tag="B1")#1루
         self.canvas.create_oval(225, 500, 255, 530, fill="white")
+        self.change_color()
 
+        print('----------------------sㅋㅋㅋ')
+
+    def change_color(self):
+        if Game.ADVANCE[0]==1:
+            self.canvas.find_withtag("B1",fill="black")
+        if Game.ADVANCE[1]==1:
+            self.canvas.find_withtag("B2", fill="black")
+        if Game.ADVANCE[2]==1:
+            self.canvas.find_withtag("B3", fill="black")
+
+        #self.after(1000, self.change_color)
+
+
+        #d[a]
         # self.canvas.create_line(240, 135, 35, 330, width=4, fill="white")
         # self.canvas.create_line(X + 20, Y + 20, X - 20, Y - 20, width=4, fill="black")
         # self.canvas.create_line(X + 20, Y + 20, X - 20, Y - 20, width=4, fill="black")
@@ -615,8 +629,8 @@ class Main():
                     Y1 = int((j - 100) / 100)
 
         print('마우스 위치 좌표', X1, Y1)
-        print('리턴 좌표', loclist[X1][Y1])
-        Main.BallLoc = loclist[X1][Y1]
+        print('리턴 좌표', loclist[Y1][X1])
+        Main.BallLoc = loclist[Y1][X1]
 
     @staticmethod
     def Hitbutton():
