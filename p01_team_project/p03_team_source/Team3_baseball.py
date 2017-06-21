@@ -1,7 +1,11 @@
 import random
 import re
-# 3조
+import pandas as pd
+import csv
 
+
+# 3조
+# csv 파일 형태 : 팀명/선수명/안타수/홈런수/타수/타율/체력/부상여부
 
 ###################################################################################################
 ## 기록 및 스테이터스 관련 클래스
@@ -16,8 +20,9 @@ class Record:
         # 상태
         self.__hp = 100  # 체력(health point)
         self.__hp_dec = random.randint(0,2)  # 체력감소율
-        self.__injure = 0  # 부상
         self.__condition = {0:'good',1:'normal',2:'bad'}  # 컨디션
+        self.__injure_n = random.randint(0, 20)   # 부상 랜덤수 생성
+        # self.__injure = ''
 
     @property
     def hit(self):
@@ -68,12 +73,12 @@ class Record:
         self.__hp_dec = hp_dec
 
     @property
-    def injure(self):
-        return self.__injure
+    def injure_n(self):
+        return self.__injure_n
 
-    @injure.setter
-    def injure(self, injure):
-        self.__injure = injure
+    @injure_n.setter
+    def injure_n(self, injure_n):
+        self.__injure_n = injure_n
 
     @property
     def condition(self):
@@ -82,6 +87,18 @@ class Record:
     @condition.setter
     def condition(self, condition):
         self.__condition = condition
+
+    # @property
+    # def injure(self):
+    #     return self.__injure
+    #
+    # @injure.setter
+    # def injure(self):
+    #     if self.__injure_n < 20:
+    #         self.__injure = 'False'
+    #     else:
+    #         self.__injure = 'True'
+
 
     # 타자 기록 관련 메서드
     def batter_record(self, hit, homerun):
@@ -97,6 +114,13 @@ class Record:
         elif hp_dec == 1:
             self.hp -= 3
         else: self.hp -= 5
+
+    # 타자 부상 관련 메소드
+    def batter_injure(self, injure_n):
+        if injure_n < 20:
+            return False
+        else:
+            return True
 
 ###################################################################################################
 ## 선수 관련 클래스
@@ -136,8 +160,12 @@ class Player:
     def player_status(self, hp_dec):
         self.__record.batter_status(hp_dec)
 
+    # 선수 부상 관련 메소드
+    def player_injure(self, injure_n):
+        self.__record.batter_injure(injure_n)
+
 ###################################################################################################
-## 팀 관련 클래스
+## 팀 관련 클래스b
 ###################################################################################################
 class Team:
     def __init__(self, team_name, players):
@@ -199,7 +227,7 @@ class Game:
         self.__hometeam = Team(game_team_list[0], Game.TEAM_LIST[game_team_list[0]])
         self.__awayteam = Team(game_team_list[1], Game.TEAM_LIST[game_team_list[1]])
         print('== 선수단 구성이 완료 되었습니다.\n')
-
+        print(game_team_list[0])
     @property
     def hometeam(self):
         return self.__hometeam
@@ -225,6 +253,8 @@ class Game:
         print('====================================================================================================\n')
         self.show_record()
 
+
+
     # 팀별 선수 기록 출력
     def show_record(self):
         print('====================================================================================================')
@@ -238,22 +268,68 @@ class Game:
 
         hometeam_players = self.hometeam.player_list
         awayteam_players = self.awayteam.player_list
+        open_csv_header1 = open("d:/d/baseball.csv", 'w', encoding='UTF-8', newline='')
+        csv_writer1 = csv.writer(open_csv_header1)
+        csv_writer1.writerow(['팀명', '선수명', '안타수', '홈런수', '타수', '타율', '체력', '부상여부'])
+        open_csv_header1.close()
 
         for i in range(9):
             hp = hometeam_players[i]
             hp_rec = hp.record
             ap = awayteam_players[i]
             ap_rec = ap.record
-                                            # 체력 부상 컨디션
+
             # 홈팀 스탯
             print('== {} | {} | {} | {} | {} | {} | {} | {} '.format(hp.name.center(6+(4-len(hp.name)), ' '), str(hp_rec.avg).center(7, ' '),
                                                       str(hp_rec.atbat).center(6, ' '), str(hp_rec.hit).center(5, ' '), str(hp_rec.homerun).center(5, ' '),
-                                                      str(hp_rec.hp).center(5, ' '), str(hp_rec.injure).center(5, ' '), str(hp_rec.condition[hp_rec.hp_dec]).center(5, ' ')), end='')
+                                                      str(hp_rec.hp).center(5, ' '), str(hp_rec.batter_injure(hp_rec.injure_n)).center(5, ' '), str(hp_rec.condition[hp_rec.hp_dec]).center(5, ' ')), end='')
+
             # 어웨이팀 스탯
             print(' {} | {} | {} | {} | {} | {} | {} | {} =='.format(ap.name.center(6+(4-len(ap.name)), ' '), str(ap_rec.avg).center(7, ' '),
                                                         str(ap_rec.atbat).center(6, ' '), str(ap_rec.hit).center(5, ' '), str(ap_rec.homerun).center(5, ' '),
-                                                        str(ap_rec.hp).center(5, ' '),str(ap_rec.injure).center(5, ' '), str(ap_rec.condition[ap_rec.hp_dec]).center(5, ' ')))
+                                                        str(ap_rec.hp).center(5, ' '),str(ap_rec.batter_injure(ap_rec.injure_n)).center(5, ' '), str(ap_rec.condition[ap_rec.hp_dec]).center(5, ' ')))
+
+        # 홈팀 선수 기록
+        for i in range(9):
+            hp = hometeam_players[i]
+            hp_rec = hp.record
+            open_csv_header_h = open("d:/d/baseball.csv", 'a', encoding='UTF-8', newline='')
+            csv_writer_h = csv.writer(open_csv_header_h)
+            csv_writer_h.writerow(
+                [game_team_list[0], hp.name, hp_rec.hit, hp_rec.homerun, hp_rec.atbat, hp_rec.hit, hp_rec.avg,
+                 hp_rec.hp, hp_rec.batter_injure(hp_rec.injure_n)])
+            open_csv_header_h.close()
+
+        # 어웨이팀 선수 기록
+        for i in range(9):
+            ap = awayteam_players[i]
+            ap_rec = ap.record
+            open_csv_header_a = open("d:/d/baseball.csv", 'a', encoding='UTF-8', newline='')
+            csv_writer_a = csv.writer(open_csv_header_a)
+            csv_writer_a.writerow(
+                [game_team_list[1], ap.name, ap_rec.hit, ap_rec.homerun, ap_rec.atbat, ap_rec.hit, ap_rec.avg,
+                 ap_rec.hp, ap_rec.batter_injure(ap_rec.injure_n)])
+            open_csv_header_a.close()
+
+
         print('====================================================================================================')
+        # open_csv_header1 = open("d:/d/baseball.csv", 'w', encoding='UTF-8', newline='')
+        # csv_writer1 = csv.writer(open_csv_header1)
+        # csv_writer1.writerow(['팀명', '선수명', '안타수', '홈런수', '타수', '타율', '체력', '부상여부'])
+        # open_csv_header1.close()
+        # open_csv_header2 = open("d:/d/baseball.csv", 'a', encoding='UTF-8', newline='')
+        # csv_writer2 = csv.writer(open_csv_header2)
+        # csv_writer2.writerow([game_team_list[0], hp.name, hp_rec.hit, hp_rec.homerun, hp_rec.atbat, hp_rec.hit, hp_rec.avg, hp_rec.hp, hp_rec.batter_injure(hp_rec.injure_n)])
+        # open_csv_header2.close()
+
+
+
+
+
+
+
+
+
 
     # 공격 수행 메서드
     def attack(self):
@@ -380,5 +456,11 @@ if __name__ == '__main__':
             game = Game(game_team_list)
             game.start_game()
             break
+
         else:
             print('입력한 팀 정보가 존재하지 않습니다. 다시 입력해주세요.')
+
+csv_open = pd.read_csv('d:/d/baseball.csv', encoding='UTF-8')
+print(csv_open)
+
+
