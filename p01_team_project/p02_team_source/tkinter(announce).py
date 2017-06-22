@@ -198,9 +198,6 @@ class Main(object):
         self.i = 0
         self.j = False
 
-
-
-
     def board(self, *args):
         hometeam = self.game.hometeam.team_name
         awayteam = self.game.awayteam.team_name
@@ -211,6 +208,8 @@ class Main(object):
         inning = self.game.INNING
         change = self.game.CHANGE
         attackordefence = [["공격", "수비"] if change == 0 else ["수비", "공격"]]
+        scoreformat = '{} : {}  ({}) | {}이닝 | ({})  {} : {}'
+
         if self.game.BALL_CNT==0:
             self.ball_color=["white","white","white"]
         elif self.game.BALL_CNT==1:
@@ -257,15 +256,18 @@ class Main(object):
         self.canvas.create_oval(430, 315, 460, 345, fill=Main.COLOR[self.game.ADVANCE[0]])  # 1루
         self.canvas.create_oval(225, 500, 255, 530, fill="white")
 
+        self.canvas.create_text(350, 490, font=("Courier", 12), text="B")
         self.canvas.create_oval(370, 480, 390, 500, fill=self.ball_color[0])#볼
         self.canvas.create_oval(405, 480, 425, 500, fill=self.ball_color[1])#볼
         self.canvas.create_oval(440, 480, 460, 500, fill=self.ball_color[2])#볼
+        self.canvas.create_text(350, 525, font=("Courier", 12), text="S")
         self.canvas.create_oval(370, 515, 390, 535, fill=self.strike_color[0])#스트라이크
         self.canvas.create_oval(405, 515, 425, 535, fill=self.strike_color[1])  # 스트라이크
+        self.canvas.create_text(350, 560, font=("Courier", 12), text="O")
         self.canvas.create_oval(370, 550, 390, 570, fill=self.out_color[0])  # 아웃
         self.canvas.create_oval(405, 550, 425, 570, fill=self.out_color[1])  # 아웃
 
-        self.label = Label(self.frame, text='{} : {}  ({}) | {}이닝 | ({})  {} : {}'.format(hometeam, homescore, attackordefence[0][0], inning, attackordefence[0][1], awayscore, awayteam), height=6, bg='white', fg='black')
+        self.label = Label(self.frame, text=scoreformat.format(hometeam, homescore, attackordefence[0][0], inning, attackordefence[0][1], awayscore, awayteam), height=6, bg='white', fg='black')
         self.label.config(font=("Courier", 20))
         self.label.pack(fill="both", expand=True)
         self.label.place(x=0, y=0, width=1000, height=38, bordermode='outside')
@@ -289,22 +291,22 @@ class Main(object):
 
     @staticmethod
     def Hitbutton():
-        print('hit')
+        # print('hit')
         Main.HITORNOT = 1
 
     @staticmethod
     def Nohitbutton():
-        print('no hit')
+        # print('no hit')
         Main.HITORNOT = 0
 
     @staticmethod
     def FastBall():
-        print('Fastball')
+        # print('Fastball')
         Main.FORB = 1
 
     @staticmethod
     def BreakingBall():
-        print('Brakingball')
+        # print('Brakingball')
         Main.FORB = 0
 
 
@@ -387,8 +389,8 @@ class Game(object):
                                         self.awayteam.team_name.center(52, ' ') if re.search('[a-zA-Z]+', self.awayteam.team_name) is not None else self.awayteam.team_name.center(50, ' ')))
         print('==  {} | {}  =='.format(('('+str(Game.SCORE[0])+')').center(52, ' '), ('('+str(Game.SCORE[1])+')').center(52, ' ')))
         print('===================================================================================================================')
-        print('== {} | {} | {} | {} | {} | {} '.format('이름'.center(8, ' '), '타율'.center(5, ' '), '타석'.center(4, ' '), '안타'.center(3, ' '), '홈런'.center(3, ' '), '볼넷'.center(5, ' ')), end='')
-        print('| {} | {} | {} | {} | {} | {} =='.format('이름'.center(8, ' '), '타율'.center(5, ' '), '타석'.center(4, ' '), '안타'.center(3, ' '), '홈런'.center(3, ' '), '볼넷'.center(5, ' ')))
+        print('== {} | {} | {} | {} | {} | {} '.format('이름'.center(8, ' '), '타율'.center(5, ' '), '타석'.center(4, ' '), '안타'.center(3, ' '), '홈런'.center(3, ' '), '볼넷'.center(3, ' ')), end='')
+        print('| {} | {} | {} | {} | {} | {} =='.format('이름'.center(8, ' '), '타율'.center(5, ' '), '타석'.center(4, ' '), '안타'.center(3, ' '), '홈런'.center(3, ' '), '볼넷'.center(3, ' ')))
         print('===================================================================================================================')
 
         hometeam_players = self.hometeam.player_list
@@ -492,7 +494,7 @@ class Game(object):
                         if hit_cnt[1] == True:#파울일 때
                             if Game.STRIKE_CNT <= 1: #스트라이크 카운트가 1 이하일때는 원래대로 진행 융
                                 Game.STRIKE_CNT += 1
-                                Game.ANNOUNCE = '파울!!! 스트라이크!!!'
+                                Game.ANNOUNCE = '파울!!!'
                                 if Game.STRIKE_CNT == 3:
                                     Game.ANNOUNCE = '삼진 아웃!!!'
                                     Game.STRIKE_CNT = 0
@@ -500,8 +502,8 @@ class Game(object):
                                     player.hit_and_run(0, 0, 0)
                                     break
 
-                            if Game.STRIKE_CNT == 2: #스트라이크 카운트가 2일때가 문제. 2일때는 파울이어도 스트라이크 카운트가 늘어나선 안됨 융
-                                Game.ANNOUNCE = '파울이므로 아웃이 아닙니다. 다시 치세요!!!!'
+                            # if Game.STRIKE_CNT == 2: #스트라이크 카운트가 2일때가 문제. 2일때는 파울이어도 스트라이크 카운트가 늘어나선 안됨 융
+                            #     Game.ANNOUNCE = '파울이므로 아웃이 아닙니다. 다시 치세요!!!!'
 
                     else:
                         Game.STRIKE_CNT = 0
