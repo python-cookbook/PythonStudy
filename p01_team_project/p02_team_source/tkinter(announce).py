@@ -260,9 +260,11 @@ class Main(object):
         self.canvas.create_oval(370, 480, 390, 500, fill=self.ball_color[0])#볼
         self.canvas.create_oval(405, 480, 425, 500, fill=self.ball_color[1])#볼
         self.canvas.create_oval(440, 480, 460, 500, fill=self.ball_color[2])#볼
+
         self.canvas.create_text(350, 525, font=("Courier", 12), text="S")
         self.canvas.create_oval(370, 515, 390, 535, fill=self.strike_color[0])#스트라이크
         self.canvas.create_oval(405, 515, 425, 535, fill=self.strike_color[1])  # 스트라이크
+
         self.canvas.create_text(350, 560, font=("Courier", 12), text="O")
         self.canvas.create_oval(370, 550, 390, 570, fill=self.out_color[0])  # 아웃
         self.canvas.create_oval(405, 550, 425, 570, fill=self.out_color[1])  # 아웃
