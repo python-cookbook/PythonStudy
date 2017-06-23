@@ -143,6 +143,113 @@ class Team:
         for player in self.__player_list:
             print(player.player_info)
 
+###################################################################################################
+## 저장 및 불러오기 관련 클래스  -원주/지은
+#####################################################################################################
+
+"""
+d:/data/ 폴더 만들어야 합니다.
+
+"""
+class Saveandload:
+    DATA_SET = 0
+    FILE_PATH = 'd:/data/'
+    CHECK = 0
+    LOAD_YN = False
+    print('LOAD_YN = ',LOAD_YN)
+
+
+    def __init__(self):
+        self.__hometeam = Team(game_team_list[0], Game.TEAM_LIST[game_team_list[0]])
+        self.__awayteam = Team(game_team_list[1], Game.TEAM_LIST[game_team_list[1]])
+        self.__ADV = []
+        self.__INNING = 0
+        self.player_info = 0
+        self.adv = []
+
+
+    @property
+    def hometeam(self):
+        return self.__hometeam
+
+    @property
+    def awayteam(self):
+        return self.__awayteam
+
+
+
+    def make_data_set(self,player_info,cnt,game_info,adv):
+        self.player_info = player_info
+        self.cnt = cnt
+        self.game_info = game_info
+        self.adv = adv
+        self.DATA_SET = []
+        self.player_info = [str(data) for data in self.player_info]
+        self.cnt = [str(data) for data in self.cnt]
+        self.game_info = [str(data) for data in self.game_info]
+        self.adv = [str(data) for data in self.adv]
+        # Saveandload.DATA_SET.append([self.player_info,self.cnt,self.game_info, self.adv])
+        self.DATA_SET.append([self.game_info,self.adv])
+        Saveandload.DATA_SET = self.DATA_SET
+
+
+    def save(self):
+        with open(Saveandload.FILE_PATH + self.__hometeam.team_name+"VS"+self.__awayteam.team_name+".txt", "wt", encoding="utf-8") as f:
+            print('여기',Saveandload.DATA_SET)
+            for row in Saveandload.DATA_SET:
+                for idx,value in enumerate(row,1):
+                    if idx == 1:
+                        f.write(value[0]+'\n')
+                        f.write(value[1]+'\n')
+                    if idx == 2:
+                        f.write(value[0]+","+value[1]+","+value[2]+'\n')
+
+    @staticmethod
+    def load():
+        INNING = 0
+        adv = 0
+        CHANGE = 0
+        print('함수 호출되었다.')
+        import csv
+        f = open('d:/data/test.txt')
+        reader = csv.reader(f, delimiter=',')
+        for idx,line in enumerate(reader,1):
+            if idx==1:
+                INNING = int(line[0])
+            elif idx==2:
+                CHANGE = int(line[0])
+
+            elif idx==3:
+                adv = line
+            print(INNING,adv,CHANGE)
+            # f.close()
+        return [INNING ,adv,CHANGE]
+
+    def load_chk(self):
+        if Saveandload.LOAD_YN == False:
+            Saveandload.LOAD_YN = True
+            print(Saveandload.LOAD_YN)
+        else:
+            pass
+
+"""
+test.txt의 데이터 형태는
+
+0         #이닝
+1         #체인지
+0,0,0     #진루상황
+
+위처럼 저장되며, 불러올 때도 저 형태의 데이터를 idx를 참고삼아 불러옴.
+"""
+
+
+
+
+
+
+
+
+
 class Main(object):
     HITORNOT = -1
     FORB = -1
@@ -181,12 +288,9 @@ class Main(object):
         self.breakingball.pack(fill="both", expand=True, side=TOP)
         self.canvas.bind("<ButtonPress-1>", Main.Throwandhit)
         self.canvas.bind("<Motion>", self.board)
-        self.ball_color = []
+        self.ball_color=[]
         self.strike_color=[]
         self.out_color=[]
-        self.board()
-
-    def __call__(self):
         self.board()
 
     def Loadgame(self):
@@ -260,11 +364,9 @@ class Main(object):
         self.canvas.create_oval(370, 480, 390, 500, fill=self.ball_color[0])#볼
         self.canvas.create_oval(405, 480, 425, 500, fill=self.ball_color[1])#볼
         self.canvas.create_oval(440, 480, 460, 500, fill=self.ball_color[2])#볼
-
         self.canvas.create_text(350, 525, font=("Courier", 12), text="S")
         self.canvas.create_oval(370, 515, 390, 535, fill=self.strike_color[0])#스트라이크
         self.canvas.create_oval(405, 515, 425, 535, fill=self.strike_color[1])  # 스트라이크
-
         self.canvas.create_text(350, 560, font=("Courier", 12), text="O")
         self.canvas.create_oval(370, 550, 390, 570, fill=self.out_color[0])  # 아웃
         self.canvas.create_oval(405, 550, 425, 570, fill=self.out_color[1])  # 아웃
@@ -369,7 +471,7 @@ class Game(object):
 
     # 게임 수행 메서드
     def start_game(self):
-        if Game.INNING <= 2: #게임을 진행할 이닝을 설정. 현재는 1이닝만 진행하게끔 되어 있음.
+        if Game.INNING <= 1: #게임을 진행할 이닝을 설정. 현재는 1이닝만 진행하게끔 되어 있음.
             # print('====================================================================================================')
             Game.ANNOUNCE = '{} 이닝 {} 팀 공격 시작합니다.'.format(Game.INNING, self.hometeam.team_name if Game.CHANGE == 0 else self.awayteam.team_name)
             # print('====================================================================================================\n')
@@ -687,22 +789,34 @@ class Game(object):
 
 
 if __name__ == '__main__':
-    game_team_list = []
-    if game_team_list == [] :
+    # game_team_list = []
+    # if game_team_list == [] :
+    #     print('====================================================================================================')
+    #     print('한화 / ', '롯데 / ', '삼성 / ', 'KIA / ', 'SK / ', 'LG / ', '두산 / ', '넥센 / ', 'KT / ', 'NC / ')
+    #     game_team_list = input('=> 게임을 진행할 두 팀을 입력하세요 : ').split(' ')
+    #     print('====================================================================================================\n')
+    #     # if (game_team_list[0] in Game.TEAM_LIST) and (game_team_list[1] in Game.TEAM_LIST):
+    #     #     root = Tk()
+    #     #     Main(root, game_team_list)
+    #     #     root.mainloop()
+    #
+    #     root = Tk()
+    #     app = Main(root,game_team_list, root)
+    #     root.mainloop()
+
+    while True:
+        game_team_list = []
         print('====================================================================================================')
         print('한화 / ', '롯데 / ', '삼성 / ', 'KIA / ', 'SK / ', 'LG / ', '두산 / ', '넥센 / ', 'KT / ', 'NC / ')
         game_team_list = input('=> 게임을 진행할 두 팀을 입력하세요 : ').split(' ')
         print('====================================================================================================\n')
-        # if (game_team_list[0] in Game.TEAM_LIST) and (game_team_list[1] in Game.TEAM_LIST):
-        #     root = Tk()
-        #     Main(root, game_team_list)
-        #     root.mainloop()
+        if (game_team_list[0] in Game.TEAM_LIST) and (game_team_list[1] in Game.TEAM_LIST):
+            break
+        else:
+            print('입력한 팀 정보가 존재하지 않습니다. 다시 입력해주세요.')
 
-        root = Tk()
-        app = Main(root,game_team_list, root)
-        root.mainloop()
-
-
-
+    root = Tk()
+    app = Main(root, game_team_list, root)
+    root.mainloop()
 
 
