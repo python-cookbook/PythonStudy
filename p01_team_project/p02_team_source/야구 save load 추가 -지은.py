@@ -235,8 +235,8 @@ class Saveandload:
             print(Saveandload.LOAD_YN)
         else:
             pass
-        
-            
+
+
 """
 test.txt의 데이터 형태는
 
@@ -249,17 +249,17 @@ test.txt의 데이터 형태는
 
 
 
-     
+
     
     def save_record(self, save_path, *save_col):  # 지은
-        csvFile = open(save_path, 'a')        
+        csvFile = open(save_path, 'a')
         try :
             writer = csv.writer(csvFile)
             writer.writerow(save_col)
-            
+
         finally:
-            csvFile.close()        
-        
+            csvFile.close()
+
 
 
 
@@ -267,7 +267,7 @@ test.txt의 데이터 형태는
         record = [record for record in csv.reader(open(load_path, 'r')) if len(record) !=0 ]
         print(record)
         return record
-    
+
 
 
 
