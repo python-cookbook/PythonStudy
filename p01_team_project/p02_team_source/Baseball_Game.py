@@ -261,7 +261,7 @@ class Game:
                 print(random_numbers)
 
                 try :
-                    hit_yn = int(input('타격을 하시겠습니까?(타격 : 1 | 타격안함 : 0 | 도루 : -1)'))
+                    hit_yn = int(input('타격을 하시겠습니까?(타격 : 1 | 타격안함 : 0 | 도루 : 2)'))
                 except Exception:
                     print('잘못된 숫자를 입력하였습니다. 다시 입력하세요.')
                     continue
