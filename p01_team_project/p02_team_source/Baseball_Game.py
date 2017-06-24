@@ -259,7 +259,7 @@ class Game:
                 print('== 현재 타석 : {}번 타자[{}], 타율 : {}, 볼넷 : {}, 홈런 : {}'.format(player.number, player.name, player.record.avg, player.record.bob, player.record.homerun))
 
                 try :
-                    hit_yn = int(input('타격을 하시겠습니까?(타격 : 1 타격안함 : 0)'))
+                    hit_yn = int(input('타격을 하시겠습니까?(타격 : 1 | 타격안함 : 0 | 도루 : -1)'))
                 except Exception:
                     print('잘못된 숫자를 입력하였습니다. 다시 입력하세요.')
                     continue
