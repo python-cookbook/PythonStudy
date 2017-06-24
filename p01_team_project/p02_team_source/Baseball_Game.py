@@ -372,11 +372,8 @@ class Game:
                 else:  # 도루선택, 태흠
                     rn = random.random()
                     while 1:
-                        base_num = input('진루시킬 주자를 선택하세요[1, 2, 3] : {0}루 주자 / {1}루 주자 / {2}루 주자').format \
-                            (1 if Game.ADVANCE[0] == 1 and Game.ADVANCE[1] == 0 else '도루 불가',
-                             2 if Game.ADVANCE[1] == 1 and Game.ADVANCE[2] == 0 else '도루 불가',
-                             3 if Game.ADVANCE[2] == 1 else '도루 불가')
-
+                        base_num = input('진루시킬 주자를 선택하세요[1, 2, 3] : {} / {} / {}'.format('1루주자' if Game.ADVANCE[0] == 1 and Game.ADVANCE[1] == 0 else '도루 불가', '2루주자' if Game.ADVANCE[1] == 1 and Game.ADVANCE[2] == 0 else '도루 불가', '3루주자' if Game.ADVANCE[2] == 1 else '도루 불가')
+)
                         for i in range(len(Game.ADVANCE)):
                             if Game.ADVANCE[i] == 1 and Game.ADVANCE[i + 1] == 0:
                                 if base_num == i + 1:
