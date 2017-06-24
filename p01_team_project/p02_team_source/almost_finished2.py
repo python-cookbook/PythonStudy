@@ -912,7 +912,7 @@ class Main(Game):
 
     def start_game(self):
         Saveandload.load_to_start_game()
-        saveandload.load_record()
+        Saveandload.load_record()
 
         if Game.INNING <= 1: #게임을 진행할 이닝을 설정. 현재는 1이닝만 진행하게끔 되어 있음.
             # print('====================================================================================================')
