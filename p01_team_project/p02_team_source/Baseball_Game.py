@@ -241,6 +241,7 @@ class Game:
         PITCH_LOCATION = "---------" * MATRIX + "\n" + PITCH_LOCATION
 
 
+
         if Game.OUT_CNT < 3:
             player = self.select_player(Game.BATTER_NUMBER[Game.CHANGE], player_list)
             print('====================================================================================================')
@@ -257,6 +258,7 @@ class Game:
                 print(PITCH_LOCATION.format(*[str(idx) for idx in range(26)])) #투구 영역 5 * 5 출력
                 print('====================================================================================================')
                 print('== 현재 타석 : {}번 타자[{}], 타율 : {}, 볼넷 : {}, 홈런 : {}'.format(player.number, player.name, player.record.avg, player.record.bob, player.record.homerun))
+                print(random_numbers)
 
                 try :
                     hit_yn = int(input('타격을 하시겠습니까?(타격 : 1 | 타격안함 : 0 | 도루 : -1)'))
@@ -319,7 +321,7 @@ class Game:
                                 Game.OUT_CNT += 1
                                 print('== ▣ 높게 뜬공! 그대로 외야수에 잡혀 아웃됩니다. \n'.format(hit_cnt[0]))
                                 player.hit_and_run(1 if hit_cnt[0] > 0 else 0, 0, 1 if hit_cnt[0] == 4 else 0)
-                                self.advance_setting(hit_cnt[0])
+                                self.advance_setting(hit_cnt[0], None)
                                 break
 
                             elif hit_cnt[2] == True and 1 in Game.ADVANCE:   # 출루인줄 알았지만 병살타ㅜ({}루타, 병살타 판단), 태흠
@@ -328,18 +330,17 @@ class Game:
                                 Game.OUT_CNT += 2
                                 player.hit_and_run(1 if hit_cnt[0] > 0 else 0, 0, 1 if hit_cnt[0] == 4 else 0)  # 진루타, 볼넷, 홈런
                                 print('== ▣ 병살타!!! 아~ 이게 무슨일입니까!! \n'.format(hit_cnt[0]))
-                                self.advance_setting(hit_cnt[0], False, True)
+                                self.advance_setting(hit_cnt[0], None, False, True)
                                 break
 
                             print('== ▣ {}루타!!!\n'.format(hit_cnt[0]))
                             player.hit_and_run(1 if hit_cnt[0] > 0 else 0, 0, 1 if hit_cnt[0] == 4 else 0)
-                            self.advance_setting(hit_cnt[0])
-                            break
+
 
                         else:   # 홈런일 때
                             print('== ▣ 홈런!!!\n')
                             player.hit_and_run(1 if hit_cnt[0] > 0 else 0, 0, 1 if hit_cnt[0] == 4 else 0)
-                        self.advance_setting(hit_cnt[0])
+                        self.advance_setting(hit_cnt[0], None)
                         break
 
                 elif hit_yn==0:######타격안하고 지켜보기 시전###########################
@@ -349,7 +350,7 @@ class Game:
                         print('== ▣ 볼 !!!!!!!!!!!!!!!!!!!!!!')
                         if Game.BALL_CNT == 4:
                             print('== ▣ 볼넷 1루출루 !!!!!!!!!!!!!!!!!!!!!! 투수가 정신을 못차리네요!')
-                            return self.advance_setting(1,True)
+                            return self.advance_setting(1, None, True)
                             Game.STRIKE_CNT = 0
                             Game.BALL_CNT = 0
                             player.hit_and_run(0,1,0)
@@ -369,7 +370,7 @@ class Game:
                             break
                     #player.hit_and_run(1 if hit_cnt[0] > 0 else 0, 1 if len(hit_cnt) == 0 else 0, 1 if hit_cnt[0] == 4 else 0)
 
-                elif hit_yn==-1:  # 도루선택, 태흠, -1
+                elif hit_yn==2:  # 도루선택, 태흠, 2
                     if Game.ADVANCE == [0, 0, 0]:
                         print('====================================================================================================')
                         print('★★★★★★★★도루 가능한 주자가 없습니다.★★★★★★★★')
@@ -389,7 +390,7 @@ class Game:
                             continue
 
                     if rn < 0.3:  # 도루 성공확률, 태흠
-                        self.advance_setting(1, base_num, False, True)
+                        self.advance_setting(1, base_num, False, False, True)
                         print('도루성공, stolen_base')
                         break
 
@@ -398,8 +399,6 @@ class Game:
                         Game.OUT_CNT += 1
                         Game.ADVANCE[base_num - 1] = 0
                         break
-
-
 
             if Game.BATTER_NUMBER[Game.CHANGE] == 9:
                 Game.BATTER_NUMBER[Game.CHANGE] = 1
@@ -442,7 +441,6 @@ class Game:
                     else:  # 기존 출루한 선수들 중 득점권에 있지 않은 선수들에 대한 진루 설정
                         Game.ADVANCE[i - 1 + hit_cnt] = 1
                         Game.ADVANCE[i - 1] = 0
-
 
         else:
             if bob==False: #볼넷이 아닐때
@@ -492,6 +490,7 @@ class Game:
         fly_ball = False   # 태흠
         UPDOWN = abs(Game.LOCATION[random_ball[1]][0] - Game.LOCATION[hit_numbers[1]][0]) #투수와 타자의 선택한 공 위치의 높낮이차이
         L_OR_R = abs(Game.LOCATION[random_ball[1]][1] - Game.LOCATION[hit_numbers[1]][1]) #투수와 타자의 선택한 공 위치의 좌우차이
+
         if random_ball[0] == hit_numbers[0]: #투수가 던진 공의 구질과 타자가 선택한 구질이 같을 때
             if random_ball[1] == hit_numbers[1]:#위치까지 같으니까 홈런
                 cnt += 4
@@ -514,12 +513,13 @@ class Game:
                     cnt += 2
                     if self.doble_play_OUT() is True:   # 태흠
                         Double_Play = True
+
                 elif L_OR_R == 2:  # 좌우로 2칸 차이
                     cnt += 1
                     if self.doble_play_OUT() is True:   # 태흠
                         Double_Play = True
+
                 elif L_OR_R >= 3: # 좌우로 3칸 차이
-                    print(121213)
                     cnt += 0
                     Foul = True
 
@@ -532,8 +532,7 @@ class Game:
             if random_ball[1] == hit_numbers[1]:
                 cnt += 3
                 if self.flyball_OUT() is True:   # 플라이볼 판정
-                    cnt = -1   # 0이면 스트라이크 판정 나서 -1로 해줌     ###### 여기 버그 내일 고치시오!@#!@#!@#!@#!@
-
+                    cnt = -1   # 0이면 스트라이크 판정 나서 -1로 해줌
 
             elif UPDOWN == 0:#높낮이가 같은 선상일 때
                 if L_OR_R == 1:
@@ -553,11 +552,10 @@ class Game:
                     cnt += 1
                     if self.doble_play_OUT() is True:   # 태흠
                         Double_Play = True
-                elif L_OR_R ==2:
+                elif L_OR_R == 2:
                     cnt += 0
                     Foul = True
                 elif L_OR_R >= 3:
-
                     cnt += 0
 
             elif UPDOWN >= 2:#높낮이가 두개이상 차이날때
