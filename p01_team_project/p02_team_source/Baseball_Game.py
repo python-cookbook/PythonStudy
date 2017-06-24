@@ -369,17 +369,23 @@ class Game:
                             break
                     #player.hit_and_run(1 if hit_cnt[0] > 0 else 0, 1 if len(hit_cnt) == 0 else 0, 1 if hit_cnt[0] == 4 else 0)
 
-                else:  # 도루선택, 태흠
+                elif hit_yn==-1:  # 도루선택, 태흠, -1
+                    if Game.ADVANCE == [0, 0, 0]:
+                        print('★★★★★★★★도루 가능한 주자가 없습니다.★★★★★★★★')
+
+                        self.attack()
+
                     rn = random.random()
                     while 1:
-                        base_num = input('진루시킬 주자를 선택하세요[1, 2, 3] : {} / {} / {}'.format('1루주자' if Game.ADVANCE[0] == 1 and Game.ADVANCE[1] == 0 else '도루 불가', '2루주자' if Game.ADVANCE[1] == 1 and Game.ADVANCE[2] == 0 else '도루 불가', '3루주자' if Game.ADVANCE[2] == 1 else '도루 불가')
-)
-                        for i in range(len(Game.ADVANCE)):
-                            if Game.ADVANCE[i] == 1 and Game.ADVANCE[i + 1] == 0:
-                                if base_num == i + 1:
-                                    print('도루 불가라고 난독증이냐?')
-                        else:
+                        base_num = int(input('진루시킬 주자를 선택하세요[1, 2, 3] : {} / {} / {}'.format('1루주자' if Game.ADVANCE[0] == 1 and Game.ADVANCE[1] == 0 else '도루 불가', '2루주자' if Game.ADVANCE[1] == 1 and Game.ADVANCE[2] == 0 else '도루 불가', '3루주자' if Game.ADVANCE[2] == 1 else '도루 불가')))
+
+                        if Game.ADVANCE[base_num-1] == 1 and Game.ADVANCE[base_num] == 0:
+                            print('도루 가능')
                             break
+
+                        else:
+                            print('도루 불가라고 난독증이냐?')
+                            continue
 
                     if rn < 0.3:  # 도루 성공확률, 태흠
                         self.advance_setting(1, base_num, False, True)
