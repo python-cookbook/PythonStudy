@@ -369,6 +369,33 @@ class Game:
                             break
                     #player.hit_and_run(1 if hit_cnt[0] > 0 else 0, 1 if len(hit_cnt) == 0 else 0, 1 if hit_cnt[0] == 4 else 0)
 
+                else:  # 도루선택, 태흠
+                    rn = random.random()
+                    while 1:
+                        base_num = input('진루시킬 주자를 선택하세요[1, 2, 3] : {0}루 주자 / {1}루 주자 / {2}루 주자').format \
+                            (1 if Game.ADVANCE[0] == 1 and Game.ADVANCE[1] == 0 else '도루 불가',
+                             2 if Game.ADVANCE[1] == 1 and Game.ADVANCE[2] == 0 else '도루 불가',
+                             3 if Game.ADVANCE[2] == 1 else '도루 불가')
+
+                        for i in range(len(Game.ADVANCE)):
+                            if Game.ADVANCE[i] == 1 and Game.ADVANCE[i + 1] == 0:
+                                if base_num == i + 1:
+                                    print('도루 불가라고 난독증이냐?')
+                        else:
+                            break
+
+                    if rn < 0.3:  # 도루 성공확률, 태흠
+                        self.advance_setting(1, base_num, False, True)
+                        print('도루성공, stolen_base')
+                        break
+
+                    else:  # 도루 실패할 경우, 태흠
+                        print('도루실패, caught_stealing')
+                        Game.OUT_CNT += 1
+                        Game.ADVANCE[base_num - 1] = 0
+                        break
+
+
 
             if Game.BATTER_NUMBER[Game.CHANGE] == 9:
                 Game.BATTER_NUMBER[Game.CHANGE] = 1
@@ -387,7 +414,7 @@ class Game:
             print('====================================================================================================\n')
 
     # 진루 및 득점 설정하는 메서드
-    def advance_setting(self, hit_cnt, bob=False, double_play=False):   # {}루타~!
+    def advance_setting(self, hit_cnt, base_num, bob=False, double_play=False, sb=False):   # {}루타~!
         if hit_cnt == 4:  # 홈런인 경우
             Game.SCORE[Game.CHANGE] += (Game.ADVANCE.count(1)+1)
             Game.ADVANCE = [0, 0, 0]
@@ -415,29 +442,43 @@ class Game:
 
         else:
             if bob==False: #볼넷이 아닐때
-                for i in range(len(Game.ADVANCE), 0, -1):
-                    if Game.ADVANCE[i-1] == 1:
-                        if (i + hit_cnt) > 3:  # 기존에 출루한 선수들 중 득점 가능한 선수들에 대한 진루 설정 예, 1루+3루타 / 2루+2루타 / 3루+1루타
-                            Game.SCORE[Game.CHANGE] += 1   # 득점 해주고
-                            Game.ADVANCE[i-1] = 0   # 자리 다시 비워주고
-                        else:  # 기존 출루한 선수들 중 득점권에 있지 않은 선수들에 대한 진루 설정
-                            Game.ADVANCE[i-1 + hit_cnt] = 1
-                            Game.ADVANCE[i-1] = 0
-                Game.ADVANCE[hit_cnt-1] = 1  # 타석에 있던 선수에 대한 진루 설정
-
-            elif bob==True: #볼넷일때
-                if Game.ADVANCE[0]==1: #1루에 주자가 있을때.
+                if sb == False:  # 볼넷도 아니고 도루도 아니고, hit_cnt만 필요함, 이 줄만 태흠
                     for i in range(len(Game.ADVANCE), 0, -1):
                         if Game.ADVANCE[i-1] == 1:
-                            if (i + hit_cnt) > 3:  # 기존에 출루한 선수들 중 득점 가능한 선수들에 대한 진루 설정
-                                Game.SCORE[Game.CHANGE] += 1
-                                Game.ADVANCE[i-1] = 0
+                            if (i + hit_cnt) > 3:  # 기존에 출루한 선수들 중 득점 가능한 선수들에 대한 진루 설정 예, 1루+3루타 / 2루+2루타 / 3루+1루타
+                                Game.SCORE[Game.CHANGE] += 1   # 득점 해주고
+                                Game.ADVANCE[i-1] = 0   # 자리 다시 비워주고
                             else:  # 기존 출루한 선수들 중 득점권에 있지 않은 선수들에 대한 진루 설정
                                 Game.ADVANCE[i-1 + hit_cnt] = 1
                                 Game.ADVANCE[i-1] = 0
                     Game.ADVANCE[hit_cnt-1] = 1  # 타석에 있던 선수에 대한 진루 설정
-                else: #1루에 주자가 없을때는 1루에만 주자를 채워 넣는다.
-                    Game.ADVANCE[0] = 1
+
+                elif sb == True:  # 도루인 경우!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!, 태흠
+                    if (base_num + hit_cnt) > 3:
+                        Game.SCORE[Game.CHANGE] += 1  # 즉 3루에 서있으면 득점이란 소리, 위하고 코드 깔맞춤
+                        Game.ADVANCE[base_num - 1] = 0
+                    else:
+                        Game.ADVANCE[base_num - 1 + hit_cnt] = 1  # 진루상황 넣어주고
+                        Game.ADVANCE[base_num - 1] = 0  # 서있던 곳 빼주고
+
+
+                elif bob==True: #볼넷일때
+                    if Game.ADVANCE[0]==1: #1루에 주자가 있을때.
+                        if Game.ADVANCE[1] == 0 and Game.ADVANCE[2] == 1:  # 1,3루 일때
+                            Game.ADVANCE[1] = 1
+                        else:  # 그 외의 경우
+                            for i in range(len(Game.ADVANCE), 0, -1):
+                                if Game.ADVANCE[i-1] == 1:
+                                    if (i + hit_cnt) > 3:  # 기존에 출루한 선수들 중 득점 가능한 선수들에 대한 진루 설정
+                                        Game.SCORE[Game.CHANGE] += 1
+                                        Game.ADVANCE[i-1] = 0
+                                    else:  # 기존 출루한 선수들 중 득점권에 있지 않은 선수들에 대한 진루 설정
+                                        Game.ADVANCE[i-1 + hit_cnt] = 1
+                                        Game.ADVANCE[i-1] = 0
+                            Game.ADVANCE[hit_cnt-1] = 1  # 타석에 있던 선수에 대한 진루 설정
+
+                    else: #1루에 주자가 없을때는 1루에만 주자를 채워 넣는다.
+                        Game.ADVANCE[0] = 1
 
     # 컴퓨터가 생성한 랜덤 수와 플레이어가 입력한 숫자가 얼마나 맞는지 판단
     def hit_judgment(self, random_ball, hit_numbers): #(공던질위치, 구질)
