@@ -1066,8 +1066,8 @@ if __name__ == '__main__':
             print('한화 / ', '롯데 / ', '삼성 / ', 'KIA / ', 'SK / ', 'LG / ', '두산 / ', '넥센 / ', 'KT / ', 'NC / ')
             game_team_list = input('=> 게임을 진행할 두 팀을 입력하세요 : ').split(' ')
             print('====================================================================================================')
-            print('게임이 시작되었습니다. 작업표시줄에 실행된 게임콘솔창을 확인해주세요~\n')
             if (game_team_list[0] in Game.TEAM_LIST) and (game_team_list[1] in Game.TEAM_LIST):
+                print('게임이 시작되었습니다. 작업표시줄에 실행된 게임콘솔창을 확인해주세요~\n')
                 break
             else:
                 ctypes.windll.user32.MessageBoxW(None, '팀명을 잘못 입력하셨습니다.', "Error", 0)
