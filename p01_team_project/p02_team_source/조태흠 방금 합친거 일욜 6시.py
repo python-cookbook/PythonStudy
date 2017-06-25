@@ -842,7 +842,7 @@ class Main(Game):
                             break
 
                     #컴퓨터가 던진 공이 스트라이크 일 때 융
-                    if (random_numbers[1] >=6 and random_numbers[1] <= 7) or (random_numbers[1] >= 11 and random_numbers[1] <= 12) or (random_numbers[1] >= 16 and random_numbers[1] <= 17):
+                    if random_numbers[1] in [6, 7, 11, 12, 16, 17]:
                         Game.STRIKE_CNT += 1
                         Game.ANNOUNCE = '스트라이크!!!!!!!!!!!!!'
                         self.board()
@@ -856,8 +856,9 @@ class Main(Game):
                             break
 
                 elif hit_yn == 2:  # 도루선택, 태흠
-                    if Game.ADVANCE == [0, 0, 0] or Game.ADVANCE == [0, 0, 1] or Game.ADVANCE == [0, 1, 1] or Game.ADVANCE == [1, 1, 1]:
-                        Game.ANNOUNCE = '====================================================================================================\n★★★★★★★★도루 가능한 주자가 없습니다.★★★★★★★★'
+                    if Game.ADVANCE in [[0, 0, 0], [0, 0, 1], [0, 1, 1], [1, 1, 1]]:
+                        Game.ANNOUNCE = '====================================================================================================\n' \
+                                        '★★★★★★★★도루 가능한 주자가 없습니다.★★★★★★★★'
                         self.board()
                         self.attack()
 
