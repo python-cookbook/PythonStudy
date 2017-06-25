@@ -248,7 +248,7 @@ class Game:
                 for value in self.float_labels:
                     item[value] = round(float(item[value]), 3)
                 self.home_temp.append(item)
-        # self.home_temp_sort = sorted(self.home_temp, key=itemgetter('체력'), reverse=True)
+        self.home_temp_sort = sorted(self.home_temp, key=itemgetter('체력'), reverse=True)
         print(self.home_temp_sort)
 
         # 어웨이팀 csv 로드
@@ -260,7 +260,7 @@ class Game:
                     item[value] = round(float(item[value]), 3)
                     self.away_temp.append(item)
 
-        # self.away_temp_sort = sorted(self.away_temp, key=itemgetter('체력'), reverse=True)
+        self.away_temp_sort = sorted(self.away_temp, key=itemgetter('체력'), reverse=True)
         print(self.away_temp_sort)
         # 홈팀 라인업 구성
         self.value_h = tuple({int(i['등번호']): i['선수명']} for i in self.home_temp_sort)
@@ -338,52 +338,125 @@ class Game:
                                                         str(ap_rec.atbat).center(6, ' '), str(ap_rec.hit).center(5, ' '), str(ap_rec.homerun).center(5, ' '),
                                                         str(ap_rec.hp).center(5, ' '),str(ap_rec.batter_injure(ap_rec.injure_n)).center(5, ' '), str(ap_rec.condition[ap_rec.hp_dec]).center(5, ' ')))
 
-        open_csv_header1 = open("d:/Baseball_data/"+game_team_list[0]+".csv", 'w', encoding='euc_kr', newline='')
-        open_csv_header2 = open("d:/Baseball_data/"+game_team_list[1]+".csv", 'w', encoding='euc_kr', newline='')
-        csv_writer1 = csv.writer(open_csv_header1)
-        csv_writer1.writerow(['팀명', '등번호', '선수명', '타수', '안타수', '홈런수', '타율', '체력', '부상여부', '체력순위'])
-        open_csv_header1.close()
-        csv_writer2= csv.writer(open_csv_header2)
-        csv_writer2.writerow(['팀명', '등번호', '선수명', '타수', '안타수', '홈런수', '타율', '체력', '부상여부', '체력순위'])
-        open_csv_header2.close()
+        # 홈팀 csv 파일 저장 + 체력 높은 순으로 정렬 + 정렬 후 높은 순으로 순위 부여
+        home_csv1 = open('D://Baseball_data//'+game_team_list[0]+'.csv', 'r', encoding='euc_kr', newline='')
+        home_csv1_read = csv.reader(home_csv1)
+        temp_h = []
+        for i in home_csv1_read:
+            # ff.append(i)
+            temp_h.append(i)
+        home_csv1.close()
 
+        temp_h2 = sorted(temp_h, key=lambda temp_h: temp_h[6], reverse=False)
 
-        # 홈팀 선수 기록 세이브
-        for i in range(20):
-            hp = hometeam_players[i]
-            hp_rec = hp.record
-            open_csv_header_h = open("d:/Baseball_data/"+game_team_list[0]+".csv", 'a', encoding='euc_kr', newline='')
-            csv_writer_h = csv.writer(open_csv_header_h)
-            csv_writer_h.writerow(
-                [game_team_list[0], int(hp.number), hp.name, int(hp_rec.atbat), int(hp_rec.hit), int(hp_rec.homerun), round(float(hp_rec.avg),3),
-                 int(hp_rec.hp), hp_rec.batter_injure(hp_rec.injure_n)])
-            open_csv_header_h.close()
+        for i in range(0, len(temp_h2), 1):
+            temp_h2[i].append(i + 1)
+        # print(temp_h2)
+        home_open_csv_header1 = open("d:/Baseball_data/"+game_team_list[0]+".csv", 'w', encoding='euc_kr', newline='')
+        home_csv_writer1 = csv.writer(home_open_csv_header1)
+        home_csv_writer1.writerow(['팀명', '선수명', '타수', '안타수', '홈런수', '타율', '체력', '부상여부', '등번호'])
+        home_open_csv_header1.close()
+
+        home_open_csv_header2 = open("d:/Baseball_data/"+game_team_list[0]+".csv", 'a', encoding='euc_kr', newline='')
+        home_csv_writer2 = csv.writer(home_open_csv_header2)
+        for i in range(0, 20, 1):
+            home_csv_writer2.writerow(temp_h2[i])
+        home_open_csv_header2.close()
+
+        home_csv_read3 = open('D://Baseball_data//'+game_team_list[0]+'.csv', 'r', encoding='euc_kr', newline='')
+        home_csv_reader3 = csv.reader(home_csv_read3)
+        temp_h3 = []
+        for ia in home_csv_reader3:
+            # ff.append(i)
+            temp_h3.append(ia)
+        home_csv_read3.close()
+        #print(temp_h3)
+
+        # 어웨이팀 csv 파일 저장 + 체력 높은 순으로 정렬 + 정렬 후 높은 순으로 순위 부여
+        away_csv1 = open('D://Baseball_data//'+game_team_list[1]+'.csv', 'r', encoding='euc_kr', newline='')
+        away_csv1_read = csv.reader(away_csv1)
+        temp_a = []
+        for i in away_csv1_read:
+            # ff.append(i)
+            temp_a.append(i)
+        away_csv1.close()
+
+        temp_a2 = sorted(temp_a, key=lambda temp_a: temp_a[6], reverse=False)
+
+        for i in range(0, len(temp_a2), 1):
+            temp_a2[i].append(i + 1)
+        # print(temp_h2)
+        away_open_csv_header1 = open("d:/Baseball_data/"+game_team_list[1]+".csv", 'w', encoding='euc_kr', newline='')
+        away_csv_writer1 = csv.writer(away_open_csv_header1)
+        away_csv_writer1.writerow(['팀명', '선수명', '타수', '안타수', '홈런수', '타율', '체력', '부상여부', '등번호'])
+        away_open_csv_header1.close()
+
+        away_open_csv_header2 = open("d:/Baseball_data/"+game_team_list[1]+".csv", 'a', encoding='euc_kr', newline='')
+        away_csv_writer2 = csv.writer(away_open_csv_header2)
+        for i in range(0, 20, 1):
+            away_csv_writer2.writerow(temp_a2[i])
+        away_open_csv_header2.close()
+
+        away_csv_read3 = open('D://Baseball_data//'+game_team_list[1]+'.csv', 'r', encoding='euc_kr', newline='')
+        away_csv_reader3 = csv.reader(away_csv_read3)
+        temp_a3 = []
+        for ia in away_csv_reader3:
+            # ff.append(i)
+            temp_a3.append(ia)
+        away_csv_read3.close()
+        #print(temp_h3)
+
+        # # 홈팀 선수 기록 세이브
+        # for i in range(20):
+        #     hp = hometeam_players[i]
+        #     hp_rec = hp.record
+        #     open_csv_header_h = open("d:/Baseball_data/"+game_team_list[0]+".csv", 'a', encoding='euc_kr', newline='')
+        #     csv_writer_h = csv.writer(open_csv_header_h)
+        #     csv_writer_h.writerow(
+        #         [game_team_list[0], int(hp.number), hp.name, int(hp_rec.atbat), int(hp_rec.hit), int(hp_rec.homerun), round(float(hp_rec.avg),3),
+        #          int(hp_rec.hp), hp_rec.batter_injure(hp_rec.injure_n)])
+        #     open_csv_header_h.close()
+
+        # # 어웨이팀 선수 기록 세이브
+        # for i in range(20):
+        #     ap = awayteam_players[i]
+        #     ap_rec = ap.record
+        #     open_csv_header_a = open("d:/Baseball_data/"+game_team_list[1]+".csv", 'a', encoding='euc_kr', newline='')
+        #     csv_writer_a = csv.writer(open_csv_header_a)
+        #     csv_writer_a.writerow(
+        #         [game_team_list[1], int(ap.number), ap.name, int(ap_rec.atbat), int(ap_rec.hit), int(ap_rec.homerun), round(float(ap_rec.avg),3),
+        #          int(ap_rec.hp), ap_rec.batter_injure(ap_rec.injure_n)])
+        #     open_csv_header_a.close()
+
+        # 홈팀 csv 정렬 및 순위 부여
+        with open(self.home_location, 'r') as f:
+            for idx, item in enumerate(csv.DictReader(f), 0):
+                for value in self.int_labels:
+                    item[value] = int(item[value])
+                for value in self.float_labels:
+                    item[value] = round(float(item[value]), 3)
+                self.home_temp.append(item)
         self.home_temp_sort = sorted(self.home_temp, key=itemgetter('체력'), reverse=True)
+        print(self.home_temp_sort)
+
+        # 어웨이팀 csv 정렬 및 순위 부여
+        with open(self.away_location, 'r') as f:
+            for idx, item in enumerate(csv.DictReader(f), 0):
+                for value in self.int_labels:
+                    item[value] = int(item[value])
+                for value in self.float_labels:
+                    item[value] = round(float(item[value]), 3)
+                    self.away_temp.append(item)
 
 
 
-        # 어웨이팀 선수 기록 세이브
-        for i in range(20):
-            ap = awayteam_players[i]
-            ap_rec = ap.record
-            open_csv_header_a = open("d:/Baseball_data/"+game_team_list[1]+".csv", 'a', encoding='euc_kr', newline='')
-            csv_writer_a = csv.writer(open_csv_header_a)
-            csv_writer_a.writerow(
-                [game_team_list[1], int(ap.number), ap.name, int(ap_rec.atbat), int(ap_rec.hit), int(ap_rec.homerun), round(float(ap_rec.avg),3),
-                 int(ap_rec.hp), ap_rec.batter_injure(ap_rec.injure_n)])
-            open_csv_header_a.close()
-        self.away_temp_sort = sorted(self.away_temp, key=itemgetter('체력'), reverse=True)
 
 
         print('====================================================================================================')
-        # open_csv_header1 = open("d:/d/baseball.csv", 'w', encoding='UTF-8', newline='')
-        # csv_writer1 = csv.writer(open_csv_header1)
-        # csv_writer1.writerow(['팀명', '선수명', '안타수', '홈런수', '타수', '타율', '체력', '부상여부'])
-        # open_csv_header1.close()
-        # open_csv_header2 = open("d:/d/baseball.csv", 'a', encoding='UTF-8', newline='')
-        # csv_writer2 = csv.writer(open_csv_header2)
-        # csv_writer2.writerow([game_team_list[0], hp.name, hp_rec.hit, hp_rec.homerun, hp_rec.atbat, hp_rec.hit, hp_rec.avg, hp_rec.hp, hp_rec.batter_injure(hp_rec.injure_n)])
-        # open_csv_header2.close()
+
+
+
+
 
     # 공격 수행 메서드
     def attack(self):
