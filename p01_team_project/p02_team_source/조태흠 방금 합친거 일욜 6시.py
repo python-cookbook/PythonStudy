@@ -856,41 +856,42 @@ class Main(Game):
                             break
 
                 elif hit_yn == 2:  # 도루선택, 태흠
-                    self.root.update()
-                    if Game.ADVANCE == [0, 0, 0]:
-                        Game.ANNOUNCE = '====================================================================================================\n★★★★★★★★도루 가능한 주자가 없습니다.★★★★★★★★'
-                        self.board()
-                        self.attack()
-                    rn = random.random()
+                    if Game.ADVANCE == [1, 0, 0] or [0, 1, 0] or [1, 1, 0] or [1, 0, 1]:
+                        rn = random.random()
+                        while 1:
+                            base_num = int(input('도루시킬 주자를 선택하세요[1, 2] : {} / {}'.format(
+                                '1루주자' if Game.ADVANCE[0] == 1 and Game.ADVANCE[1] == 0 else '도루 불가',
+                                '2루주자' if Game.ADVANCE[1] == 1 and Game.ADVANCE[2] == 0 else '도루 불가')))
 
-                    while 1:
-                        base_num = int(input('도루시킬 주자를 선택하세요[1, 2] : {} / {}'.format(
-                            '1루주자' if Game.ADVANCE[0] == 1 and Game.ADVANCE[1] == 0 else '도루 불가',
-                            '2루주자' if Game.ADVANCE[1] == 1 and Game.ADVANCE[2] == 0 else '도루 불가')))
+                            if Game.ADVANCE[base_num - 1] == 1 and Game.ADVANCE[base_num] == 0:
+                                Game.ANNOUNCE = '도루 가능'
+                                self.board()
+                                break
 
-                        if Game.ADVANCE[base_num - 1] == 1 and Game.ADVANCE[base_num] == 0:
-                            Game.ANNOUNCE = '도루 가능'
+                            else:
+                                print('도루불가라고 난독증이냐?')
+                                self.board()
+                                continue
+
+                        if rn < 0.3:  # 도루 성공확률, 태흠
+                            self.advance_setting(1, base_num, False, False, True)
+                            print('도루성공, 게임창을 확인해주세용~')
+                            Game.ANNOUNCE = '도루성공, Stolen Base'
                             self.board()
                             break
 
-                        else:
-                            print('도루불가라고 난독증이냐?')
+                        else:  # 도루 실패할 경우, 태흠
+                            Game.ANNOUNCE = '도루실패, Caught Stealing'
+                            Game.OUT_CNT += 1
+                            Game.ADVANCE[base_num - 1] = 0
                             self.board()
-                            continue
+                            break
 
-                    if rn < 0.3:  # 도루 성공확률, 태흠
-                        self.advance_setting(1, base_num, False, False, True)
-                        print('도루성공, 게임창을 확인해주세용~')
-                        Game.ANNOUNCE = '도루성공, Stolen Base'
+                    elif Game.ADVANCE == [0, 0, 0] or [0, 0, 1] or [0, 1, 1] or [1, 1, 1]:
+                        print('Game.ADVANCE', Game.ADVANCE)
+                        Game.ANNOUNCE = '====================================================================================================\n★★★★★★★★도루 가능한 주자가 없습니다.★★★★★★★★'
                         self.board()
-                        break
-
-                    else:  # 도루 실패할 경우, 태흠
-                        Game.ANNOUNCE = '도루실패, Caught Stealing'
-                        Game.OUT_CNT += 1
-                        Game.ADVANCE[base_num - 1] = 0
-                        self.board()
-                        break
+                        self.attack()
 
                 else :
                     continue
