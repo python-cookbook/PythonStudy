@@ -856,7 +856,12 @@ class Main(Game):
                             break
 
                 elif hit_yn == 2:  # 도루선택, 태흠
-                    if Game.ADVANCE == [1, 0, 0] or [0, 1, 0] or [1, 1, 0] or [1, 0, 1]:
+                    if Game.ADVANCE == [0, 0, 0] or Game.ADVANCE == [0, 0, 1] or Game.ADVANCE == [0, 1, 1] or Game.ADVANCE == [1, 1, 1]:
+                        Game.ANNOUNCE = '====================================================================================================\n★★★★★★★★도루 가능한 주자가 없습니다.★★★★★★★★'
+                        self.board()
+                        self.attack()
+
+                    else:
                         rn = random.random()
                         while 1:
                             base_num = int(input('도루시킬 주자를 선택하세요[1, 2] : {} / {}'.format(
@@ -886,12 +891,6 @@ class Main(Game):
                             Game.ADVANCE[base_num - 1] = 0
                             self.board()
                             break
-
-                    elif Game.ADVANCE == [0, 0, 0] or [0, 0, 1] or [0, 1, 1] or [1, 1, 1]:
-                        print('Game.ADVANCE', Game.ADVANCE)
-                        Game.ANNOUNCE = '====================================================================================================\n★★★★★★★★도루 가능한 주자가 없습니다.★★★★★★★★'
-                        self.board()
-                        self.attack()
 
                 else :
                     continue
