@@ -11,7 +11,7 @@ from tkinter import Frame, Canvas, Label, Button, LEFT,  ALL, Tk, TOP
 import random,re,time,csv
 
 
-############# 기록을 저장할 경로 설정 ###################         #지은
+############# 기록을 저장할 경로 설정 ###################         #지은           #태흠 ~
 ##### 저장할 경로는 항상 새로운 경로일 것! ##########
 
 ### 실시간 선수 기록 저장 ####
@@ -27,7 +27,7 @@ save_result_path = "d:\\data\\baseball_save_result.csv"
 load_player_path = "d:\\data\\baseball_save_player1.csv"
 
 ### 기록 분석을 위한 최종 경기 기록 데이터가 필요할 경우 ###
-load_result_path = None
+load_result_path = None                                                       # ~ 태흠
 
 ########################################################
 
@@ -173,7 +173,7 @@ d:/data/ 폴더 만들어야 합니다.
 
 """
 
-class Saveandload:
+class Saveandload:                          #태흠 ~
     DATA_SET = 0
     FILE_PATH = 'd:/data/'
     CHECK = 0
@@ -324,7 +324,7 @@ class Saveandload:
                     return Main.Loadgame
     
             except FileNotFoundError :
-                print('파일 위치를 잘못 입력하셨습니다.')
+                print('파일 위치를 잘못 입력하셨습니다.')              # ~ 태흠
     
 
 
@@ -356,7 +356,7 @@ class Game(object):
     ADVANCE = [0, 0, 0]  # 진루 상황
     SCORE = [0, 0]  # [home, away]
     BATTER_NUMBER = [1, 1]  # [home, away] 타자 순번
-    LOAD_CHK = True
+    LOAD_CHK = True                                  #태흠
     MATRIX = 5
     LOCATION = {0: [0, 0], 1: [0, 1], 2: [0, 2], 3: [0, 3], 4: [0, 4],
                 5: [1, 0], 6: [1, 1], 7: [1, 2], 8: [1, 3], 9: [1, 4],
@@ -371,7 +371,7 @@ class Game(object):
         print('Away Team : ' + game_team_list[1]+' : ', Game.TEAM_LIST[game_team_list[1]])
         self.__hometeam = Team(game_team_list[0], Game.TEAM_LIST[game_team_list[0]])
         self.__awayteam = Team(game_team_list[1], Game.TEAM_LIST[game_team_list[1]])
-        self.game_team_list = game_team_list
+        self.game_team_list = game_team_list           #태흠
         self.root = root
 
     @property
@@ -419,7 +419,7 @@ class Game(object):
         print('===================================================================================================================')
 
     # 공격 수행 메서드
-    def attack(self):
+    def attack(self):       #태흠
         pass
 
     # 진루 및 득점 설정하는 메서드
@@ -628,15 +628,15 @@ class Main(Game):
             while True:
 
                 PLAYER_INFO = [curr_team.team_name, player.number, player.name, player.record.atbat, player.record.hit, player.record.bob,
-                               player.record.homerun, player.record.avg]
+                               player.record.homerun, player.record.avg]         #태흠
                 CNT = [Game.STRIKE_CNT, Game.BALL_CNT, Game.OUT_CNT]
                 GAME_INFO = [Game.INNING, Game.CHANGE]
                 ADV = Game.ADVANCE
                 SCORE = Game.SCORE
                 BATTER_NUMBER = Game.BATTER_NUMBER
 
-                Saveandload.make_data_set(CNT, GAME_INFO, ADV, SCORE, BATTER_NUMBER)
-                Saveandload.save_record(save_player_path, *PLAYER_INFO)            #지은
+                Saveandload.make_data_set(CNT, GAME_INFO, ADV, SCORE, BATTER_NUMBER)      #태흠
+                Saveandload.save_record(save_player_path, *PLAYER_INFO)            #지은     #태흠
 
                 Main.FORB = -1
                 Main.BALLLOC = -1
@@ -755,8 +755,8 @@ class Main(Game):
                     continue
 
             PLAYER_INFO = [curr_team.team_name, player.number, player.name, player.record.atbat, player.record.hit, player.record.bob,
-                           player.record.homerun, player.record.avg]
-            Saveandload.save_record(save_player_path, *PLAYER_INFO)  # 지은
+                           player.record.homerun, player.record.avg]           #태흠
+            Saveandload.save_record(save_player_path, *PLAYER_INFO)  # 지은     #태흠
             if Game.BATTER_NUMBER[Game.CHANGE] == 9:
                 Game.BATTER_NUMBER[Game.CHANGE] = 1
             else:
@@ -771,9 +771,9 @@ class Main(Game):
             self.board()
 
     def start_game(self):
-        Saveandload.load_to_start_game()
-        Saveandload.load_record(self.game_team_list[0], self.hometeam, self.awayteam, load_player_path)   #지은
-        Game.LOAD_CHK = False
+        Saveandload.load_to_start_game()       #태흠
+        Saveandload.load_record(self.game_team_list[0], self.hometeam, self.awayteam, load_player_path)   #지은     #태흠
+        Game.LOAD_CHK = False     #태흠
 
         if Game.INNING <= 3: #게임을 진행할 이닝을 설정. 현재는 1이닝만 진행하게끔 되어 있음.
             # print('====================================================================================================')
