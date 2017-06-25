@@ -22,7 +22,7 @@ class Record:
         self.__hp_dec = random.randint(0,2)  # 체력감소율
         self.__condition = {0:'good',1:'normal',2:'bad'}  # 컨디션
         self.__injure_n = random.randint(0, 20)   # 부상 랜덤수 생성
-        # self.__injure = ''
+
 
     @property
     def hit(self):
@@ -88,18 +88,6 @@ class Record:
     def condition(self, condition):
         self.__condition = condition
 
-    # @property
-    # def injure(self):
-    #     return self.__injure
-    #
-    # @injure.setter
-    # def injure(self):
-    #     if self.__injure_n < 20:
-    #         self.__injure = 'False'
-    #     else:
-    #         self.__injure = 'True'
-
-
     # 타자 기록 관련 메서드
     def batter_record(self, hit, homerun):
         self.hit += hit
@@ -121,6 +109,19 @@ class Record:
             return False
         else:
             return True
+
+    # 타자 부상 회복 관련 메소드
+    @classmethod
+    def batter_injure_heal(cls, injure_n):
+        if cls.batter_injure(injure_n) is True:
+            heal_number = random.randint(1, 9)
+            if heal_number == 3 or heal_number == 6 or heal_number == 9:
+                return False
+            else:
+                return True
+        else:
+            return False
+
 
 ###################################################################################################
 ## 선수 관련 클래스
@@ -163,6 +164,10 @@ class Player:
     # 선수 부상 관련 메소드
     def player_injure(self, injure_n):
         self.__record.batter_injure(injure_n)
+
+    # 선수 부상 회복 관련 메소드
+    def player_injure_heal(self, injure_n):
+        self.__record.batter_injure_heal(injure_n)
 
 ###################################################################################################
 ## 팀 관련 클래스
