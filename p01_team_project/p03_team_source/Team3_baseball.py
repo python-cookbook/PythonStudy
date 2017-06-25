@@ -450,7 +450,7 @@ class Game:
             print('====================================================================================================\n')
 
             while True:
-                random_numbers = self.throws_numbers()  # 컴퓨터가 랜덤으로 숫자 4개 생성
+                random_numbers = self.throws_numbers(player)  # 컴퓨터가 랜덤으로 숫자 4개 생성
                 print('== [전광판] =========================================================================================')
                 print('==   {}      | {} : {}'.format(Game.ADVANCE[1], self.hometeam.team_name, Game.SCORE[0]))
                 print('==  {}  {}    | {} : {}'.format(Game.ADVANCE[2], Game.ADVANCE[0], self.awayteam.team_name, Game.SCORE[1]))
@@ -459,8 +459,14 @@ class Game:
                 print('== 현재 타석 : {}번 타자[{}], 타율 : {}'.format(player.number, player.name, player.record.avg))
                 print('== 컨디션 : {}, 체력 : {}'.format(player.record.condition[player.record.hp_dec], player.record.hp))
                 try:
-                    hit_numbers = set(int(hit_number) for hit_number in input('== 숫자를 입력하세요(1~40) : ').split(' '))  # 유저가 직접 숫자 4개 입력
-                    if self.hit_number_check(hit_numbers) is False:
+                    if player.record.condition[player.record.hp_dec] == 'good':
+                        print('==선수의 컨디션이 "good" 입니다. 1~55 사이의 숫자를 선택하세요.')
+                    if player.record.condition[player.record.hp_dec] == 'normal':
+                        print('==선수의 컨디션이 "normal" 입니다. 1~65 사이의 숫자를 선택하세요.')
+                    if player.record.condition[player.record.hp_dec] == 'bad':
+                        print('==선수의 컨디션이 "bad" 입니다. 1~75 사이의 숫자를 선택하세요.')
+                    hit_numbers = set(int(hit_number) for hit_number in input('== 컨디션에 따른 숫자를 공백구분으로 4개 입력하세요(중복불가능) : ').split(' '))  # 유저가 직접 숫자 4개 입력
+                    if self.hit_number_check(hit_numbers, player) is False:
                         raise Exception()
                 except Exception:
                     print('== ▣ 잘못된 숫자가 입력되었습니다.')
@@ -530,13 +536,34 @@ class Game:
         return cnt
 
     # 선수가 입력한 숫자 확인
-    def hit_number_check(self, hit_numbers):
-        if len(hit_numbers) == 4:
-            for hit_number in hit_numbers:
-                if hit_number <= 0 or hit_number > 55:
-                    return False
-            return True
-        return False
+    def hit_number_check(self, hit_numbers, player):
+            if player.record.condition[player.record.hp_dec] == 'good':
+                if len(hit_numbers) == 4:
+                    for hit_number in hit_numbers:
+                        if hit_number <= 0 or hit_number > 55:
+                            return False
+                    return True
+                return False
+            if player.record.condition[player.record.hp_dec] == 'normal':
+                if len(hit_numbers) == 4:
+                    for hit_number in hit_numbers:
+                        if hit_number <= 0 or hit_number > 65:
+                            return False
+                    return True
+                return False
+            if player.record.condition[player.record.hp_dec] == 'bad':
+                if len(hit_numbers) == 4:
+                    for hit_number in hit_numbers:
+                        if hit_number <= 0 or hit_number > 75:
+                            return False
+                    return True
+                return False
+        # if len(hit_numbers) == 4:
+        #     for hit_number in hit_numbers:
+        #         if hit_number <= 0 or hit_number > 75:
+        #             return False
+        #     return True
+        # return False
 
     # 선수 선택
     def select_player(self, number, player_list):
@@ -545,13 +572,24 @@ class Game:
                 return player
 
     # 랜덤으로 숫자 생성(1~55)
-    def throws_numbers(self):
+    def throws_numbers(self, player):
         random_balls = set()
         while True:
-            random_balls.add(random.randint(1, 55))  # 1 ~ 55 중에 랜덤 수를 출력
-            if len(random_balls) == 4:  # 생성된 ball 이 4개 이면(set 객체라 중복 불가)
-                return random_balls
-
+            if player.record.condition[player.record.hp_dec] == 'good':
+                random_balls.add(random.randint(1, 55))  # 컨디션이 좋은 선수는 1 ~ 55 중에 랜덤 수를 출력
+                if len(random_balls) == 4:  # 생성된 ball 이 4개 이면(set 객체라 중복 불가)
+                    return random_balls
+            if player.record.condition[player.record.hp_dec] == 'normal':
+                random_balls.add(random.randint(1, 65))  # 컨디션이 보통인 선수는 1 ~ 65 중에 랜덤 수를 출력
+                if len(random_balls) == 4:  # 생성된 ball 이 4개 이면(set 객체라 중복 불가)
+                    return random_balls
+            if player.record.condition[player.record.hp_dec] == 'bad':
+                random_balls.add(random.randint(1, 75))  # 1 ~ 75 중에 랜덤 수를 출력
+                if len(random_balls) == 4:  # 생성된 ball 이 4개 이면(set 객체라 중복 불가)
+                    return random_balls
+            # random_balls.add(random.randint(1, 65))  # 컨디션이 보통인 선수는 1 ~ 65 중에 랜덤 수를 출력
+            # if len(random_balls) == 4:  # 생성된 ball 이 4개 이면(set 객체라 중복 불가)
+            #     return random_balls
 
 if __name__ == '__main__':
     while True:
