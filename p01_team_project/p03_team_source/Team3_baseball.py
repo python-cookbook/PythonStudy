@@ -1,8 +1,8 @@
 import random
 import re
-import pandas as pd
+# import pandas as pd
 import csv
-
+from operator import itemgetter
 
 # 3조
 # csv 파일 형태 : 팀명/선수명/안타수/홈런수/타수/타율/체력/부상여부
@@ -198,16 +198,16 @@ class Team:
 ###################################################################################################
 class Game:
     TEAM_LIST = {
-        '한화': ({1: '정근우'}, {2: '이용규'}, {3: '송광민'}, {4: '최진행'}, {5: '하주석'}, {6: '장민석'}, {7: '로사리오'}, {8: '김태균'}, {9: '최재훈'},{10:'이성열'},{11:'김경언'},{12:'차일목'},{13:'이양기'}),
-        '롯데': ({1: '전준우'}, {2: '손아섭'}, {3: '번즈'}, {4: '이대호'}, {5: '최준석'}, {6: '강민호'}, {7: '신본기'}, {8: '황진수'}, {9: '김문호'},{10:'이우민'},{11:'정훈'},{12:'나경민'},{13:'문규현'}),
-        '삼성': ({1: '박해민'}, {2: '강한울'}, {3: '구자욱'}, {4: '이승엽'}, {5: '이원석'}, {6: '조동찬'}, {7: '김헌곤'}, {8: '이지영'}, {9: '김정혁'}, {10: '러프'}, {11: '배영섭'}, {12: '김상수'}, {13: '정병곤'}),
-        'KIA': ({1: '버나디나'}, {2: '이명기'}, {3: '나지완'}, {4: '최형우'}, {5: '이범호'}, {6: '안치홍'}, {7: '서동욱'}, {8: '김민식'}, {9: '김선빈'}, {10: '김주찬'}, {11: '한승택'}, {12: '김주형'}, {13: '김호령'}),
-        'SK': ({1: '노수광'}, {2: '정진기'}, {3: '최정'}, {4: '김동엽'}, {5: '한동민'}, {6: '이재원'}, {7: '박정권'}, {8: '김성현'}, {9: '박승욱'},{10:'이대수'},{11:'최정용'},{12:'조용호'},{13:'나주환'}),
-        'LG': ({1: '이형종'}, {2: '김용의'}, {3: '박용택'}, {4: '히메네스'}, {5: '오지환'}, {6: '양석환'}, {7: '임훈'}, {8: '정상호'}, {9: '손주인'}, {10:'백창수'},{11:'강승호'},{12:'이천웅'},{13:'정성훈'}),
-        '두산': ({1: '허경민'}, {2: '최주환'}, {3: '민병헌'}, {4: '김재환'}, {5: '에반스'}, {6: '양의지'}, {7: '김재호'}, {8: '신성현'}, {9: '정진호'}, {10: '박세혁'}, {11: '조수행'}, {12: '류지혁'}, {13: '박건우'}),
-        '넥센': ({1: '이정후'}, {2: '김하성'}, {3: '서건창'}, {4: '윤석민'}, {5: '허정협'}, {6: '채태인'}, {7: '김민성'}, {8: '박정음'}, {9: '주효상'}, {10: '고종욱'}, {11: '이택근'}, {12: '박동원'}, {13: '김웅빈'}),
-        'KT': ({1: '심우준'}, {2: '정현'}, {3: '박경수'}, {4: '유한준'}, {5: '장성우'}, {6: '윤요섭'}, {7: '김사연'}, {8: '오태곤'}, {9: '김진곤'}),
-        'NC': ({1: '김성욱'}, {2: '모창민'}, {3: '나성범'}, {4: '스크럭스'}, {5: '권희동'}, {6: '박석민'}, {7: '지석훈'}, {8: '김태군'}, {9: '이상호'})
+        'HANHWA': ({1:'하주석'}, {2:'장민석'}, {3:'정근우'}, {4:'송광민'}, {5:'로사리오'}, {6:'김태균'}, {7:'양성우'}, {8:'강경학'}, {9:'차일목'}, {10:'이성열'}, {11:'최재훈'}, {12:'김회성'}, {13:'김경언'}, {14:'최진행'}, {15:'김원석'}, {16:'이동훈'}, {17:'이양기'}, {18:'조인성'}, {19:'허도환'}, {20:'이용규'}),
+        'LOTTE': ({1:'손아섭'}, {2:'이대호'}, {3:'최준석'}, {4:'강민호'}, {5:'이우민'}, {6:'김문호'}, {7:'신본기'}, {8:'번즈'}, {9:'정훈'}, {10:'김상호'}, {11:'김동한'}, {12:'나경민'}, {13:'김대륙'}, {14:'문규현'}, {15:'김사훈'}, {16:'전준우'}, {17:'박헌도'}, {18:'황진수'}, {19:'김대우'}, {20:'김민수'}),
+        'SAMSUNG': ({1:'구자욱'}, {2:'박해민'}, {3:'김헌곤'}, {4:'강한울'}, {5:'이지영'}, {6:'이승엽'}, {7:'조동찬'}, {8:'러프'}, {9:'이원석'}, {10:'배영섭'}, {11:'정병곤'}, {12:'김상수'}, {13:'권정웅'}, {14:'박한이'}, {15:'백상원'}, {16:'김정혁'}, {17:'성의준'}, {18:'김성윤'}, {19:'우동균'}, {20:'나성용'}),
+        'KIA': ({1:'김선빈'}, {2:'최형우'}, {3:'나지완'}, {4:'버나디나'}, {5:'김민식'}, {6:'서동욱'}, {7:'안치홍'}, {8:'이명기'}, {9:'김주찬'}, {10:'한승택'}, {11:'이범호'}, {12:'김호령'}, {13:'신종길'}, {14:'김주형'}, {15:'김지성'}, {16:'고장혁'}, {17:'최원준'}, {18:'이진영'}, {19:'이호신'}, {19:'노관현'}),
+        'SK': ({1:'이대수'}, {2:'최정용'}, {3:'한동민'}, {4:'최정'}, {5:'조용호'}, {6:'나주환'}, {7:'김동엽'}, {8:'정의윤'}, {9:'정진기'}, {10:'김성현'}, {11:'노수광'}, {12:'박정권'}, {13:'이재원'}, {14:'김강민'}, {15:'박승욱'}, {16:'로맥'}, {17:'이홍구'}, {18:'최승준'}, {19:'이성우'}, {20:'김주한'}),
+        'LG': ({1:'박용택'}, {2:'강승호'}, {3:'백창수'}, {4:'정성훈'}, {5:'이형종'}, {6:'안익훈'}, {7:'이천웅'}, {8:'손주인'}, {9:'임훈'}, {10:'정상호'}, {11:'채은성'}, {12:'김재율'}, {13:'양석환'}, {14:'오지환'}, {15:'히메네스'}, {16:'김용의'}, {17:'조윤준'}, {18:'최재원'}, {19:'유강남'}, {20:'이병규'}),
+        'DOOSAN': ({1:'김재환'}, {2:'민병헌'}, {3:'에반스'}, {4:'최주환'}, {5:'오재원'}, {5:'오재일'}, {7:'김재호'}, {8:'양의지'}, {9:'허경민'}, {10:'박건우'}, {11:'류지혁'}, {12:'박세혁'}, {13:'정진호'}, {14:'국해성'}, {15:'조수행'}, {16:'신성현'}, {17:'김인태'}, {18:'김민혁'}, {19:'이성곤'}, {20:'김강률'}),
+        'NEXEN': ({1:'이정후'}, {2:'윤석민'}, {3:'김하성'}, {4:'서건창'}, {5:'김민성'}, {6:'채태인'}, {7:'고종욱'}, {8:'허정협'}, {9:'박동원'}, {10:'이택근'}, {11:'김재현'}, {12:'김웅빈'}, {13:'김태완'}, {14:'김지수'}, {15:'박정음'}, {16:'주효상'}, {17:'대니돈'}, {18:'송성문'}, {19:'유재신'}, {20:'김규민'}),
+        'KT': ({1:'오정복'}, {2:'유한준'}, {3:'이진영'}, {4:'김동욱'}, {5:'이대형'}, {6:'박경수'}, {7:'심우준'}, {8:'이해창'}, {9:'정현'}, {10:'오태곤'}, {11:'장성우'}, {12:'박기혁'}, {13:'윤요섭'}, {14:'유민상'}, {15:'하준호'}, {16:'김사연'}, {17:'김연훈'}, {18:'로하스'}, {19:'전민수'}, {20:'김진곤'}),
+        'NC': ({1:'김태우'}, {2:'강진성'}, {3:'나성범'}, {4:'박민우'}, {5:'이상호'}, {6:'이종욱'}, {7:'손시헌'}, {8:'모창민'}, {9:'스크럭스'}, {10:'권희동'}, {11:'김준완'}, {12:'김태군'}, {13:'박석민'}, {14:'박광열'}, {15:'김성욱'}, {16:'지석훈'}, {17:'황윤호'}, {18:'윤병호'}, {19:'도태훈'}, {20:'조평호'})
     }
     INNING = 1  # 1 이닝부터 시작
     CHANGE = 0  # 0 : hometeam, 1 : awayteam
@@ -218,16 +218,68 @@ class Game:
     BATTER_NUMBER = [1, 1]  # [home, away] 타자 순번
 
     def __init__(self, game_team_list):
+        # csv 파일 위치
+        self.home_location = "D:\\Baseball_data\\"+game_team_list[0]+".csv"
+        self.away_location = "D:\\Baseball_data\\"+game_team_list[1]+".csv"
+
+        # csv파일을 불러와서 임시로 담아두는 리스트
+        self.home_temp = []
+        self.away_temp = []
+
+        # csv파일을 불러와서 정렬한다음 임시로 담아두는 리스트
+        self.home_temp_sort = []
+        self.away_temp_sort = []
+
+        # csv파일을 불러올 때 int타입, float타입으로 불러오는 변수 구분
+        self.int_labels = ['안타수', '체력', '홈런수', '타수']
+        self.float_labels = ['타율']
+
+        # 홈팀의 라인업을 담는 딕셔너리
+        self.hometeam_dict = {}
+
+        # 어웨이 팀의 라인업을 담는 딕셔너리
+        self.awayteam_dict = {}
+
+        # 홈팀 csv 로드
+        with open(self.home_location, 'r') as f:
+            for idx, item in enumerate(csv.DictReader(f), 0):
+                for value in self.int_labels:
+                    item[value] = int(item[value])
+                for value in self.float_labels:
+                    item[value] = round(float(item[value]), 3)
+                self.home_temp.append(item)
+        # self.home_temp_sort = sorted(self.home_temp, key=itemgetter('체력'), reverse=True)
+        print(self.home_temp_sort)
+
+        # 어웨이팀 csv 로드
+        with open(self.away_location, 'r') as f:
+            for idx, item in enumerate(csv.DictReader(f), 0):
+                for value in self.int_labels:
+                    item[value] = int(item[value])
+                for value in self.float_labels:
+                    item[value] = round(float(item[value]), 3)
+                    self.away_temp.append(item)
+
+        # self.away_temp_sort = sorted(self.away_temp, key=itemgetter('체력'), reverse=True)
+        print(self.away_temp_sort)
+        # 홈팀 라인업 구성
+        self.value_h = tuple({int(i['등번호']): i['선수명']} for i in self.home_temp_sort)
+        self.__hometeam = Team(game_team_list[0], self.value_h)
+        #print(value_h)
+        # 어웨이팀 라인업 구성
+        self.value_a = tuple({int(i['등번호']): i['선수명']} for i in self.away_temp_sort)
+        self.__awayteam = Team(game_team_list[1], self.value_a)
+        #print(value_h)
+
         print('====================================================================================================')
         print('== 선수단 구성')
         print('====================================================================================================')
-        print(game_team_list[0]+' : ', Game.TEAM_LIST[game_team_list[0]])
-        print(game_team_list[1]+' : ', Game.TEAM_LIST[game_team_list[1]])
+        print(game_team_list[0]+' : ', self.value_h)
+        print(game_team_list[1]+' : ', self.value_a)
         print('====================================================================================================')
-        self.__hometeam = Team(game_team_list[0], Game.TEAM_LIST[game_team_list[0]])
-        self.__awayteam = Team(game_team_list[1], Game.TEAM_LIST[game_team_list[1]])
         print('== 선수단 구성이 완료 되었습니다.\n')
-        print(game_team_list[0])
+
+
     @property
     def hometeam(self):
         return self.__hometeam
@@ -268,10 +320,7 @@ class Game:
 
         hometeam_players = self.hometeam.player_list
         awayteam_players = self.awayteam.player_list
-        open_csv_header1 = open("d:/d/baseball.csv", 'w', encoding='UTF-8', newline='')
-        csv_writer1 = csv.writer(open_csv_header1)
-        csv_writer1.writerow(['팀명', '선수명', '안타수', '홈런수', '타수', '타율', '체력', '부상여부'])
-        open_csv_header1.close()
+
 
         for i in range(9):
             hp = hometeam_players[i]
@@ -280,36 +329,50 @@ class Game:
             ap_rec = ap.record
 
             # 홈팀 스탯
-            print('== {} | {} | {} | {} | {} | {} | {} | {} '.format(hp.name.center(6+(4-len(hp.name)), ' '), str(hp_rec.avg).center(7, ' '),
+            print('== {} | {} | {} | {} | {} | {} | {} | {} '.format(hp.name.center(6+(4-len(hp.name)), ' '), str(round(float(hp_rec.avg), 2)).center(7, ' '),
                                                       str(hp_rec.atbat).center(6, ' '), str(hp_rec.hit).center(5, ' '), str(hp_rec.homerun).center(5, ' '),
                                                       str(hp_rec.hp).center(5, ' '), str(hp_rec.batter_injure(hp_rec.injure_n)).center(5, ' '), str(hp_rec.condition[hp_rec.hp_dec]).center(5, ' ')), end='')
 
             # 어웨이팀 스탯
-            print(' {} | {} | {} | {} | {} | {} | {} | {} =='.format(ap.name.center(6+(4-len(ap.name)), ' '), str(ap_rec.avg).center(7, ' '),
+            print(' {} | {} | {} | {} | {} | {} | {} | {} =='.format(ap.name.center(6+(4-len(ap.name)), ' '), str(round(float(ap_rec.avg), 2)).center(7, ' '),
                                                         str(ap_rec.atbat).center(6, ' '), str(ap_rec.hit).center(5, ' '), str(ap_rec.homerun).center(5, ' '),
                                                         str(ap_rec.hp).center(5, ' '),str(ap_rec.batter_injure(ap_rec.injure_n)).center(5, ' '), str(ap_rec.condition[ap_rec.hp_dec]).center(5, ' ')))
 
-        # 홈팀 선수 기록
-        for i in range(9):
+        open_csv_header1 = open("d:/Baseball_data/"+game_team_list[0]+".csv", 'w', encoding='euc_kr', newline='')
+        open_csv_header2 = open("d:/Baseball_data/"+game_team_list[1]+".csv", 'w', encoding='euc_kr', newline='')
+        csv_writer1 = csv.writer(open_csv_header1)
+        csv_writer1.writerow(['팀명', '등번호', '선수명', '타수', '안타수', '홈런수', '타율', '체력', '부상여부', '체력순위'])
+        open_csv_header1.close()
+        csv_writer2= csv.writer(open_csv_header2)
+        csv_writer2.writerow(['팀명', '등번호', '선수명', '타수', '안타수', '홈런수', '타율', '체력', '부상여부', '체력순위'])
+        open_csv_header2.close()
+
+
+        # 홈팀 선수 기록 세이브
+        for i in range(20):
             hp = hometeam_players[i]
             hp_rec = hp.record
-            open_csv_header_h = open("d:/d/baseball.csv", 'a', encoding='UTF-8', newline='')
+            open_csv_header_h = open("d:/Baseball_data/"+game_team_list[0]+".csv", 'a', encoding='euc_kr', newline='')
             csv_writer_h = csv.writer(open_csv_header_h)
             csv_writer_h.writerow(
-                [game_team_list[0], hp.name, hp_rec.hit, hp_rec.homerun, hp_rec.atbat, hp_rec.hit, hp_rec.avg,
-                 hp_rec.hp, hp_rec.batter_injure(hp_rec.injure_n)])
+                [game_team_list[0], int(hp.number), hp.name, int(hp_rec.atbat), int(hp_rec.hit), int(hp_rec.homerun), round(float(hp_rec.avg),3),
+                 int(hp_rec.hp), hp_rec.batter_injure(hp_rec.injure_n)])
             open_csv_header_h.close()
+        self.home_temp_sort = sorted(self.home_temp, key=itemgetter('체력'), reverse=True)
 
-        # 어웨이팀 선수 기록
-        for i in range(9):
+
+
+        # 어웨이팀 선수 기록 세이브
+        for i in range(20):
             ap = awayteam_players[i]
             ap_rec = ap.record
-            open_csv_header_a = open("d:/d/baseball.csv", 'a', encoding='UTF-8', newline='')
+            open_csv_header_a = open("d:/Baseball_data/"+game_team_list[1]+".csv", 'a', encoding='euc_kr', newline='')
             csv_writer_a = csv.writer(open_csv_header_a)
             csv_writer_a.writerow(
-                [game_team_list[1], ap.name, ap_rec.hit, ap_rec.homerun, ap_rec.atbat, ap_rec.hit, ap_rec.avg,
-                 ap_rec.hp, ap_rec.batter_injure(ap_rec.injure_n)])
+                [game_team_list[1], int(ap.number), ap.name, int(ap_rec.atbat), int(ap_rec.hit), int(ap_rec.homerun), round(float(ap_rec.avg),3),
+                 int(ap_rec.hp), ap_rec.batter_injure(ap_rec.injure_n)])
             open_csv_header_a.close()
+        self.away_temp_sort = sorted(self.away_temp, key=itemgetter('체력'), reverse=True)
 
 
         print('====================================================================================================')
@@ -321,15 +384,6 @@ class Game:
         # csv_writer2 = csv.writer(open_csv_header2)
         # csv_writer2.writerow([game_team_list[0], hp.name, hp_rec.hit, hp_rec.homerun, hp_rec.atbat, hp_rec.hit, hp_rec.avg, hp_rec.hp, hp_rec.batter_injure(hp_rec.injure_n)])
         # open_csv_header2.close()
-
-
-
-
-
-
-
-
-
 
     # 공격 수행 메서드
     def attack(self):
@@ -426,7 +480,7 @@ class Game:
     def hit_number_check(self, hit_numbers):
         if len(hit_numbers) == 4:
             for hit_number in hit_numbers:
-                if hit_number <= 0 or hit_number > 40:
+                if hit_number <= 0 or hit_number > 55:
                     return False
             return True
         return False
@@ -437,11 +491,11 @@ class Game:
             if number == player.number:
                 return player
 
-    # 랜덤으로 숫자 생성(1~20)
+    # 랜덤으로 숫자 생성(1~55)
     def throws_numbers(self):
         random_balls = set()
         while True:
-            random_balls.add(random.randint(1, 40))  # 1 ~ 20 중에 랜덤 수를 출력
+            random_balls.add(random.randint(1, 55))  # 1 ~ 55 중에 랜덤 수를 출력
             if len(random_balls) == 4:  # 생성된 ball 이 4개 이면(set 객체라 중복 불가)
                 return random_balls
 
@@ -459,8 +513,4 @@ if __name__ == '__main__':
 
         else:
             print('입력한 팀 정보가 존재하지 않습니다. 다시 입력해주세요.')
-
-csv_open = pd.read_csv('d:/d/baseball.csv', encoding='UTF-8')
-print(csv_open)
-
 
