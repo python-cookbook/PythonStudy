@@ -842,7 +842,7 @@ class Main(Game):
                             break
 
                     #컴퓨터가 던진 공이 스트라이크 일 때 융
-                    if (random_numbers[1] >=6 and random_numbers[1] <= 8) or (random_numbers[1] >= 11 and random_numbers[1] <= 13) or (random_numbers[1] >= 16 and random_numbers[1] <= 18):
+                    if (random_numbers[1] >=6 and random_numbers[1] <= 7) or (random_numbers[1] >= 11 and random_numbers[1] <= 12) or (random_numbers[1] >= 16 and random_numbers[1] <= 17):
                         Game.STRIKE_CNT += 1
                         Game.ANNOUNCE = '스트라이크!!!!!!!!!!!!!'
                         self.board()
