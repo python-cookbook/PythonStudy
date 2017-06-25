@@ -1056,24 +1056,8 @@ class Main(Game):
         self.board()
 
 
-
-
-
 if __name__ == '__main__':
-    # game_team_list = []
-    # if game_team_list == [] :
-    #     print('====================================================================================================')
-    #     print('한화 / ', '롯데 / ', '삼성 / ', 'KIA / ', 'SK / ', 'LG / ', '두산 / ', '넥센 / ', 'KT / ', 'NC / ')
-    #     game_team_list = input('=> 게임을 진행할 두 팀을 입력하세요 : ').split(' ')
-    #     print('====================================================================================================\n')
-    #     # if (game_team_list[0] in Game.TEAM_LIST) and (game_team_list[1] in Game.TEAM_LIST):
-    #     #     root = Tk()
-    #     #     Main(root, game_team_list)
-    #     #     root.mainloop()
-    #
-    #     root = Tk()
-    #     app = Main(root,game_team_list, root)
-    #     root.mainloop()
+
 
     while True:
         try:
