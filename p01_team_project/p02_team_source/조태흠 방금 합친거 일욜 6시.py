@@ -857,7 +857,7 @@ class Main(Game):
 
                 elif hit_yn == 2:  # 도루선택, 태흠
                     self.root.update()
-                    if Game.ADVANCE == [0, 0, 0]:
+                    if Game.ADVANCE == [0, 0, 0] or [0, 0, 1] or [0, 1, 1] or [1, 1, 1]:
                         Game.ANNOUNCE = '====================================================================================================\n★★★★★★★★도루 가능한 주자가 없습니다.★★★★★★★★'
                         self.board()
                         self.attack()
