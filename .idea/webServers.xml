@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="8e3907f7-3887-43aa-92cb-1ae03a2cb0cc" name="aws" url="http://52.79.48.228">
+        <fileTransfer host="52.79.48.228" port="22" privateKey="C:\Users\stu\Desktop\enterkey.ppk" rootFolder="/home/ubuntu" accessType="SFTP" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
