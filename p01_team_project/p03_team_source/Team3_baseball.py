@@ -306,8 +306,8 @@ class Game:
             Game.gamecount[0] = i['게임진행횟수']
             if Game.gamecount[0] % 6 == 0:  # 체력회복 # 준호, 명학, 영옥
                 hp_rec.batter_restore()
-            if Game.gamecount[0] % 3 == 0 and hp_rec.batter_injure(hp_rec.injure_n) == 'True':
-                hp_rec.batter_injure(0)
+            if Game.gamecount[0] % 3 == 0:
+                hp_rec.injure_n = 0
 
         # 로드한 어웨이팀 csv 파일의 데이터를 홈팀의 각 플레이어별 레코드 클래스에 입력하고 체력 재생, 부상 회복 수행
         #self.away_temp_sort2 = sorted(self.away_temp, key=itemgetter('체력'), reverse=True)
@@ -322,8 +322,8 @@ class Game:
             Game.gamecount[1] = i['게임진행횟수']     # 체력회복 # 준호, 명학, 영옥
             if Game.gamecount[1] % 6 == 0:
                 ap_rec.batter_restore()
-            if Game.gamecount[1] % 3 == 0 and ap_rec.batter_injure(ap_rec.injure_n) == 'True':
-                ap_rec.batter_injure(0)
+            if Game.gamecount[1] % 3 == 0:
+                ap_rec.injure_n = 0
 
 
         while Game.INNING <= 1:
