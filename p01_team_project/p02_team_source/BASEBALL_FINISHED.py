@@ -7,7 +7,7 @@ import ctypes
 ##### 저장할 경로는 항상 새로운 경로일 것! ##########
 
 ### 메인 폴더 ###
-filepath = 'c:/data/'
+filepath = 'c:\\data\\'
 
 ### 실시간 선수 기록 저장 ####
 save_player_path = "c:\\data\\baseball_save_player2.csv"
