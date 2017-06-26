@@ -163,6 +163,12 @@ class Saveandload:
     DATA_SET = 0
     CHECK = 0
     LOAD_YN = False
+    @staticmethod
+    def get_save_path():
+        import os
+        if not os.path.isdir(os.path.split(filepath)[0]):  # input받은 주소 중 현재 존재하지 않는 폴더를 input했다면, 즉 isdir이 not이라면.
+            os.mkdir(os.path.split(filepath)[0])
+        return filepath
 
     @staticmethod
     def make_data_set(cnt, game_info, adv, score, batter_number):
@@ -185,7 +191,7 @@ class Saveandload:
 
     @staticmethod
     def save(DATA_SET):
-
+        filepath = Saveandload.get_save_path()
         with open(filepath + "baseball_save_status.csv", "wt", encoding="utf-8") as f:
             for row in DATA_SET:
                 for idx, value in enumerate(row, 1):
