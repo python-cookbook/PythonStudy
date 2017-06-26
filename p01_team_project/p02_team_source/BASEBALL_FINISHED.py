@@ -10,7 +10,7 @@ import ctypes
 filepath = 'c:/data/'
 
 ### 실시간 선수 기록 저장 ####
-save_player_path = "c:\\data\\baseball_save_player1.csv"
+save_player_path = "c:\\data\\baseball_save_player2.csv"
 
 ### 최종 경기 기록 저장 ###
 save_result_path = "c:\\data\\baseball_save_result.csv"
@@ -172,7 +172,7 @@ class Saveandload:
 
     CHECK = 0
     LOAD_YN = False
-    print('LOAD_YN = ', LOAD_YN)
+    # print('LOAD_YN = ', LOAD_YN)
 
     @staticmethod
     def make_data_set(cnt, game_info, adv, score, batter_number):
@@ -206,24 +206,24 @@ class Saveandload:
     def save(DATA_SET):
 
         with open(filepath + "baseball_save_status.csv", "wt", encoding="utf-8") as f:
-            print('여기', DATA_SET)
+            # print('여기', DATA_SET)
             for row in DATA_SET:
                 for idx, value in enumerate(row, 1):
                     if idx == 1:
-                        print(value)
+                        # print(value)
                         f.write(value[0] + '\n')
                         f.write(value[1] + '\n')
                     if idx == 2:
-                        print(value)
+                        # print(value)
                         f.write(value[0] + "," + value[1] + "," + value[2] + '\n')
                     if idx == 3:
-                        print(value)
+                        # print(value)
                         f.write(value[0] + "," + value[1] + "," + value[2] + '\n')
                     if idx == 4:
-                        print(value)
+                        # print(value)
                         f.write(value[0] + "," + value[1] + '\n')
                     if idx == 5:
-                        print(value)
+                        # print(value)
                         f.write(value[0] + "," + value[1] + '\n')
     @staticmethod
     def load():
@@ -280,7 +280,7 @@ class Saveandload:
     def load_chk():
         if Saveandload.LOAD_YN == False:
             Saveandload.LOAD_YN = True
-            print(Saveandload.LOAD_YN)
+            # print('Load Finished')
         else:
             pass
 
@@ -304,7 +304,7 @@ class Saveandload:
                 else:
                     # load한 csv파일을 records 리스트에 담기
                     records = [records for records in csv.reader(open(load_path, 'r')) if len(records) != 0]
-                    print(records)
+                    # print(records)
                     # records 리스트를 선수별로 unpacking
                     for record in records:
                         curr_team = home if record[0] == hometeam else away
@@ -742,7 +742,7 @@ class Main(Game):
                             # if self.hit_number_check(hit_numbers) is False:
                             #     raise Exception()
                             hit_cnt = self.hit_judgment(random_numbers, hit_numbers)  # 안타 판별  # cnt, Foul, Double_Play, fly_ball
-                            print('hit_cnt : ', hit_cnt)
+                            # print('hit_cnt : ', hit_cnt)
                             # print(hit_cnt,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
                             break
 
@@ -799,8 +799,8 @@ class Main(Game):
                                 Game.BALL_CNT = 0
                                 Game.OUT_CNT += 2
                                 player.hit_and_run(1 if hit_cnt[0] > 0 else 0, 0, 1 if hit_cnt[0] == 4 else 0)  # 진루타, 볼넷, 홈런
-                                Game.ANNOUNCE = '== ▣ 병살타!!! 아~ 이게 무슨일입니까!! \n'
-                                print('병살타')
+                                Game.ANNOUNCE = ' 병살타!!! 아~ 이게 무슨일입니까!! \n'
+                                # print('병살타')
                                 self.advance_setting(hit_cnt[0], None, False, True, False)
                                 self.board()
                                 break
@@ -877,7 +877,7 @@ class Main(Game):
 
                         if rn < 0.3:  # 도루 성공확률, 태흠
                             self.advance_setting(1, self.base_num, False, False, True)
-                            print('도루성공, 게임창을 확인해주세용~')
+                            # print('도루성공, 게임창을 확인해주세용~')
                             Game.ANNOUNCE = '도루성공, Stolen Base'
                             self.board()
                             time.sleep(0.7)
@@ -955,33 +955,9 @@ class Main(Game):
         attackordefence = [["공격", "수비"] if change == 0 else ["수비", "공격"]]
         scoreformat = '{} : {}  ({}) | {}이닝 | ({})  {} : {}'
 
-        # if self.BALL_CNT==0:
-        #     self.ball_color=["white","white","white"]
-        # elif self.BALL_CNT==1:
-        #     self.ball_color=["orange","white","white"]
-        # elif self.BALL_CNT==2:
-        #     self.ball_color=["orange","orange","white"]
-        # elif self.BALL_CNT==3:
-        #     self.ball_color=["orange","orange","orange"]
-        #
-        # if self.STRIKE_CNT==0:
-        #     self.strike_color=['white','white']
-        # elif self.STRIKE_CNT==1:
-        #     self.strike_color=["blue","white"]
-        # elif self.STRIKE_CNT==2:
-        #     self.strike_color=["blue","blue"]
-        #
-        # if self.OUT_CNT==0:
-        #     self.out_color=['white','white']
-        # elif self.OUT_CNT==1:
-        #     self.out_color=["red","white"]
-        # elif self.OUT_CNT==2:
-        #     self.out_color=["red","red"]
-
         self.ball_color = self.state_color(3, self.BALL_CNT, "orange")    #지은  #tunning
         self.strike_color = self.state_color(2, self.STRIKE_CNT, "blue")
         self.out_color = self.state_color(2, self.OUT_CNT, "red")
-
 
         self.canvas.create_rectangle(500, 0, 1000, 600, outline="black")
         self.canvas.create_rectangle(500, 0, 1000, 100, outline="black")
@@ -1051,27 +1027,27 @@ class Main(Game):
         self.board()
 
     def Hitbutton(self):
-        print('hit')
+        # print('hit')
         Main.HITORNOT = 1
         self.board()
 
     def Nohitbutton(self):
-        print('no hit')
+        # print('no hit')
         Main.HITORNOT = 0
         self.board()
 
     def Stolenbasebutton(self):
-        print('stolen base')
+        # print('stolen base')
         Main.HITORNOT = 2
         self.board()
 
     def Runner_choice1(self):
-        print('주자 도루')
+        # print('주자 도루')
         self.base_num = 1
         self.board()
 
     def Runner_choice2(self):
-        print('주자 도루')
+        # print('주자 도루')
         self.base_num = 2
         self.board()
 
