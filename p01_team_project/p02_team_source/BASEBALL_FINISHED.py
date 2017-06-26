@@ -6,19 +6,19 @@ import ctypes
 ##### 저장할 경로는 항상 새로운 경로일 것! ##########
 
 ### 메인 폴더 ###
-filepath = "c:\\data\\"
+filepath = "d:\\data\\"
 
 ### 실시간 선수 기록 저장 ####
-save_player_path = "c:\\data\\baseball_save_player2.csv"
+save_player_path = "d:\\data\\baseball_save_player2.csv"
 
 ### 최종 경기 기록 저장 ###
-save_result_path = "c:\\data\\baseball_save_result.csv"
+save_result_path = "d:\\data\\baseball_save_result.csv"
 
 ############ 파일을  load할 경로 설정 ###################
 ##### load할 파일이 없으면 None 으로 설정! ###########
 
 ### 게임을 이어서 할 경우 실시간 경기 기록 불러오기 ###
-load_player_path = "c:\\data\\baseball_save_player1.csv"
+load_player_path = "d:\\data\\baseball_save_player1.csv"
 
 ### 기록 분석을 위한 최종 경기 기록 데이터가 필요할 경우 ###
 load_result_path = None
@@ -642,8 +642,9 @@ class Main(Game):
                 Game.INNING += 1
                 Game.CHANGE = 0
             self.start_game()
-        Game.ANNOUNCE = '게임 종료!!!'
-        self.show_record()
+        else:
+            Game.ANNOUNCE = '게임 종료!!!'
+            self.show_record()
 
     def attack(self):
         curr_team = self.hometeam if Game.CHANGE == 0 else self.awayteam
