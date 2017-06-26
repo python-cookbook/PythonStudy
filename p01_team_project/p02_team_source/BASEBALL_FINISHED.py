@@ -80,11 +80,9 @@ class Record:
     def avg(self):
         return self.__avg
 
-
     @avg.setter
     def avg(self, avg):
         self.__avg = avg
-
 
     # 타자 기록 관련 메서드
     def batter_record(self, hit, bob, homerun):
@@ -93,7 +91,6 @@ class Record:
         self.homerun += homerun
         self.atbat += 1
         self.avg = self.hit / self.atbat
-
 
 ###################################################################################################
 ## 선수 관련 클래스
@@ -164,10 +161,8 @@ class Team:
 
 class Saveandload:
     DATA_SET = 0
-
     CHECK = 0
     LOAD_YN = False
-    # print('LOAD_YN = ', LOAD_YN)
 
     @staticmethod
     def make_data_set(cnt, game_info, adv, score, batter_number):
@@ -178,7 +173,6 @@ class Saveandload:
         :param adv:
         :return:
         '''
-
         DATA_SET = []
         cnt = [str(data) for data in cnt] # S B O
         game_info = [str(data) for data in game_info] # 이닝, 체인지
@@ -186,7 +180,6 @@ class Saveandload:
         score = [str(data) for data in score] # 점수
         batter_number = [str(data) for data in batter_number] # 배터 순서
         DATA_SET.append([game_info, adv, cnt, score, batter_number])
-
         # 따로 세이브 버튼 누르지 않고, 여기서 계속 데이터 저장
         Saveandload.save(DATA_SET)
 
@@ -211,7 +204,6 @@ class Saveandload:
 
     @staticmethod
     def load():
-        # Saveandload.make_data_set()
         INNING = 0
         adv = 0
         CHANGE = 0
@@ -352,14 +344,6 @@ class Game(object):
     @property
     def awayteam(self):
         return self.__awayteam
-
-    # 게임 수행 메서드
-    def start_game(self):
-        pass
-
-    # 공격 수행 메서드
-    def attack(self):
-        pass
 
     # 팀별 선수 기록 출력
     def show_record(self):
@@ -630,20 +614,18 @@ class Main(Game):
         self.base_choice2 = Button(self.frameb, text='2루주자 도루', width=13, height=2, command=self.Runner_choice2, bg='magenta', fg='white')
         self.base_choice2.pack(fill="both", expand=False, side=TOP)
 
-
         self.canvas.bind("<ButtonPress-1>", self.Mouse_Action)   # 마우스를 누르는 행동
         self.color = ["white", "red"]
         self.ball_color=[]
         self.strike_color=[]
         self.out_color=[]
         self.board()
-        self.base_num = 0    # 태흠
-
+        self.base_num = 0  # 태흠
 
     def start_game(self):
-        Saveandload.load_to_start_game()       #태흠
-        Saveandload.load_record(self.game_team_list[0], self.hometeam, self.awayteam, load_player_path)   #지은     #태흠
-        Game.LOAD_CHK = False     #태흠
+        Saveandload.load_to_start_game()
+        Saveandload.load_record(self.game_team_list[0], self.hometeam, self.awayteam, load_player_path) #지은
+        Game.LOAD_CHK = False
 
         if Game.INNING <= 3: #게임을 진행할 이닝을 설정. 현재는 1이닝만 진행하게끔 되어 있음.
             Game.ANNOUNCE = '{} 이닝 {} 팀 공격 시작합니다.'.format(Game.INNING, self.hometeam.team_name if Game.CHANGE == 0 else self.awayteam.team_name)
@@ -662,13 +644,10 @@ class Main(Game):
         player_list = curr_team.player_list
         air_format = '\n' + '[{}] {}번 타자[{}] 타석에 들어섭니다.\n 현재 타석 : {}번 타자[{}], 타수 : {}, 타격 : {}, 볼넷 : {}, 홈런 : {},  타율 : {}'
 
-
         if Game.OUT_CNT < 3:
             player = self.select_player(Game.BATTER_NUMBER[Game.CHANGE], player_list)
             Game.ANNOUNCE += air_format.format(curr_team.team_name, player.number, player.name, player.number, player.name,  player.record.atbat, player.record.hit, player.record.bob, player.record.homerun,  player.record.avg,)
             self.board()
-
-
 
             while True:
                 random_numbers = self.throws_numbers()  # 컴퓨터가 랜덤으로 숫자 2개 생성(구질[0](0~1), 던질위치[1](0~24))
@@ -681,7 +660,7 @@ class Main(Game):
                 BATTER_NUMBER = Game.BATTER_NUMBER
 
                 Saveandload.make_data_set(CNT, GAME_INFO, ADV, SCORE, BATTER_NUMBER)
-                Saveandload.save_record(save_player_path, *PLAYER_INFO)            #지은
+                Saveandload.save_record(save_player_path, *PLAYER_INFO)  #지은
 
                 Main.FORB = -1
                 Main.BALLLOC = -1
@@ -844,8 +823,8 @@ class Main(Game):
                     continue
 
             PLAYER_INFO = [curr_team.team_name, player.number, player.name, player.record.atbat, player.record.hit, player.record.bob,
-                           player.record.homerun, player.record.avg]           #태흠
-            Saveandload.save_record(save_player_path, *PLAYER_INFO)  # 지은     #태흠
+                           player.record.homerun, player.record.avg]
+            Saveandload.save_record(save_player_path, *PLAYER_INFO)  # 지은
 
 
             if Game.BATTER_NUMBER[Game.CHANGE] == 9:
@@ -854,7 +833,7 @@ class Main(Game):
                 Game.BATTER_NUMBER[Game.CHANGE] += 1
             self.attack()
 
-        else:    # OUT_CNT가 3이 되었을 때
+        else:# OUT_CNT가 3이 되었을 때
             Game.CHANGE += 1
             Game.STRIKE_CNT = 0
             Game.BALL_CNT = 0
@@ -950,35 +929,27 @@ class Main(Game):
             self.base_num = 1
         elif event.x in range(220, 260) and event.y in range(115, 155):
             self.base_num = 2
-        self.board()
 
     def Hitbutton(self):
         Main.HITORNOT = 1
-        self.board()
 
     def Nohitbutton(self):
         Main.HITORNOT = 0
-        self.board()
 
     def Stolenbasebutton(self):
         Main.HITORNOT = 2
-        self.board()
 
     def Runner_choice1(self):
         self.base_num = 1
-        self.board()
 
     def Runner_choice2(self):
         self.base_num = 2
-        self.board()
 
     def FastBall(self):
         Main.FORB = 1
-        self.board()
 
     def BreakingBall(self):
         Main.FORB = 0
-        self.board()
 
 if __name__ == '__main__':
     while True:
@@ -999,6 +970,3 @@ if __name__ == '__main__':
     root = Tk()
     app = Main(root, game_team_list)
     root.mainloop()
-
-
-
