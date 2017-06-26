@@ -650,7 +650,7 @@ class Main(Game):
         self.frameb.pack(fill="both", expand=True)
 
 
-        self.hit = Button(self.frameb, text='타격하기(클릭 후 예상 구질 선택) ', width=5, height=2, command=self.Hitbutton, bg='orange', fg='black')
+        self.hit = Button(self.frameb, text='타격하기(클릭 후 예상구질 선택!) ', width=5, height=2, command=self.Hitbutton, bg='orange', fg='black')
         self.hit.pack(fill="both", expand=False)
 
         self.nohit = Button(self.frameb, text='타격하지 않고 흘리기', width=5, height=2, command=self.Nohitbutton, bg='orange', fg='black')
