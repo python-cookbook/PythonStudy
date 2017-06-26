@@ -5,7 +5,6 @@ import csv
 from operator import itemgetter
 
 # 3조
-# csv 파일 형태 : 팀명/선수명/안타수/홈런수/타수/타율/체력/부상여부
 
 ###################################################################################################
 ## 기록 및 스테이터스 관련 클래스
@@ -21,7 +20,7 @@ class Record:
         self.__hp = 100  # 체력(health point)
         self.__hp_dec = random.randint(0,2)  # 체력감소율
         self.__condition = {0:'good',1:'normal',2:'bad'}  # 컨디션
-        self.__injure_n = random.randint(0, 20)   # 부상 랜덤수 생성
+        self.__injure_n = random.randint(0, 21)   # 부상 랜덤수 생성
 
 
     @property
@@ -88,6 +87,7 @@ class Record:
     def condition(self, condition):
         self.__condition = condition
 
+
     # 타자 기록 관련 메서드
     def batter_record(self, hit, homerun):
         self.hit += hit
@@ -103,6 +103,7 @@ class Record:
             self.hp -= 3
         else: self.hp -= 5
 
+
     # 타자 부상 관련 메소드
     def batter_injure(self, injure_n):
         if injure_n < 20:
@@ -110,17 +111,11 @@ class Record:
         else:
             return True
 
-    # 타자 부상 회복 관련 메소드
-    @classmethod
-    def batter_injure_heal(cls, injure_n):
-        if cls.batter_injure(injure_n) is True:
-            heal_number = random.randint(1, 9)
-            if heal_number == 3 or heal_number == 6 or heal_number == 9:
-                return False
-            else:
-                return True
-        else:
-            return False
+
+
+    # 체력 회복 메소드
+    def batter_restore(self):
+        self.hp += 10
 
 
 ###################################################################################################
@@ -165,9 +160,6 @@ class Player:
     def player_injure(self, injure_n):
         self.__record.batter_injure(injure_n)
 
-    # 선수 부상 회복 관련 메소드
-    def player_injure_heal(self, injure_n):
-        self.__record.batter_injure_heal(injure_n)
 
 ###################################################################################################
 ## 팀 관련 클래스
@@ -210,6 +202,8 @@ class Game:
     ADVANCE = [0, 0, 0]  # 진루 상황
     SCORE = [0, 0]  # [home, away]
     BATTER_NUMBER = [1, 1]  # [home, away] 타자 순번
+    gamecount = [0, 0]
+
 
     def __init__(self, game_team_list):
         # csv 파일 위치
@@ -223,9 +217,11 @@ class Game:
         # csv파일을 불러와서 정렬한다음 임시로 담아두는 리스트
         self.home_temp_sort = []
         self.away_temp_sort = []
+        #self.home_temp_sort2 = []
+        #self.away_temp_sort2 = []
 
         # csv파일을 불러올 때 int타입, float타입으로 불러오는 변수 구분
-        self.int_labels = ['안타수', '체력', '홈런수', '타수']
+        self.int_labels = ['안타수', '체력', '홈런수', '타수', '게임진행횟수', '등번호']
         self.float_labels = ['타율']
 
         # 홈팀의 라인업을 담는 딕셔너리
@@ -233,6 +229,9 @@ class Game:
 
         # 어웨이 팀의 라인업을 담는 딕셔너리
         self.awayteam_dict = {}
+
+        #################################
+        self.__record = Record()
 
         # 홈팀 csv 로드
         with open(self.home_location, 'r') as hf:
@@ -243,7 +242,7 @@ class Game:
                     item[value] = round(float(item[value]), 3)
                 self.home_temp.append(item)
         self.home_temp_sort = sorted(self.home_temp, key=itemgetter('체력'), reverse=True)
-        print(self.home_temp_sort)
+
         hf.close()
 
         # 어웨이팀 csv 로드
@@ -259,11 +258,11 @@ class Game:
         self.away_temp_sort = sorted(self.away_temp, key=itemgetter('체력'), reverse=True)
         print(self.away_temp_sort)
         # 홈팀 라인업 구성
-        self.value_h = tuple({int(i['등번호']): i['선수명']} for i in self.home_temp_sort)
+        self.value_h = tuple({i['등번호']: i['선수명']} for i in self.home_temp_sort)
         self.__hometeam = Team(game_team_list[0], self.value_h)
         print(self.value_h)
         # 어웨이팀 라인업 구성
-        self.value_a = tuple({int(i['등번호']): i['선수명']} for i in self.away_temp_sort)
+        self.value_a = tuple({i['등번호']: i['선수명']} for i in self.away_temp_sort)
         self.__awayteam = Team(game_team_list[1], self.value_a)
         print(self.value_a)
 
@@ -275,6 +274,9 @@ class Game:
         print('====================================================================================================')
         print('== 선수단 구성이 완료 되었습니다.\n')
 
+    @property #인스턴스화 시킨거는 위에서 세터다해놓음 클래스 가보면 다 해놓음 그냥 프로퍼티만 해주면 됨
+    def record(self):
+        return self.__record
 
     @property
     def hometeam(self):
@@ -286,6 +288,43 @@ class Game:
 
     # 게임 수행 메서드
     def start_game(self):
+
+        hometeam_players = self.hometeam.player_list
+        awayteam_players = self.awayteam.player_list
+
+        # 로드한 홈팀 csv 파일의 데이터를 홈팀의 각 플레이어별 레코드 클래스에 입력하고 체력 재생, 부상 회복 수행
+        #self.home_temp_sort2 = sorted(self.home_temp, key=itemgetter('체력'), reverse=True)
+        for idx, i in enumerate(self.home_temp_sort):
+            hp = hometeam_players[idx]
+            hp_rec = hp.record
+            hp_rec.hp = i['체력']
+            hp_rec.homerun += i['홈런수']
+            hp_rec.avg += i['타율']
+            hp_rec.hit += i['안타수']
+            hp_rec.atbat += i['타수']
+            Game.gamecount[0] = i['게임진행횟수']
+            if Game.gamecount[0] % 6 == 0:
+                hp_rec.batter_restore()
+            if Game.gamecount[0] % 3 == 0 and hp_rec.batter_injure(hp_rec.injure_n) == 'True':
+                hp_rec.batter_injure(0)
+
+        # 로드한 어웨이팀 csv 파일의 데이터를 홈팀의 각 플레이어별 레코드 클래스에 입력하고 체력 재생, 부상 회복 수행
+        #self.away_temp_sort2 = sorted(self.away_temp, key=itemgetter('체력'), reverse=True)
+        for idx, i in enumerate(self.away_temp_sort):
+            ap = awayteam_players[idx]
+            ap_rec = ap.record
+            ap_rec.hp = i['체력']
+            ap_rec.homerun += i['홈런수']
+            ap_rec.avg += i['타율']
+            ap_rec.hit += i['안타수']
+            ap_rec.atbat += i['타수']
+            Game.gamecount[1] = i['게임진행횟수']
+            if Game.gamecount[1] % 6 == 0:
+                ap_rec.batter_restore()
+            if Game.gamecount[1] % 3 == 0 and ap_rec.batter_injure(ap_rec.injure_n) == 'True':
+                ap_rec.batter_injure(0)
+
+
         while Game.INNING <= 1:
             print('====================================================================================================')
             print('== {} 이닝 {} 팀 공격 시작합니다.'.format(Game.INNING, self.hometeam.team_name if Game.CHANGE == 0 else self.awayteam.team_name))
@@ -295,6 +334,9 @@ class Game:
             if Game.CHANGE == 2:  # 이닝 교체
                 Game.INNING += 1
                 Game.CHANGE = 0
+
+        Game.gamecount[0] += 1
+        Game.gamecount[1] += 1
 
         print('====================================================================================================')
         print('== 게임 종료!!!')
@@ -337,7 +379,7 @@ class Game:
         # 홈팀 선수 기록 1차 저장
         h_csv1_header1 = open("d:/Baseball_data/" + game_team_list[0] + ".csv", 'w', encoding='euc_kr', newline='')
         h_csv1_writer1 = csv.writer(h_csv1_header1)
-        h_csv1_writer1.writerow(['팀명', '선수명', '타수', '안타수', '홈런수', '타율', '체력', '부상여부', '등번호'])
+        h_csv1_writer1.writerow(['팀명', '선수명', '타수', '안타수', '홈런수', '타율', '체력', '부상여부', '게임진행횟수', '등번호'])
         h_csv1_header1.close()
 
         for i in range(20):
@@ -347,13 +389,13 @@ class Game:
             csv_writer_h = csv.writer(open_csv_header_h)
             csv_writer_h.writerow(
                 [game_team_list[0], hp.name, int(hp_rec.atbat), int(hp_rec.hit), int(hp_rec.homerun), round(float(hp_rec.avg),3),
-                 int(hp_rec.hp), hp_rec.batter_injure(hp_rec.injure_n)])
+                 int(hp_rec.hp), hp_rec.batter_injure(hp_rec.injure_n), Game.gamecount[0]])
             open_csv_header_h.close()
 
         # 어웨이팀 선수 기록 1차 저장
         a_csv1_header1 = open("d:/Baseball_data/" + game_team_list[1] + ".csv", 'w', encoding='euc_kr', newline='')
         a_csv1_writer1 = csv.writer(a_csv1_header1)
-        a_csv1_writer1.writerow(['팀명', '선수명', '타수', '안타수', '홈런수', '타율', '체력', '부상여부', '등번호'])
+        a_csv1_writer1.writerow(['팀명', '선수명', '타수', '안타수', '홈런수', '타율', '체력', '부상여부', '게임진행횟수', '등번호'])
         a_csv1_header1.close()
 
         for i in range(20):
@@ -363,7 +405,7 @@ class Game:
             csv_writer_a = csv.writer(open_csv_header_a)
             csv_writer_a.writerow(
                 [game_team_list[1], ap.name, int(ap_rec.atbat), int(ap_rec.hit), int(ap_rec.homerun), round(float(ap_rec.avg),3),
-                 int(ap_rec.hp), ap_rec.batter_injure(ap_rec.injure_n)])
+                 int(ap_rec.hp), ap_rec.batter_injure(ap_rec.injure_n), Game.gamecount[1]])
             open_csv_header_a.close()
         #팀명	선수명	타수	안타수	홈런수	타율	체력	부상여부	등번호
 
@@ -374,17 +416,27 @@ class Game:
         temp_h = []
         for i in home_csv1_read:
             # ff.append(i)
-            temp_h.append(i[0:8])   # 정렬전 순위를 빼고 append한다
+            temp_h.append(i[0:9])   # 정렬전 순위를 빼고 append한다
         home_csv1.close()
 
-        temp_h2 = sorted(temp_h, key=lambda temp_h: int(temp_h[6]), reverse=True)   # 체력 순으로 desc 정렬
+        temp_h2 = sorted(temp_h, key=lambda temp_h: (-int(temp_h[6]), 1 if temp_h[7] == 'True' else 0), reverse=False)   # 체력 순으로 desc 정렬
+        temp_h3 = sorted(temp_h2, key=lambda temp_h2: temp_h2[7], reverse=False)
 
-        for i in range(0, len(temp_h2), 1):
-            temp_h2[i].append(i + 1)
+
+        for i in range(0, len(temp_h3), 1):
+            # if int(temp_h2[i][7]) == 1:
+            #     pass
+            # else:
+            #     temp_h2[i].append(i + 1)
+            temp_h3[i].append(i + 1)
+        # for i in range(0, len(temp_h3), 1):
+        #     print(temp_h3[i])
+
+
         # print(temp_h2)
         home_open_csv_header1 = open("d:/Baseball_data/"+game_team_list[0]+".csv", 'w', encoding='euc_kr', newline='')
         home_csv_writer1 = csv.writer(home_open_csv_header1)
-        home_csv_writer1.writerow(['팀명', '선수명', '타수', '안타수', '홈런수', '타율', '체력', '부상여부', '등번호'])
+        home_csv_writer1.writerow(['팀명', '선수명', '타수', '안타수', '홈런수', '타율', '체력', '부상여부', '게임진행횟수', '등번호'])
         home_open_csv_header1.close()
 
         home_open_csv_header2 = open("d:/Baseball_data/"+game_team_list[0]+".csv", 'a', encoding='euc_kr', newline='')
@@ -409,17 +461,25 @@ class Game:
         temp_a = []
         for i in away_csv1_read:
             # ff.append(i)
-            temp_a.append(i[0:8])
+            temp_a.append(i[0:9])
         away_csv1.close()
 
-        temp_a2 = sorted(temp_a, key=lambda temp_a: int(temp_a[6]), reverse=True)
+        temp_a2 = sorted(temp_a, key=lambda temp_a: (-int(temp_a[6]), 1 if temp_a[7] == 'True' else 0), reverse=False)   # 체력 순으로 desc 정렬
+        temp_a3 = sorted(temp_a2, key=lambda temp_a2: temp_a2[7], reverse=False)
 
-        for i in range(0, len(temp_a2), 1):
-            temp_a2[i].append(i + 1)
-        # print(temp_h2)
+
+        for i in range(0, len(temp_a3), 1):
+            # if int(temp_a2[i][7]) == 1:
+            #     pass
+            # else:
+            #     temp_a2[i].append(i + 1)
+            temp_a3[i].append(i + 1)
+        # for i in range(0, len(temp_a3), 1):
+        #     print(temp_a3[i])
+
         away_open_csv_header1 = open("d:/Baseball_data/"+game_team_list[1]+".csv", 'w', encoding='euc_kr', newline='')
         away_csv_writer1 = csv.writer(away_open_csv_header1)
-        away_csv_writer1.writerow(['팀명', '선수명', '타수', '안타수', '홈런수', '타율', '체력', '부상여부', '등번호'])
+        away_csv_writer1.writerow(['팀명', '선수명', '타수', '안타수', '홈런수', '타율', '체력', '부상여부', '게임진행횟수', '등번호'])
         away_open_csv_header1.close()
 
         away_open_csv_header2 = open("d:/Baseball_data/"+game_team_list[1]+".csv", 'a', encoding='euc_kr', newline='')
@@ -447,9 +507,11 @@ class Game:
     def attack(self):
         curr_team = self.hometeam if Game.CHANGE == 0 else self.awayteam
         player_list = curr_team.player_list
+        player = self.select_player(Game.BATTER_NUMBER[Game.CHANGE], player_list)
+
 
         if Game.OUT_CNT < 3:
-            player = self.select_player(Game.BATTER_NUMBER[Game.CHANGE], player_list)
+
             print('====================================================================================================')
             print('== [{}] {}번 타자[{}] 타석에 들어섭니다.'.format(curr_team.team_name, player.number, player.name))
             print('====================================================================================================\n')
@@ -465,11 +527,11 @@ class Game:
                 print('== 컨디션 : {}, 체력 : {}'.format(player.record.condition[player.record.hp_dec], player.record.hp))
                 try:
                     if player.record.condition[player.record.hp_dec] == 'good':
-                        print('==선수의 컨디션이 "good" 입니다. 1~55 사이의 숫자를 선택하세요.')
+                        print('==선수의 컨디션이 "good" 입니다. 1~45 사이의 숫자를 선택하세요.')
                     if player.record.condition[player.record.hp_dec] == 'normal':
-                        print('==선수의 컨디션이 "normal" 입니다. 1~65 사이의 숫자를 선택하세요.')
+                        print('==선수의 컨디션이 "normal" 입니다. 1~50 사이의 숫자를 선택하세요.')
                     if player.record.condition[player.record.hp_dec] == 'bad':
-                        print('==선수의 컨디션이 "bad" 입니다. 1~75 사이의 숫자를 선택하세요.')
+                        print('==선수의 컨디션이 "bad" 입니다. 1~55 사이의 숫자를 선택하세요.')
                     hit_numbers = set(int(hit_number) for hit_number in input('== 컨디션에 따른 숫자를 공백구분으로 4개 입력하세요(중복불가능) : ').split(' '))  # 유저가 직접 숫자 4개 입력
                     if self.hit_number_check(hit_numbers, player) is False:
                         raise Exception()
@@ -545,21 +607,21 @@ class Game:
             if player.record.condition[player.record.hp_dec] == 'good':
                 if len(hit_numbers) == 4:
                     for hit_number in hit_numbers:
-                        if hit_number <= 0 or hit_number > 55:
+                        if hit_number <= 0 or hit_number > 45:
                             return False
                     return True
                 return False
             if player.record.condition[player.record.hp_dec] == 'normal':
                 if len(hit_numbers) == 4:
                     for hit_number in hit_numbers:
-                        if hit_number <= 0 or hit_number > 65:
+                        if hit_number <= 0 or hit_number > 50:
                             return False
                     return True
                 return False
             if player.record.condition[player.record.hp_dec] == 'bad':
                 if len(hit_numbers) == 4:
                     for hit_number in hit_numbers:
-                        if hit_number <= 0 or hit_number > 75:
+                        if hit_number <= 0 or hit_number > 55:
                             return False
                     return True
                 return False
@@ -576,23 +638,23 @@ class Game:
             if number == player.number:
                 return player
 
-    # 랜덤으로 숫자 생성(1~55)
+    # 랜덤으로 숫자 생성
     def throws_numbers(self, player):
         random_balls = set()
         while True:
             if player.record.condition[player.record.hp_dec] == 'good':
-                random_balls.add(random.randint(1, 55))  # 컨디션이 좋은 선수는 1 ~ 55 중에 랜덤 수를 출력
+                random_balls.add(random.randint(1, 45))  # 컨디션이 좋은 선수는 1 ~ 45 중에 랜덤 수를 출력
                 if len(random_balls) == 4:  # 생성된 ball 이 4개 이면(set 객체라 중복 불가)
                     return random_balls
             if player.record.condition[player.record.hp_dec] == 'normal':
-                random_balls.add(random.randint(1, 65))  # 컨디션이 보통인 선수는 1 ~ 65 중에 랜덤 수를 출력
+                random_balls.add(random.randint(1, 50))  # 컨디션이 보통인 선수는 1 ~ 50 중에 랜덤 수를 출력
                 if len(random_balls) == 4:  # 생성된 ball 이 4개 이면(set 객체라 중복 불가)
                     return random_balls
             if player.record.condition[player.record.hp_dec] == 'bad':
-                random_balls.add(random.randint(1, 75))  # 1 ~ 75 중에 랜덤 수를 출력
+                random_balls.add(random.randint(1, 55))  # 1 ~ 75 중에 랜덤 수를 출력
                 if len(random_balls) == 4:  # 생성된 ball 이 4개 이면(set 객체라 중복 불가)
                     return random_balls
-            # random_balls.add(random.randint(1, 65))  # 컨디션이 보통인 선수는 1 ~ 65 중에 랜덤 수를 출력
+            # random_balls.add(random.randint(1, 65))  # 컨디션이 보통인 선수는 1 ~ 55 중에 랜덤 수를 출력
             # if len(random_balls) == 4:  # 생성된 ball 이 4개 이면(set 객체라 중복 불가)
             #     return random_balls
 
@@ -610,3 +672,5 @@ if __name__ == '__main__':
         else:
             print('입력한 팀 정보가 존재하지 않습니다. 다시 입력해주세요.')
 
+# 팀명	선수명	타수	안타수	홈런수	타율	체력	부상여부	게임진행횟수	등번호
+# temp_h2 = sorted(temp_h, key=lambda temp_h: (-int(temp_h[6]), 1 if int(temp_h[7]) == 1 else 0), reverse=False)
