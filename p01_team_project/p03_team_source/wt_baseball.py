@@ -601,7 +601,7 @@ class Game:
             # random_balls.add(random.randint(1, 65))  # 컨디션이 보통인 선수는 1 ~ 65 중에 랜덤 수를 출력
             # if len(random_balls) == 4:  # 생성된 ball 이 4개 이면(set 객체라 중복 불가)
             #     return random_balls
-
+#
 if __name__ == '__main__':
     while True:
         game_team_list = []
