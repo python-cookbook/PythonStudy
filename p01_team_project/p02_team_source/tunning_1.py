@@ -669,7 +669,6 @@ class Main(Game):
         self.stolen_base.pack(fill="both", expand=True, side=TOP)
 
 
-
         self.fastball = Button(self.frameb, text='직구', width=5, height=2, command=self.FastBall, bg='purple', fg='white')
         self.fastball.pack(fill="both", expand=True, side=TOP)
         self.breakingball = Button(self.frameb, text='변화구', width=5, height=2, command=self.BreakingBall, bg='purple', fg='white')
@@ -689,15 +688,19 @@ class Main(Game):
         PITCH_LOCATION = (PITCH_LOCATION + '\n') * MATRIX #융
         PITCH_LOCATION = "---------" * MATRIX + "\n" + PITCH_LOCATION + "---------" * MATRIX #융
         hit_numbers = []
+        # 튜닝 1 - 원주
+        air_format = '\n' + '[{}] {}번 타자[{}] 타석에 들어섭니다.\n 현재 타석 : {}번 타자[{}], 타율 : {}, 볼넷 : {}, 홈런 : {}, 타수 : {}, 타격 : {}'
 
         if Game.OUT_CNT < 3:
             player = self.select_player(Game.BATTER_NUMBER[Game.CHANGE], player_list)
             # print('====================================================================================================')
-            Game.ANNOUNCE += '\n' + '[{}] {}번 타자[{}] 타석에 들어섭니다.\n 현재 타석 : {}번 타자[{}], 타율 : {}, 볼넷 : {}, 홈런 : {}'.format(curr_team.team_name, player.number, player.name,player.number, player.name, player.record.avg, player.record.bob, player.record.homerun)
+            # 튜닝 1 - 원주
+            Game.ANNOUNCE += air_format.format(curr_team.team_name, player.number, player.name,player.number, player.name, player.record.avg, player.record.bob, player.record.homerun, player.record.atbat, player.record.hit)
             # print('====================================================================================================\n')
             self.board()
 
             random_numbers = self.throws_numbers()  # 컴퓨터가 랜덤으로 숫자 2개 생성(구질[0](0~1), 던질위치[1](0~24))
+
             # print('== [전광판] =========================================================================================')
             # print('==    {}      | {} : {}'.format(Game.ADVANCE[1], self.hometeam.team_name, Game.SCORE[0]))
             # print('==  {}   {}    | {} : {}'.format(Game.ADVANCE[2], Game.ADVANCE[0], self.awayteam.team_name, Game.SCORE[1]))
@@ -828,7 +831,7 @@ class Main(Game):
 
                 elif hit_yn == 0:######타격안하고 지켜보기 시전########################### 융
                     #컴퓨터가 던진 공이 볼일때 융
-                    if (random_numbers[1] >= 0 and random_numbers[1] <= 4) or (random_numbers[1] % 5 == 0) or (random_numbers[1] >= 20):
+                    if (random_numbers[1] >= 0 and random_numbers[1] <= 4) or (random_numbers[1] % 5 == 0) or (random_numbers[1] >= 20) or ((random_numbers[1]-4) % 5 ==0) or ((random_numbers[1]-3) % 5 == 0):
                         Game.BALL_CNT += 1
                         Game.ANNOUNCE = '볼 !!!!!!!!!!!!!!!!!!!!!!'
                         self.board()
@@ -842,7 +845,7 @@ class Main(Game):
                             break
 
                     #컴퓨터가 던진 공이 스트라이크 일 때 융
-                    if random_numbers[1] in [6, 7, 8, 9, 11, 12, 13, 14, 16, 17, 18, 19]:
+                    if random_numbers[1] in [6, 7, 11, 12, 16, 17]:
                         Game.STRIKE_CNT += 1
                         Game.ANNOUNCE = '스트라이크!!!!!!!!!!!!!'
                         self.board()
@@ -975,29 +978,36 @@ class Main(Game):
         elif self.game.OUT_CNT==2:
             self.out_color=["red","red"]
 
+        #Ball 존
         self.canvas.create_rectangle(500, 0, 1000, 600, outline="black")
         self.canvas.create_rectangle(500, 0, 1000, 100, outline="black")
         self.canvas.create_rectangle(600, 600, 700, 0, outline="black")
         self.canvas.create_rectangle(500, 100, 1000, 200, outline="black")
-        self.canvas.create_rectangle(700, 600, 800, 0, outline="black")
+        self.canvas.create_rectangle(500, 100, 1000, 200, outline="black")
+        # 튜닝 1 - 원주
+        # ---------스트라이크존------#
+        self.canvas.create_rectangle(600, 200, 1100, 500, fill="yellow")
+        #----------스트라이크존------#
+        self.canvas.create_rectangle(700, 600, 800, 0 ,outline="black")
         self.canvas.create_rectangle(500, 200, 1000, 300, outline="black")
         self.canvas.create_rectangle(800, 600, 900, 0, outline="black")
         self.canvas.create_rectangle(500, 300, 1000, 400, outline="black")
         self.canvas.create_rectangle(900, 600, 1000, 0, outline="black")
         self.canvas.create_rectangle(500, 400, 1000, 500, outline="black")
         self.canvas.create_rectangle(500, 600, 1000, 600, outline="black")
+
         self.canvas.create_rectangle(0, 100, 480, 600, fill="green")
 
+        self.canvas.create_rectangle(220, 300, 260, 340, fill="white")
+        #진루 선
         self.canvas.create_line(240, 135, 35, 330, width=4, fill="white")
         self.canvas.create_line(240, 135, 445, 330, width=4, fill="white")
         self.canvas.create_line(40, 330, 240, 515, width=4, fill="white")
         self.canvas.create_line(445, 330, 240, 515, width=4, fill="white")
-
         self.canvas.create_oval(225, 120, 255, 150, fill=Main.COLOR[self.game.ADVANCE[1]])  # 2루
         self.canvas.create_oval(20, 315, 50, 345, fill=Main.COLOR[self.game.ADVANCE[2]])  # 3루
         self.canvas.create_oval(430, 315, 460, 345, fill=Main.COLOR[self.game.ADVANCE[0]])  # 1루
         self.canvas.create_oval(225, 500, 255, 530, fill="white")
-
         self.canvas.create_text(350, 490, font=("Courier", 12), text="B")
         self.canvas.create_oval(370, 480, 390, 500, fill=self.ball_color[0])#볼
         self.canvas.create_oval(405, 480, 425, 500, fill=self.ball_color[1])#볼
@@ -1078,6 +1088,4 @@ if __name__ == '__main__':
     root = Tk()
     app = Main(root, game_team_list, root)
     root.mainloop()
-
-
 
